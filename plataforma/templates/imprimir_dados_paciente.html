@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'body' %}
+
+<style>
+    @media print {
+        @page {
+            size: A4;
+            margin: 0.5cm;
+        }
+        .no-print {
+            display: none !important;}
+        
+    }
+
+    .assinatura {
+        margin-top: 80px;
+        text-align: center;
+    }
+
+    .linha-assinatura {
+        border-top: 1px solid #000;
+        width: 300px;
+        margin: 0 auto;
+        padding-top: 5px;
+    }
+
+    .footer-print {
+        position: relative;
+        bottom: 0;
+        width: 100%;
+        padding-top: 5px;
+    }
+</style>
+
+    {% if messages %}
+        <br>
+        {% for message in messages %}
+            <div class="alert {{message.tags}}">
+                {{message}}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+<!-- detalhes_paciente.html -->
+<div class="container mt-4">
+    <!-- Cabeçalho Institucional -->
+    <div class="border-bottom pb-3 mb-4">
+        <h3 class="text-center">{{perfil.nomeclinica}} - Dados Clinicos</h3>
+        <div class="d-flex justify-content-between">
+            <div>
+               <strong> Nome:</strong> {{ paciente.nome }}<br>
+                <strong>Data Nascimento:</strong> {{ paciente.datanascimento }}<br>
+                <strong>CPF:</strong> {{ paciente.cpf }}
+            </div>
+{% if perfil %}
+    <div class="mb-3">
+         <div>
+            <strong>Nutricionista:</strong> {{ perfil.nome_completo }}<br>
+            <strong>CPF:</strong> {{ perfil.cpf }}<br>
+            <strong>CFN:</strong> {{ perfil.cfn }}
+        </div>
+    </div>
+    {% if perfil.logotipo %}
+            <img src="{{ perfil.logotipo.url }}" height="80" class="mb-2">
+            <!--<img src="{{ MEDIA_URL }}logos_profissionais/{{ perfil.logotipo }}" height="80" class="mb-2">-->
+    {% endif %}
+{% endif %}
+</div>
+<button class="btn btn-success no-print" onclick="window.print()">
+    🖨️ Imprimir
+</button>
+<h2>Dados do Paciente</h2> 
+<div class="text-end mb-3">
+    
+</div>
+
+<div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Peso</th>
+            <th scope="col">Altura</th>
+            <th scope="col">% gordura</th>
+            <th scope="col">% músculo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dado in dados_paciente %}
+            <tr>
+                <th scope="row">{{dado.data|date:"d/m/Y"}}</th>
+                <th scope="row">{{dado.peso}} Kg</th>
+                <td>{{dado.altura}} cm</td>
+                <td>{{dado.percentual_gordura}}%</td>
+                <td>{{dado.percentual_musculo}}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Colesterol HDL</th>
+            <th scope="col">Coleterol LDL</th>
+            <th scope="col">Coleterol Total</th>
+            <th scope="col">Triglicerídios</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dado in dados_paciente %}
+            <tr>
+                <th scope="row">{{dado.data|date:"d/m/Y"}}</th>
+                <td scope="row">{{dado.colesterol_hdl}} mg/dL</td>
+                <td>{{dado.colesterol_hdl}} mg/dL</td>
+                <td>{{dado.colesterol_total}} mg/dL</td>
+                <td>{{dado.trigliceridios}} mg/dL</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+
+ 
+    <p>Data de Impressão: {{ today }}</p>
+    <br>
+    <br>
+    <br>
+        <div class="footer-print">
+            <div class="assinatura">
+                <div class="linha-assinatura"></div>
+                <div class="mt-1">
+                    Assinatura e Carimbo do Profissional
+                </div>
+            </div>
+        </div>
+</div>
+{% endblock %}

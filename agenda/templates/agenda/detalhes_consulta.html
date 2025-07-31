@@ -1,0 +1,104 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'plataforma' %}
+<div class="container mt-4">
+    <h2>Detalhes da Consulta</h2>
+    
+    {% if consulta %}
+        <div class="card">
+            <div class="card-header">
+                Consulta de {{ consulta.paciente.nome }} - {{ consulta.data_hora|date:"d/m/Y H:i" }}
+            </div>
+            <div class="card-body">
+                <p><strong>Paciente:</strong> {{ consulta.paciente.nome }}</p>
+                <p><strong>Data e Hora:</strong> {{ consulta.data_hora|date:"d/m/Y H:i" }}</p>
+                <p><strong>Duração:</strong> {{ consulta.duracao }} minutos</p>
+                <p><strong>Status:</strong> <span id="consulta-status">{{ consulta.get_status_display }}</span></p>
+                {% if consulta.observacoes %}
+                    <p><strong>Observações:</strong></p>
+                    <p>{{ consulta.observacoes|linebreaksbr }}</p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'agenda:calendario' %}" class="btn btn-secondary">Voltar ao Calendário</a>
+                {% if consulta.status != 'cancelado' and consulta.status != 'realizado' %}
+                    <a href="{% url 'agenda:editar_consulta' pk=consulta.pk %}" class="btn btn-primary" id="btn-editar-consulta">Editar Consulta</a>
+                    <button id="btn-cancelar-consulta" class="btn btn-danger" data-url="{% url 'agenda:cancelar_consulta' pk=consulta.pk %}" data-consulta-id="{{ consulta.pk }}">Cancelar Consulta</button>
+                {% else %}
+                    <p class="mt-2"><em>Esta consulta não pode mais ser editada ou cancelada.</em></p>
+                {% endif %}
+            </div>
+        </div>
+        <div id="mensagem-status" class="mt-3"></div> {# Para exibir mensagens de sucesso/erro #}
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            Consulta não encontrada.
+        </div>
+        <a href="{% url 'agenda:calendario' %}" class="btn btn-secondary">Voltar ao Calendário</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block 'body' %}
+{{ block.super }}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+document.addEventListener('DOMContentLoaded', function() {
+    const btnCancelar = document.getElementById('btn-cancelar-consulta');
+    const mensagemStatusDiv = document.getElementById('mensagem-status');
+    const consultaStatusSpan = document.getElementById('consulta-status');
+    const btnEditar = document.getElementById('btn-editar-consulta');
+
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', function() {
+            const url = this.dataset.url;
+            if (window.confirm("Tem certeza que deseja cancelar esta consulta?")) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        mensagemStatusDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                        if (consultaStatusSpan) {
+                            consultaStatusSpan.textContent = "Cancelado"; // Atualiza o status na tela
+                        }
+                        // Desabilitar botões
+                        if(btnEditar) btnEditar.style.display = 'none';
+                        btnCancelar.style.display = 'none';
+                        // Opcional: redirecionar ou atualizar mais a página
+                        // window.location.href = "{% url 'agenda:calendario' %}"; 
+                    } else {
+                        mensagemStatusDiv.innerHTML = `<div class="alert alert-danger">${data.message || 'Ocorreu um erro.'}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao cancelar consulta:', error);
+                    mensagemStatusDiv.innerHTML = `<div class="alert alert-danger">Erro de comunicação ao tentar cancelar a consulta.</div>`;
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+{% block 'plataforma' %}
+    {% if messages %}
+        <br>
+        {% for message in messages %}
+            <div class="alert {{message.tags}}">
+                {{message}}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            {% if paciente.sexo == "Masculino"%}
+                <img src="{% static 'plataforma/img/perfil2.png' %}">
+            {% else %}
+                <img src="{% static 'plataforma/img/perfil1.png' %}">
+            {% endif %}
+        </div>  
+        
+        <div class="col-md-3 dados descricao">
+            <h4>{{paciente.nome}}</h4>
+            <h6>{{paciente.datanascimento}}</h6>
+        </div>
+
+    </div>
+    <hr>
+
+    <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modal">
+
+        🧾 Nova Evolução
+
+    </button>
+
+    
+    <a href="{% url 'imprimir_evolucoes' paciente.id %}" class="btn btn-outline-success" >
+        🖨️ Imprimir Evoluções
+    </a>
+    
+
+    <br>  
+
+    <br>
+
+    <div class="fundo-evolucao">
+        <h4 class="titulo">Evoluções</h4>
+        {% for ev in evolucao %}
+            <div class="evolucao">
+                <div class="head-evolucao">
+                    <span><strong>{{ev.titulo}}</strong></span>
+                    <span style="float: right;">{{ev.data_criacao|date:"d/m/Y"}}</span>
+                </div>
+                    <div class="body-evolucao" style="font-weight: normal; font-family: Verdana, sans-serif;">
+                        
+                        {{ ev.evolucao }}
+                        
+                    </div>
+            </div>
+            <br>
+        {% endfor %}
+    </div>
+
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+        <div class="modal-dialog" role="document">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+
+                        <span aria-hidden="true">&times;</span>
+
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <h4 class="titulo">Adicionar Evolução</h4>
+
+                    <div id="form-evolucao" style="display: block;">
+
+                        <form action="{% url 'evolucao' paciente.id %}" method="POST">{% csrf_token %}
+
+                            <label for="validationServerUsername">Título</label>
+
+                            <div class="input-group">
+
+                                <input type="text" class="form-control" placeholder="Titulo" name="titulo">
+
+                            </div>
+
+                            <label for="validationServerUsername">Evolução</label>
+
+                            <div class="input-group">
+                                <textarea class="form-control" placeholder="Descreve a Evolução" name='evolucao'></textarea>
+                            </div>
+                            <br>
+                            <label for="validationServerUsername">Imagem</label>
+
+                            <div class="input-group">
+
+                                <input type="file" class="form-control" placeholder="" name="imagem">
+
+                            </div>
+                            <br>
+                            <label for="validationServerUsername">Data da Consulta</label>
+
+                            <div class="input-group">
+
+                                <input type="date" class="date" placeholder="" name="data_criacao" requerided>
+
+                            </div>
+                            <br>
+                            
+
+                            <input type="submit" value="Cadastrar" class="btn btn-success">
+
+                        </form>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+{% endblock%}
+

@@ -1,0 +1,51 @@
+.card-lateral{
+
+    background-image: linear-gradient(to right, #10B981, #F59E0B); /* Degradê azul */
+        color: white; /* Cor do texto */
+        border-radius: 10px; /* Borda arredondada */
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.9s, box-shadow 0.9s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.link-lateral:hover{
+    transform: translateY(-5px); /* Efeito de levantar ao passar o mouse */
+        box-shadow: 0 6px 12px #F59E0B;
+}
+
+.titulo{
+    color: #F59E0B;
+}
+
+.card-paciente{
+    background-color: #EAEAEA;
+    border-radius: 10px;
+    width: 80%;
+    box-shadow: 3px 3px 3px gray;
+    padding: 20px;
+    color: black;
+}
+
+.link-hover:hover{
+    text-decoration: none;
+}
+
+.foto-perfil{
+    text-align: center;
+}
+
+.dados{
+    font-weight: bold;
+}
+
+.descricao{
+    margin-left: -12%;
+}
+
+@media (max-width: 1300px)
+{
+    .descricao{
+        margin-left: 1px;
+    }
+}

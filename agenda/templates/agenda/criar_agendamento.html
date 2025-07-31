@@ -1,0 +1,91 @@
+{% extends 'base_plataforma.html' %} 
+{% load static %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <h2>Agendar Nova Consulta</h2> 
+    
+    {# Exibe erros não relacionados a campos específicos (como o de conflito de horário) #}
+    {% if form.non_field_errors %}
+        <div id="form_errors_non_field" style="display:none;">
+            {% for error in form.non_field_errors %}
+                <span class="error-message">{{ error|escape }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="{{ form.paciente.id_for_label }}" class="form-label">Paciente</label>
+            {{ form.paciente }}
+            {% if form.paciente.errors %}
+                <div class="alert alert-danger mt-1">
+                    {{ form.paciente.errors }}
+                </div>
+            {% endif %}
+            {% if form.paciente.help_text %}
+                <small class="form-text text-muted">{{ form.paciente.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="{{ form.data_hora.id_for_label }}" class="form-label">Data e Hora</label>
+            {{ form.data_hora }}
+            {% if form.data_hora.errors %}
+                <div class="alert alert-danger mt-1">
+                    {{ form.data_hora.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="{{ form.duracao.id_for_label }}" class="form-label">Duração (minutos)</label>
+            {{ form.duracao }}
+            {% if form.duracao.errors %}
+                <div class="alert alert-danger mt-1">
+                    {{ form.duracao.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mb-3">
+            <label for="{{ form.observacoes.id_for_label }}" class="form-label">Observações</label>
+            {{ form.observacoes }}
+            {% if form.observacoes.errors %}
+                <div class="alert alert-danger mt-1">
+                    {{ form.observacoes.errors }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Salvar Agendamento</button>
+        <a href="{% url 'agenda:calendario' %}" class="btn btn-danger">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block 'body' %}
+{{ block.super }} 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const errorDiv = document.getElementById('form_errors_non_field');
+    if (errorDiv) {
+        const errorMessages = errorDiv.getElementsByClassName('error-message');
+        if (errorMessages.length > 0) {
+            let alertMessage = '';
+            for (let i = 0; i < errorMessages.length; i++) {
+                // Verifica se a mensagem específica de conflito está presente
+                if (errorMessages[i].textContent.includes("Não permitido para este horário")) {
+                    alertMessage += errorMessages[i].textContent + '\n';
+                }
+            }
+            if (alertMessage) {
+                alert(alertMessage.trim());
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

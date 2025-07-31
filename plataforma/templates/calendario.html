@@ -1,0 +1,98 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block content %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+<style>
+    .fc-daygrid-day-number {
+        color: #000 !important; /* Cor dos números dos dias */
+    }
+    .fc-col-header-cell {
+        background-color: #27DB8F; /* Cor do cabeçalho igual à sua navbar */
+    }
+    .fc-event {
+        background-color: #00007d; /* Cor dos eventos */
+        border: none;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar com lista de pacientes (como na imagem) -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">NOVA CONSULTA</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-center mb-3">13 – 17/Nov</h6>
+                    <div id="lista-pacientes">
+                        <!-- Esta lista será preenchida via JavaScript quando um dia for clicado -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendário principal -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridWeek',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek'
+        },
+        events: [
+            // Exemplo de eventos (substitua pelos seus dados reais)
+            {
+                title: 'Fernanda Silva',
+                start: '2023-11-13T10:00:00',
+                end: '2023-11-13T11:00:00',
+                extendedProps: {
+                    sala: 'Sala 1',
+                    status: 'Confirmado'
+                }
+            },
+            // Adicione mais eventos conforme necessário
+        ],
+        dateClick: function(info) {
+            // Atualiza a lista de pacientes quando um dia é clicado
+            fetch(`/consultas/?data=${info.dateStr}`)
+                .then(response => response.json())
+                .then(data => {
+                    let html = '<ul class="list-group">';
+                    data.forEach(consulta => {
+                        html += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                ${consulta.paciente}
+                                <span class="badge bg-primary rounded-pill">${consulta.hora}</span>
+                            </li>
+                        `;
+                    });
+                    document.getElementById('lista-pacientes').innerHTML = html;
+                });
+        },
+        //events: '/consultas/?fullcalendar=true'
+        eventClick: function(info) {
+            // Mostra detalhes da consulta ao clicar no evento
+            alert(`Paciente: ${info.event.title}\nSala: ${info.event.extendedProps.sala}\nStatus: ${info.event.extendedProps.status}`);
+        }
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}
+api/consultas

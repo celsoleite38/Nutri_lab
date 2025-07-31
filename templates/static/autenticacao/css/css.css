@@ -1,0 +1,47 @@
+.sidebar{
+    background-image: url('/static/autenticacao/img/prato.png'), linear-gradient(to bottom, #a9ebd5, #F59E0B) ;
+    height: 100vh;
+    color: rgb(218, 124, 124);
+} 
+.logo_sidebar{
+    text-align: center;
+}
+.img_logo_sidebar{
+    width: 100%;
+}
+
+.area_cadastrar{
+    margin-top: 8%;
+    margin-left: 15%;
+    width: 70%;
+}
+.titulo{
+    font-weight: bold;
+}
+.sub-titulo{
+    color: rgb(241, 234, 234);
+}
+.input-form{
+    margin-top: 15px;
+    width: 100%;
+    padding: 5px;
+    outline: 0;
+}
+.input-form:focus{
+    border: 2px solid #27DB8F !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+}
+.bold{
+    font-weight: bold;
+}
+.btn-first{
+    border: 2px solid #10B981;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 25px;
+    background-color: #10B981;
+    color: white;
+    font-weight: bold;
+}
+    

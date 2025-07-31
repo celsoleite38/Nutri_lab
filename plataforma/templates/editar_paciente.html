@@ -1,0 +1,96 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+{% block 'plataforma' %}
+    {% if messages %}
+        <br>
+        {% for message in messages %}
+            <div class="alert {{message.tags}}">
+                {{message}}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <br>
+    <h1 class="titulo">Editar Paciente</h1>
+    
+    <a button  href="{% url 'imprimir_paciente' paciente.id %}" class="btn btn-primary">
+        Gerar PDF </button>
+    </a>
+        <div class="col-md-8" style="width: 80%; margin: auto;">
+                {% for paciente in pacientes %}
+                    
+                {% endfor %}                    
+                        <form action="{% url 'editar_paciente' paciente.id %}" method="POST"> {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label for="nome">Nome</label>
+                                <input type="text" name="nome" class="form-control" value="{{paciente.nome}}">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>CPF</label>
+                                <input type="text" name="cpf" class="form-control"  placeholder="000.000.000-00" oninput="formatarCPF(this)" value="{{ paciente.cpf }}" required>
+
+                                    <script>
+                                        function formatarCPF(campo) {
+                                            campo.value = campo.value
+                                                .replace(/\D/g, '') // Remove não números
+                                                .replace(/(\d{3})(\d)/, '$1.$2')
+                                                .replace(/(\d{3})(\d)/, '$1.$2')
+                                                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                                        }
+                                    </script>
+
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sexo">sexo:</label>
+                                <select name="sexo" class="form-control">
+                                <option value="Masculino" {% if paciente.sexo == "Masculino" %}selected{% endif %}>Masculino</option>
+                                <option value="Feminino" {% if paciente.sexo == "Feminino" %}selected{% endif %}>Feminino</option>
+                                <option value="Outros" {% if paciente.sexo == "Outros" %}selected{% endif %}>Outro(a)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">                        
+                                <label for="estadocivil">Estado Civil</label>
+                                <select name="estadocivil" class="form-control">
+                                <option value="Casado(a)" {% if paciente.estadocivil == "Casado(a)" %}selected{% endif %}>Casado(a)</option>
+                                <option value="Solteiro(a)" {% if paciente.estadocivil == "Solteiro(a)" %}selected{% endif %}>Solteiro(a)</option>
+                                <option value="Divorciado(a)" {% if paciente.estadocivil == "Divorciado(a)" %}selected{% endif %}>Divorciado(a)</option>
+                                <option value="Viuvo(a)" {% if paciente.estadocivil == "Viuvo(a)" %}selected{% endif %}>Viuvo(a)</option>
+                                </select>
+                             </div>
+
+                            <div class="form-group">
+                                <label for="datanascimento">Data de Nascimento:</label>
+                                <input type="date" name="datanascimento" class="form-control" value="{{ paciente.datanascimento|date:'Y-m-d' }}" required>
+                            </div>
+                            
+                            
+                            <div>
+                            <label>Naturalidade:</label>
+                            <input type="text" name="naturalidade" class="form-control" value="{{ paciente.naturalidade }}" required>
+                            </div>
+                            <div>
+                            <label>Profissão:</label>
+                            <input type="text" name="profissao" class="form-control" value="{{ paciente.profissao }}" required>
+                            </div>
+                            <div>
+                            <label>E-mail:</label>
+                            <input type="email" name="email" class="form-control" value="{{ paciente.email }}" required>
+                            </div>
+                            <div>
+                            <label>Telefone:</label>
+                            <input type="text" name="telefone" class="form-control" value="{{ paciente.telefone }}" required>
+                            </div>
+                            <div>
+                            <label>Endereço:</label>
+                            <input type="text" name="endereco" class="form-control" value="{{ paciente.endereco }}" required>
+                            </div>
+                        
+                    <input type="submit" class="btn btn-success btn-lg" value="Salvar">
+                </form>
+            
+        </div>
+
+{% endblock %}

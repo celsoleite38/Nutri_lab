@@ -1,0 +1,164 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'plataforma' %}
+
+    {% if messages %}
+        <br>
+        {% for message in messages %}
+            <div class="alert {{message.tags}}">
+                {{message}}
+            </div>
+        {% endfor %}
+
+    {% endif %}
+
+    <h1 class="titulo">Escolha o Paciente <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modal">
+        Novo Paciente
+        </button></h1>
+
+       
+   
+    <div class="row">
+
+        {% for paciente in pacientes %}   
+        <div class="col-md-4">
+            <a href="#" class="link-hover"></a>
+                <div class="card-paciente">
+                    <div class="foto-perfil">
+
+                        {% if paciente.sexo == "Masculino"%}
+                            <img src="{% static 'plataforma/img/perfil2.png' %}">
+                        {% else %}
+                            <img src="{% static 'plataforma/img/perfil1.png' %}">
+                        {% endif %}
+                        </div>
+                        <br>
+                        <p class="dados">{{paciente.nome}}</p>
+                    <p class="dados">{{paciente.cpf}}</p>
+                   <p class="dados">{{paciente.datanascimento}}</p>
+                    <p class="dados"> <span id="dataNascimento" hidden >{{ paciente.datanascimento|date:"y-m-d" }}</span></p>
+                    
+
+                    <div class="paciente">
+                        <p class="dados">
+                            <span class="dataNascimento" hidden>{{ paciente.datanascimento|date:"Y-m-d" }}</span>
+                        </p>
+                        <p class="dados"> <span class="idade"></span> anos</p>
+                        
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Seleciona todos os blocos de pacientes
+                            const pacientes = document.querySelectorAll('.paciente');
+                            
+                            pacientes.forEach(paciente => {
+                                const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
+                                const dataNasc = new Date(dataNascStr);
+                                const hoje = new Date();
+                                
+                                let idade = hoje.getFullYear() - dataNasc.getFullYear();
+                                const mesAtual = hoje.getMonth();
+                                const mesNasc = dataNasc.getMonth();
+                                
+                                // Ajuste se ainda não fez aniversário este ano
+                                if (mesNasc > mesAtual || 
+                                    (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
+                                    idade--;
+                                }
+                                
+                                // Insere a idade no campo correto
+                                paciente.querySelector('.idade').textContent = idade;
+                            });
+                        });
+                    </script>
+
+                            
+                        <a href="{% url 'editar_paciente' paciente.pk %}" class="link-hover">
+                            <button type="button" class="btn btn-primary">
+                                Editar </button>
+                        </a>
+                    
+                    
+                </div>        
+            
+                
+        
+        </div>
+        {% endfor %}
+    </div>
+
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title titulo" id="exampleModalLabel">Cadastrar Paciente</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'pacientes' %}" method="POST"> {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <img src="{% static 'plataforma/img/perfil2.png' %}">
+                        </div>
+                        <div class="col-md-9">
+                            <label>Nome:</label>
+                                <input type="text" placeholder="Digite o nome do paciente..." class="form-control" name="nome">
+                            </div>
+                        </div>
+                        <br>
+                        <label>CPF</label>
+                                <input type="text" name="cpf" maxlength="14" placeholder="000.000.000-00" oninput="formatarCPF(this)" class="form-control">
+                            <script>
+                                function formatarCPF(campo) {
+                                    campo.value = campo.value
+                                        .replace(/\D/g, '') // Remove não números
+                                        .replace(/(\d{3})(\d)/, '$1.$2')
+                                        .replace(/(\d{3})(\d)/, '$1.$2')
+                                        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                                }
+                            </script>
+                        <br>
+                        <label>Sexo:</label>
+                            <select name="sexo" class="form-control">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Outros">Outro(a)</option>
+                        </select>
+                        <br>
+                        <label>Estado Civil:</label>
+                        <select name="estadocivil" class="form-control">
+                            <option value="Casado">Casado(a)</option>
+                            <option value="Solteiro">Solteiro(a)</option>
+                            <option value="Divorciado">Divorciado(a)</option>
+                            <option value="Viúvo">Viúvo(a)</option>
+                        </select>
+                        <br>
+                        <label>Data de Nascimento:</label>
+                        <input type="date" placeholder="0" class="form-control" name="datanascimento">
+                        <br>
+                        <label>Naturalidade:</label>
+                        <input type="text" placeholder="Varginha-MG" class="form-control" name="naturalidade">
+                        <br>
+                        <label>Profissão:</label>
+                        <input type="text" placeholder="comerciante" class="form-control" name="profissao">
+                        <br>
+                        <label>E-mail:</label>
+                        <input type="email" placeholder="exemple@email.com" class="form-control" name="email">
+                        <br>
+                        <label>Telefone:</label>
+                        <input type="tel" placeholder="+55 (00) 00000-0000" class="form-control" name="telefone">
+                        <br>
+                        <label>Endereço:</label>
+                        <input type="text" placeholder="rua, numero, apto, cidade " class="form-control" name="endereco">
+                        <input type="submit" class="btn btn-success btn-lg" value="Salvar">
+                </form>
+            </div>
+        </div>          
+    </div>
+</div>
+
+{% endblock %}

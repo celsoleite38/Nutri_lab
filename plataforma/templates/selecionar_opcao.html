@@ -1,0 +1,58 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+{% block 'plataforma' %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Selecione Refeições para Impressão</h2>
+        
+        <form method="post" action="{% url 'imprimir_opcao' paciente.id %}"> 
+            {% csrf_token %}
+            
+            <div class="text-end">
+                <button type="submit" class="btn btn-outline-success">
+                    <strong>🖨️ Imprimir Selecionadas</strong>
+                </button>
+            </div>
+
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="select-all">
+                        </th>
+                        <th>Data</th>
+                        <th>Refeição</th>
+                        <th>Opçoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for opcao in opcoes %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="opcoes" value="{{ opcao.id }}">
+                            </td>
+                            <td>{{ opcao.refeicao.data|date:"d/m/Y" }}</td>
+                            <td>{{ opcao.refeicao.titulo }}</td>
+                            <td>{{ opcao.descricao }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">Nenhuma Refeição registrada para este paciente.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    <script>
+        // Marcar ou desmarcar todos os checkboxes
+        document.addEventListener("DOMContentLoaded", function () {
+            const selectAll = document.getElementById("select-all");
+            const checkboxes = document.querySelectorAll('input[name="opcoes"]');
+
+            selectAll.addEventListener("change", function () {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
+        });
+    </script>
+{% endblock %}

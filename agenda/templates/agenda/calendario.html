@@ -1,0 +1,67 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'head' %}
+    {{ block.super }}  <!-- Mantém os CSS existentes -->
+    <!-- CSS do FullCalendar -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <style>
+        #calendar {
+            margin: 40px auto;
+            max-width: 1100px;
+            padding: 0 20px;
+            height: 600px;
+        }
+        .fc-event {
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 2px 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block 'plataforma' %}  <!-- Este bloco é inserido dentro do 'body' -->
+<div class="container mt-4">
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'agenda:novo_agendamento' %}" class="btn btn-primary btn-novo-agendamento">Novo Agendamento</a>
+    </div>
+    <div id="calendar"></div>
+</div>
+{% endblock %}
+
+{% block 'body' %}
+
+    {{ block.super }}
+    <!-- JavaScript no final do body -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales/pt-br.js'></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Iniciando calendário...");
+        
+        var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) {
+            console.error("Elemento #calendar não encontrado!");
+            return;
+        }
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'pt-br',
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: "{% url 'agenda:consultas_json' %}", // Alterado para carregar eventos dinamicamente
+            eventClick: function(info) {
+                window.location.href = `/agenda/consulta/${info.event.id}/`;
+            }
+        });
+
+        calendar.render();
+        console.log("Calendário renderizado!");
+    });
+    </script>
+    
+{% endblock %}

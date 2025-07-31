@@ -1,0 +1,27 @@
+# Ambiente virtual (não versionar)
+venv/
+env/
+
+# Arquivos do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Banco de dados local
+*.sqlite3
+
+# Diretórios de configuração
+.vscode/
+.idea/
+
+# Arquivos de mídia ou imagens grandes
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.cdr
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db

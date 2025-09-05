@@ -1,0 +1,397 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'title' %}{{ titulo }} - Nutri-Minas{% endblock %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>Nutri-Minas - {{ titulo }}</h1>
+        <ul class="breadcrumb">
+            <li><a href="{% url 'alimentos:lista_alimentos' %}">Alimentos</a></li>
+            <li><a href="{% url 'alimentos:lista_categorias' %}">Categorias</a></li>
+            <li>{{ titulo }}</li>
+        </ul>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Formulário -->
+    <div class="card">
+        <div class="card-header">
+            <span>Dados da Categoria</span>
+        </div>
+        <div class="card-body">
+            <form method="post" id="categoriaForm">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }} *</label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="error-text">{{ form.nome.errors }}</div>
+                            {% endif %}
+                            <small class="form-text">Nome da categoria (ex: Frutas, Cereais, Laticínios)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.descricao.id_for_label }}">{{ form.descricao.label }}</label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                                <div class="error-text">{{ form.descricao.errors }}</div>
+                            {% endif %}
+                            <small class="form-text">Descrição opcional da categoria</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ações -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Categoria</button>
+                    <a href="{% url 'alimentos:lista_categorias' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Categorias existentes (apenas no modo de adição) -->
+    {% if titulo == 'Adicionar Categoria' %}
+    <div class="card">
+        <div class="card-header">
+            <span>Categorias Existentes</span>
+        </div>
+        <div class="card-body">
+            <div class="categorias-list">
+                {% for categoria in categorias_existentes %}
+                <div class="categoria-item">
+                    <strong>{{ categoria.nome }}</strong>
+                    {% if categoria.descricao %}
+                    <p>{{ categoria.descricao }}</p>
+                    {% endif %}
+                    <small>{{ categoria.alimento_set.count }} alimento(s) nesta categoria</small>
+                </div>
+                {% empty %}
+                <p class="text-muted">Nenhuma categoria cadastrada ainda.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    :root {
+        --primary: #2c7da0;
+        --secondary: #a9d6e5;
+        --accent: #01497c;
+        --light: #f2f8fc;
+        --dark: #012a4a;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --gray: #6c757d;
+    }
+    
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Header */
+    .header {
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        flex-wrap: wrap;
+    }
+    
+    .breadcrumb li {
+        margin-right: 0.5rem;
+    }
+    
+    .breadcrumb li:after {
+        content: ">";
+        margin-left: 0.5rem;
+        color: var(--secondary);
+    }
+    
+    .breadcrumb li:last-child:after {
+        content: "";
+    }
+    
+    .breadcrumb a {
+        color: var(--secondary);
+        text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Card */
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    /* Formulário */
+    .form-grid {
+        display: grid;
+        gap: 30px;
+    }
+    
+    .form-section {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: var(--dark);
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.25);
+    }
+    
+    .error-text {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+    
+    .form-text {
+        color: var(--gray);
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: block;
+    }
+    
+    /* Ações */
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent);
+    }
+    
+    .btn-secondary {
+        background-color: var(--gray);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    /* Mensagens */
+    .messages {
+        margin-bottom: 20px;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* Lista de categorias */
+    .categorias-list {
+        display: grid;
+        gap: 15px;
+    }
+    
+    .categoria-item {
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        background-color: #f8f9fa;
+    }
+    
+    .categoria-item strong {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+    
+    .categoria-item p {
+        margin: 8px 0;
+        color: var(--dark);
+    }
+    
+    .categoria-item small {
+        color: var(--gray);
+    }
+    
+    .text-muted {
+        color: var(--gray);
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .breadcrumb {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .breadcrumb li:after {
+            content: "";
+            margin: 0;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Adicionar placeholders para melhor usabilidade
+        const nomeField = document.querySelector('#{{ form.nome.id_for_label }}');
+        if (nomeField && !nomeField.getAttribute('placeholder')) {
+            nomeField.setAttribute('placeholder', 'Ex: Frutas, Cereais, Laticínios');
+        }
+        
+        const descricaoField = document.querySelector('#{{ form.descricao.id_for_label }}');
+        if (descricaoField && !descricaoField.getAttribute('placeholder')) {
+            descricaoField.setAttribute('placeholder', 'Ex: Frutas frescas e seus derivados');
+        }
+        
+        // Validação básica do formulário
+        const form = document.getElementById('categoriaForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                const nomeField = form.querySelector('#{{ form.nome.id_for_label }}');
+                
+                if (!nomeField.value.trim()) {
+                    isValid = false;
+                    nomeField.style.borderColor = 'var(--danger)';
+                    // Adicionar mensagem de erro se não existir
+                    if (!nomeField.nextElementSibling.classList.contains('error-text')) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'error-text';
+                        errorDiv.textContent = 'Este campo é obrigatório.';
+                        nomeField.parentNode.insertBefore(errorDiv, nomeField.nextElementSibling);
+                    }
+                } else {
+                    nomeField.style.borderColor = '';
+                    // Remover mensagem de erro se existir
+                    const errorText = nomeField.nextElementSibling;
+                    if (errorText && errorText.classList.contains('error-text')) {
+                        errorText.remove();
+                    }
+                }
+                
+                if (!isValid) {
+                    event.preventDefault();
+                }
+            });
+        }
+        
+        // Focar no campo nome ao carregar a página
+        const nomeFieldFocus = document.querySelector('#{{ form.nome.id_for_label }}');
+        if (nomeFieldFocus) {
+            nomeFieldFocus.focus();
+        }
+    });
+</script>
+{% endblock %}

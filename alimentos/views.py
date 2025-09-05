@@ -2,11 +2,13 @@
 from django.db.models.aggregates import Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from django.db.models import Q
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from .models import Alimento, CategoriaAlimento
 from .forms import AlimentoForm, CategoriaAlimentoForm, BuscaAlimentoForm
+from django.db.models import Count, Sum, Avg, Q
+from django.db import models
 
 def lista_alimentos(request):
     form = BuscaAlimentoForm(request.GET or None)
@@ -124,19 +126,44 @@ def adicionar_categoria(request):
     
     return render(request, 'alimentos/form_categoria.html', {'form': form, 'titulo': 'Adicionar Categoria'})
 
-# alimentos/views.py
-from django.shortcuts import render
-from django.db.models import Count, Sum, Avg, Q  # Adicione Q aqui
-from django.db import models  # Adicione esta importação
-from .models import Alimento, CategoriaAlimento
+
 
 def dashboard_nutricional(request):
-    # Dados simples para teste
+    total_alimentos = Alimento.objects.filter(ativo=True).count()
+    total_categorias = CategoriaAlimento.objects.count()
+    
+    alimentos_recentes = Alimento.objects.filter(ativo=True).order_by('-data_criacao')[:5]
+    
+    # Estatísticas por categoria - FORMA SIMPLIFICADA
+    categorias_stats = []
+    for categoria in CategoriaAlimento.objects.all():
+        num_alimentos = categoria.alimento_set.count()
+        categorias_stats.append({
+            'nome': categoria.nome,
+            'num_alimentos': num_alimentos,
+            'alimentos_ativos': num_alimentos  # Assumindo que todos estão ativos
+        })
+    
+    # Ordena por número de alimentos
+    categorias_stats.sort(key=lambda x: x['num_alimentos'], reverse=True)
+    
+    # Média de nutrientes
+    medias = Alimento.objects.filter(ativo=True).aggregate(
+        avg_calorias=Avg('energia_kcal'),
+        avg_proteinas=Avg('proteina_g'),
+        avg_carboidratos=Avg('carboidrato_g')
+    )
+    
     context = {
-        'total_alimentos': Alimento.objects.filter(ativo=True).count(),
-        'total_categorias': CategoriaAlimento.objects.count(),
-        'alimentos_recentes': Alimento.objects.filter(ativo=True).order_by('-id')[:5],
-        'categorias_stats': [],
-        'media_nutrientes': {'calorias': 0, 'proteinas': 0, 'carboidratos': 0}
+        'total_alimentos': total_alimentos,
+        'total_categorias': total_categorias,
+        'alimentos_recentes': alimentos_recentes,
+        'categorias_stats': categorias_stats,
+        'media_nutrientes': {
+            'calorias': medias['avg_calorias'] or 0,
+            'proteinas': medias['avg_proteinas'] or 0,
+            'carboidratos': medias['avg_carboidratos'] or 0,
+        },
     }
+    
     return render(request, 'alimentos/dashboard.html', context)

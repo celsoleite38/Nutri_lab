@@ -18,4 +18,6 @@ urlpatterns = [
     
     path('dashboard/', views.dashboard_nutricional, name='dashboard'),
     path('api/buscar/', views.buscar_alimentos_ajax, name='api_buscar'),
+
+    path('api/calcular-nutrientes/', views.calcular_nutrientes, name='api_calcular_nutrientes'),
 ]

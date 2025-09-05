@@ -1,0 +1,22 @@
+<!-- plataforma/templates/plataforma/buscar_alimentos_modal.html -->
+<div class="modal fade" id="modalBuscarAlimentos" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Buscar Alimento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="inputBuscarAlimento" 
+                           placeholder="Digite o nome do alimento...">
+                    <button class="btn btn-primary" id="btnBuscarAlimento">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+                
+                <div id="resultadosAlimentos" class="row"></div>
+            </div>
+        </div>
+    </div>
+</div>

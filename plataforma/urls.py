@@ -14,6 +14,6 @@ urlpatterns = [
     path('paciente/<int:paciente_id>/imprimir/', views.imprimir_opcao, name='imprimir_opcao'),
     path('opcao/<str:id_paciente>/', views.opcao, name="Opcao"),
     path('pacientes/<int:id>/', views.imprimir_dados_paciente, name='imprimir_dados_paciente'),
+    path('buscar-alimentos-plano/', views.buscar_alimentos_plano, name='buscar_alimentos_plano'),
+    path('adicionar-alimento-refeicao/', views.adicionar_alimento_refeicao, name='adicionar_alimento_refeicao'),
 ]
-
-

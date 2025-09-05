@@ -1,0 +1,532 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'title' %}Categorias de Alimentos - Nutri-Minsas{% endblock %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>Nutri-Minsas - Categorias de Alimentos</h1>
+        <ul class="breadcrumb">
+            <li><a href="{% url 'alimentos:lista_alimentos' %}">Alimentos</a></li>
+            <li>Categorias</li>
+        </ul>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Estatísticas Rápidas -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ total_categorias }}</div>
+                <div class="stat-label">Categorias</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🍎</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ total_alimentos }}</div>
+                <div class="stat-label">Alimentos</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ media_por_categoria|floatformat:1 }}</div>
+                <div class="stat-label">Média por Categoria</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="action-bar">
+        <a href="{% url 'alimentos:adicionar_categoria' %}" class="btn btn-primary">
+            <span class="icon">+</span> Nova Categoria
+        </a>
+        <a href="{% url 'alimentos:lista_alimentos' %}" class="btn btn-secondary">
+            Voltar para Alimentos
+        </a>
+    </div>
+
+    <!-- Lista de Categorias -->
+    <div class="card">
+        <div class="card-header">
+            <span>Lista de Categorias</span>
+            <span>{{ categorias|length }} categoria(s) cadastrada(s)</span>
+        </div>
+        <div class="card-body">
+            {% if categorias %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Nº de Alimentos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                        <tr>
+                            <td>
+                                <div class="categoria-name">
+                                    <strong>{{ categoria.nome }}</strong>
+                                </div>
+                            </td>
+                            <td>
+                                {% if categoria.descricao %}
+                                {{ categoria.descricao|truncatewords:10 }}
+                                {% else %}
+                                <span class="text-muted">Sem descrição</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if categoria.alimento_set.count > 0 %}badge-primary{% else %}badge-secondary{% endif %}">
+                                    {{ categoria.alimento_set.count }} alimento(s)
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{% url 'alimentos:lista_alimentos' %}?categoria={{ categoria.id }}" class="btn btn-sm btn-info" title="Ver alimentos">
+                                        👁️ Ver
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-warning" title="Editar" onclick="alert('Funcionalidade de edição em desenvolvimento')">
+                                        ✏️ Editar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📁</div>
+                <h3>Nenhuma categoria cadastrada</h3>
+                <p>Comece adicionando sua primeira categoria de alimentos.</p>
+                <a href="{% url 'alimentos:adicionar_categoria' %}" class="btn btn-primary">
+                    + Adicionar Primeira Categoria
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Categorias mais populosas -->
+    {% if categorias_mais_populosas %}
+    <div class="card">
+        <div class="card-header">
+            <span>Categorias com Mais Alimentos</span>
+        </div>
+        <div class="card-body">
+            <div class="categories-chart">
+                {% for categoria in categorias_mais_populosas %}
+                <div class="chart-item">
+                    <div class="chart-label">
+                        <span>{{ categoria.nome }}</span>
+                        <span>{{ categoria.alimento_set.count }} alimentos</span>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-fill" style="width: {% widthratio categoria.alimento_set.count max_alimentos 100 %}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    :root {
+        --primary: #2c7da0;
+        --secondary: #a9d6e5;
+        --accent: #01497c;
+        --light: #f2f8fc;
+        --dark: #012a4a;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --gray: #6c757d;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Header */
+    .header {
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        flex-wrap: wrap;
+    }
+    
+    .breadcrumb li {
+        margin-right: 0.5rem;
+    }
+    
+    .breadcrumb li:after {
+        content: ">";
+        margin-left: 0.5rem;
+        color: var(--secondary);
+    }
+    
+    .breadcrumb li:last-child:after {
+        content: "";
+    }
+    
+    .breadcrumb a {
+        color: var(--secondary);
+        text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Estatísticas */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+    
+    .stat-label {
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    /* Barra de ações */
+    .action-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    /* Card */
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    /* Tabela */
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background-color: var(--light);
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: bold;
+        color: var(--dark);
+        border-bottom: 2px solid var(--secondary);
+    }
+    
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .categoria-name {
+        font-weight: bold;
+        color: var(--primary);
+    }
+    
+    /* Badges */
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .badge-primary {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .badge-secondary {
+        background-color: var(--gray);
+        color: white;
+    }
+    
+    /* Botões */
+    .btn {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent);
+    }
+    
+    .btn-secondary {
+        background-color: var(--gray);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .btn-warning {
+        background-color: var(--warning);
+        color: var(--dark);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+    }
+    
+    /* Estado vazio */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state h3 {
+        color: var(--dark);
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        color: var(--gray);
+        margin-bottom: 20px;
+    }
+    
+    /* Gráfico de categorias */
+    .categories-chart {
+        display: grid;
+        gap: 10px;
+    }
+    
+    .chart-item {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .chart-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+    
+    .chart-bar {
+        height: 20px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .chart-fill {
+        height: 100%;
+        background-color: var(--primary);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    /* Mensagens */
+    .messages {
+        margin-bottom: 20px;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .text-muted {
+        color: var(--gray);
+        font-style: italic;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-bar {
+            flex-direction: column;
+        }
+        
+        .data-table {
+            font-size: 0.85rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .chart-item {
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+        
+        .breadcrumb {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .breadcrumb li:after {
+            content: "";
+            margin: 0;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ordenação da tabela
+        const table = document.querySelector('.data-table');
+        if (table) {
+            const headers = table.querySelectorAll('th');
+            headers.forEach((header, index) => {
+                header.style.cursor = 'pointer';
+                header.addEventListener('click', () => {
+                    sortTable(index);
+                });
+            });
+        }
+        
+        function sortTable(column) {
+            // Implementação básica de ordenação
+            alert('Funcionalidade de ordenação em desenvolvimento');
+        }
+        
+        // Animações das barras do gráfico
+        const chartFills = document.querySelectorAll('.chart-fill');
+        chartFills.forEach(fill => {
+            const width = fill.style.width;
+            fill.style.width = '0';
+            setTimeout(() => {
+                fill.style.width = width;
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

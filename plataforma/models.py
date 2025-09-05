@@ -61,13 +61,19 @@ class Opcao(models.Model):
         return self.descricao
     
 
-
-
 class ItemRefeicao(models.Model):
     refeicao = models.ForeignKey('Refeicao', on_delete=models.CASCADE)
     alimento = models.ForeignKey(Alimento, on_delete=models.CASCADE)
-    quantidade_g = models.DecimalField(max_digits=6, decimal_places=2)
+    quantidade_g = models.DecimalField(max_digits=6, decimal_places=2, default=100)
     observacoes = models.TextField(blank=True)
 
-    def nutrientes_totais(self):
+    class Meta:
+        verbose_name = 'Item de Refeição'
+        verbose_name_plural = 'Itens de Refeição'
+
+    def __str__(self):
+        return f"{self.quantidade_g}g de {self.alimento.nome}"
+
+    def calcular_nutrientes(self):
+        """Calcula os nutrientes totais deste item"""
         return self.alimento.calcular_nutrientes_por_porcao(self.quantidade_g)

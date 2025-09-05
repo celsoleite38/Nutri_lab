@@ -314,3 +314,33 @@ def calcular_nutrientes_plano(request, plano_id):
                 total_nutrientes[key] += nutrientes.get(key, 0)
     
     return JsonResponse(total_nutrientes)
+
+# plataforma/views.py
+
+
+def adicionar_alimento_refeicao(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            refeicao_id = request.POST.get('refeicao_id')
+            alimento_id = request.POST.get('alimento_id')
+            quantidade_g = float(request.POST.get('quantidade_g', 100))
+            
+            # Aqui você precisaria ter o modelo Refeicao
+            # refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+            alimento = get_object_or_404(Alimento, id=alimento_id)
+            
+            # Simulação - depois implemente com seu modelo real
+            nutrientes = alimento.calcular_nutrientes_por_porcao(quantidade_g)
+            
+            return JsonResponse({
+                'success': True,
+                'alimento': alimento.nome,
+                'quantidade': quantidade_g,
+                'nutrientes': nutrientes,
+                'medida_caseira': alimento.medida_caseira
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Requisição inválida'})

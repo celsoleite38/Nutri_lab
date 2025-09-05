@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from alimentos.models import Alimento
 
 class Pacientes(models.Model):
     choices_sexo = (('Feminino', 'Feminino'),
@@ -58,3 +59,15 @@ class Opcao(models.Model):
     
     def __str__(self):
         return self.descricao
+    
+
+
+
+class ItemRefeicao(models.Model):
+    refeicao = models.ForeignKey('Refeicao', on_delete=models.CASCADE)
+    alimento = models.ForeignKey(Alimento, on_delete=models.CASCADE)
+    quantidade_g = models.DecimalField(max_digits=6, decimal_places=2)
+    observacoes = models.TextField(blank=True)
+
+    def nutrientes_totais(self):
+        return self.alimento.calcular_nutrientes_por_porcao(self.quantidade_g)

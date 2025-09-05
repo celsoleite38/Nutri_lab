@@ -9,6 +9,8 @@ urlpatterns = [
     path('auth/' , include('autenticacao.urls')),
     path('' , include('plataforma.urls')),
     path('agenda/', include('agenda.urls',namespace='agenda')),
+    path("alimentos/", include("alimentos.urls")),
+
 ]
 
 if settings.DEBUG:

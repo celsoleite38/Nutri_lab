@@ -1,0 +1,134 @@
+<!-- alimentos/templates/alimentos/lista_alimentos.html -->
+{% extends 'base_plataforma.html' %}
+
+{% block title %}Tabela de Alimentos Brasileira - NutriLab{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-utensils"></i> Tabela de Alimentos Brasileira</h2>
+        <p class="text-muted">Baseada na TBCA - Tabela Brasileira de Composição de Alimentos</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'alimentos:adicionar_alimento' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Adicionar Alimento
+        </a>
+        <a href="{% url 'alimentos:lista_categorias' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-tags"></i> Categorias
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label for="{{ form.nome.id_for_label }}" class="form-label">Nome do Alimento</label>
+                {{ form.nome }}
+            </div>
+            <div class="col-md-4">
+                <label for="{{ form.categoria.id_for_label }}" class="form-label">Categoria</label>
+                {{ form.categoria }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Resultados ({{ total_alimentos }})</h5>
+        <small class="text-muted">Valores nutricionais por 100g de alimento</small>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Alimento</th>
+                        <th>Categoria</th>
+                        <th>Energia (kcal)</th>
+                        <th>Proteína (g)</th>
+                        <th>Carboidrato (g)</th>
+                        <th>Lipídios (g)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alimento in page_obj %}
+                    <tr>
+                        <td>
+                            <strong>{{ alimento.nome }}</strong>
+                            {% if alimento.nome_cientifico %}
+                            <br><small class="text-muted">{{ alimento.nome_cientifico }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ alimento.categoria|default:"-" }}</td>
+                        <td>{{ alimento.energia_kcal }}</td>
+                        <td>{{ alimento.proteina_g }}</td>
+                        <td>{{ alimento.carboidrato_g }}</td>
+                        <td>{{ alimento.lipidios_g }}</td>
+                        <td>
+                            <a href="{% url 'alimentos:detalhe_alimento' alimento.id %}" class="btn btn-sm btn-info" title="Detalhes">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'alimentos:editar_alimento' alimento.id %}" class="btn btn-sm btn-warning" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Nenhum alimento encontrado.</p>
+                            <a href="{% url 'alimentos:adicionar_alimento' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Adicionar Primeiro Alimento
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.nome %}&nome={{ request.GET.nome }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">Anterior</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.nome %}&nome={{ request.GET.nome }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.nome %}&nome={{ request.GET.nome }}{% endif %}{% if request.GET.categoria %}&categoria={{ request.GET.categoria }}{% endif %}">Próxima</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Função para busca em tempo real (opcional)
+document.getElementById('id_nome').addEventListener('input', function(e) {
+    // Implementar busca AJAX se desejar
+});
+</script>
+{% endblock %}

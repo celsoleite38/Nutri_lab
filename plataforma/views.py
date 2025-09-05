@@ -8,6 +8,7 @@ from autenticacao.models import PerfilProfissional
 from .models import Pacientes, DadosPaciente, Refeicao, Opcao
 from datetime import date, datetime
 
+from alimentos.models import Alimento
 
 @login_required(login_url='/auth/logar/')
 def pacientes(request):
@@ -277,3 +278,39 @@ def imprimir_opcao(request, paciente_id):
         'today':date.today()
         
     })
+
+def buscar_alimentos_plano(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        termo = request.GET.get('q', '')
+        alimentos = Alimento.objects.filter(
+            nome__icontains=termo, 
+            ativo=True
+        )[:10]
+        
+        resultados = [{
+            'id': a.id,
+            'nome': a.nome,
+            'categoria': a.categoria.nome if a.categoria else '',
+            'medida': a.medida_caseira,
+            'energia': float(a.energia_kcal),
+            'proteinas': float(a.proteina_g),
+            'carboidratos': float(a.carboidrato_g)
+        } for a in alimentos]
+        
+        return JsonResponse(resultados, safe=False)
+    
+    
+def calcular_nutrientes_plano(request, plano_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    total_nutrientes = {
+        'energia': 0, 'proteinas': 0, 'carboidratos': 0, 
+        'lipidios': 0, 'fibras': 0
+    }
+    
+    for refeicao in plano.refeicoes.all():
+        for item in refeicao.itens.all():
+            nutrientes = item.nutrientes_totais()
+            for key in total_nutrientes:
+                total_nutrientes[key] += nutrientes.get(key, 0)
+    
+    return JsonResponse(total_nutrientes)

@@ -1,0 +1,114 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'title' %}Planos Alimentares - Nutri-Minas{% endblock %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <div class="header">
+        <h1>Planos Alimentares</h1>
+    </div>
+
+    <div class="action-bar">
+        <a href="{% url 'pacientes' %}" class="btn btn-secondary">
+            ← Voltar para Pacientes
+        </a>
+    </div>
+
+    <!-- Lista de Planos Existentes -->
+    {% if planos %}
+    <div class="card">
+        <div class="card-header">
+            <span>Planos Alimentares Ativos</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Plano</th>
+                            <th>Período</th>
+                            <th>Refeições</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plano in planos %}
+                        <tr>
+                            <td>{{ plano.paciente.nome }}</td>
+                            <td>{{ plano.nome }}</td>
+                            <td>{{ plano.data_inicio }} a {{ plano.data_fim }}</td>
+                            <td>{{ plano.refeicoes.count }}</td>
+                            <td>
+                                <a href="{% url 'detalhes_plano_alimentar' plano.id %}" class="btn btn-sm btn-primary">
+                                    Ver Detalhes
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Lista de Pacientes para criar novos planos -->
+    <div class="card">
+        <div class="card-header">
+            <span>Selecionar Paciente</span>
+        </div>
+        <div class="card-body">
+            {% if pacientes %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Idade</th>
+                            <th>Último Registro</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paciente in pacientes %}
+                        <tr>
+                            <td>{{ paciente.nome }}</td>
+                            <td>{% if paciente.idade %}{{ paciente.idade }} anos{% else %}N/A{% endif %}</td>
+                            <td>
+                                {% with ultimo_dado=paciente.dadospaciente_set.last %}
+                                    {% if ultimo_dado %}
+                                        {{ ultimo_dado.data|date:"d/m/Y" }} - {{ ultimo_dado.peso }}kg
+                                    {% else %}
+                                        Nenhum registro
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-sm btn-primary">
+                                    Gerenciar Refeições
+                                </a>
+                                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-sm btn-secondary">
+                                    Criar Plano
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>Nenhum paciente cadastrado</h3>
+                <p>Você precisa cadastrar pacientes primeiro para criar planos alimentares.</p>
+                <a href="{% url 'pacientes' %}" class="btn btn-primary">
+                    + Cadastrar Primeiro Paciente
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

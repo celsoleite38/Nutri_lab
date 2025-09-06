@@ -49,11 +49,11 @@
         <tbody>
             {% for dado in dados_paciente %}
             <tr>
-                <th scope="row">{{dado.data|date:"d/m/Y"}}</th>
-                <th scope="row">{{dado.peso}} Kg</th>
-                <td>{{dado.altura}} cm</td>
-                <td>{{dado.percentual_gordura}} %</td>
-                <td>{{dado.percentual_musculo}} %</td>
+                <th scope="row">{{ dado.data|date:"d/m/Y" }}</th>
+                <td>{{ dado.peso|floatformat:2 }} Kg</td>
+                <td>{{ dado.altura|floatformat:2 }} cm</td>
+                <td>{{ dado.percentual_gordura|floatformat:2 }} %</td>
+                <td>{{ dado.percentual_musculo|floatformat:2 }} %</td>
             </tr>
             {% endfor %}
         </tbody>

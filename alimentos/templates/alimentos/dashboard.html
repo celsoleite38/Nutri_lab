@@ -26,11 +26,47 @@
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col-md-12">
-            <h2><i class="fas fa-chart-pie"></i> Dashboard Nutricional</h2>
+            <h2><i class="fas fa-chart-pie"></i> Nutricional</h2>
             <p class="text-muted">Estatísticas da base de alimentos do sistema</p>
         </div>
     </div>
-
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Ações Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="{% url 'alimentos:lista_alimentos' %}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-list"></i><br>
+                                Ver Todos Alimentos
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="{% url 'alimentos:adicionar_alimento' %}" class="btn btn-outline-success btn-lg w-100">
+                                <i class="fas fa-plus"></i><br>
+                                Novo Alimento
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="{% url 'alimentos:lista_categorias' %}" class="btn btn-outline-info btn-lg w-100">
+                                <i class="fas fa-tags"></i><br>
+                                Gerenciar Categorias
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a href="{% url 'plano_alimentar_listar' %}" class="btn btn-outline-warning btn-lg w-100">
+                                <i class="fas fa-utensils"></i><br>
+                                Planos Alimentares
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Cards de Estatísticas -->
     <div class="row">
         <div class="col-md-3 mb-4">
@@ -132,42 +168,6 @@
     </div>
 
     <!-- Ações Rápidas -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-bolt"></i> Ações Rápidas</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 text-center mb-3">
-                            <a href="{% url 'alimentos:lista_alimentos' %}" class="btn btn-outline-primary btn-lg w-100">
-                                <i class="fas fa-list"></i><br>
-                                Ver Todos Alimentos
-                            </a>
-                        </div>
-                        <div class="col-md-3 text-center mb-3">
-                            <a href="{% url 'alimentos:adicionar_alimento' %}" class="btn btn-outline-success btn-lg w-100">
-                                <i class="fas fa-plus"></i><br>
-                                Novo Alimento
-                            </a>
-                        </div>
-                        <div class="col-md-3 text-center mb-3">
-                            <a href="{% url 'alimentos:lista_categorias' %}" class="btn btn-outline-info btn-lg w-100">
-                                <i class="fas fa-tags"></i><br>
-                                Gerenciar Categorias
-                            </a>
-                        </div>
-                        <div class="col-md-3 text-center mb-3">
-                            <a href="{% url 'plano_alimentar_listar' %}" class="btn btn-outline-warning btn-lg w-100">
-                                <i class="fas fa-utensils"></i><br>
-                                Planos Alimentares
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>
 {% endblock %}

@@ -14,6 +14,14 @@ urlpatterns = [
     path('paciente/<int:paciente_id>/imprimir/', views.imprimir_opcao, name='imprimir_opcao'),
     path('opcao/<str:id_paciente>/', views.opcao, name="Opcao"),
     path('pacientes/<int:id>/', views.imprimir_dados_paciente, name='imprimir_dados_paciente'),
-    path('buscar-alimentos-plano/', views.buscar_alimentos_plano, name='buscar_alimentos_plano'),
-    path('adicionar-alimento-refeicao/', views.adicionar_alimento_refeicao, name='adicionar_alimento_refeicao'),
+    
+    
+    
+    path('plano/criar/<int:paciente_id>/', views.criar_plano_alimentar, name='criar_plano_alimentar'),
+    path('plano/<int:plano_id>/', views.detalhes_plano_alimentar, name='detalhes_plano_alimentar'),
+    path('refeicao/adicionar/<int:paciente_id>/', views.adicionar_refeicao, name='adicionar_refeicao'),
+    path('refeicao/editar/<int:refeicao_id>/', views.editar_refeicao, name='editar_refeicao'),
+    path('refeicao/item/remover/<int:item_id>/', views.remover_item_refeicao, name='remover_item_refeicao'),
+    path('api/buscar-alimentos-refeicao/', views.buscar_alimentos_refeicao, name='buscar_alimentos_refeicao'),
+    path('api/calcular-nutrientes-item/', views.calcular_nutrientes_item, name='calcular_nutrientes_item'),
 ]

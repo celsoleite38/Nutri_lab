@@ -1,14 +1,18 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.messages import constants
 
 from autenticacao.models import PerfilProfissional
-from .models import Pacientes, DadosPaciente, Refeicao, Opcao
+from .models import Pacientes, DadosPaciente, Refeicao, PlanoAlimentar, ItemRefeicao
 from datetime import date, datetime
 
+from django.views.decorators.csrf import csrf_exempt
 from alimentos.models import Alimento
+from decimal import Decimal, InvalidOperation
+
+
 
 @login_required(login_url='/auth/logar/')
 def pacientes(request):
@@ -68,42 +72,72 @@ def dados_paciente_listar(request):
         pacientes = Pacientes.objects.filter(nutri=request.user)
         return render(request, 'dados_paciente_listar.html', {'pacientes': pacientes})
     
+
+
 @login_required(login_url='/auth/logar/')
 def dados_paciente(request, id):
-        paciente = get_object_or_404(Pacientes, id=id)
-        if not paciente.nutri == request.user:
-            messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
-            return render(request, 'dados_paciente.html', {'paciente': paciente})
+    paciente = get_object_or_404(Pacientes, id=id)
+    
+    # Verificar se o paciente pertence ao nutricionista logado
+    if not paciente.nutri == request.user:
+        messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
+        return redirect('/pacientes/')
    
-        if request.method == "GET":
-            dados_paciente = DadosPaciente.objects.filter(paciente=paciente)
-            return render(request, 'dados_paciente.html', {'paciente': paciente, 'dados_paciente': dados_paciente})
-        elif request.method == "POST":
-            peso = request.POST.get('peso')
-            altura = request.POST.get('altura')
-            gordura = request.POST.get('gordura')
-            musculo = request.POST.get('musculo')
+    if request.method == "GET":
+        dados_paciente = DadosPaciente.objects.filter(paciente=paciente).order_by('-data')
+        return render(request, 'dados_paciente.html', {
+            'paciente': paciente, 
+            'dados_paciente': dados_paciente
+        })
+    
+    elif request.method == "POST":
+        try:
+            # Função para converter e validar valores decimais
+            def parse_decimal(value, default='0'):
+                if not value or value.strip() == '':
+                    return Decimal(default)
+                # Substituir vírgula por ponto para formato decimal
+                value = value.replace(',', '.')
+                try:
+                    return Decimal(value)
+                except InvalidOperation:
+                    return Decimal(default)
             
-            hdl = request.POST.get('hdl')
-            ldl = request.POST.get('ldl')
-            colesterol_total = request.POST.get('ctotal')
-            trigliceridios = request.POST.get('trigliceridios')
+            # Converter todos os valores decimais
+            peso = parse_decimal(request.POST.get('peso'))
+            altura = parse_decimal(request.POST.get('altura'))
+            gordura = parse_decimal(request.POST.get('gordura'))
+            musculo = parse_decimal(request.POST.get('musculo'))
+            hdl = parse_decimal(request.POST.get('hdl'))
+            ldl = parse_decimal(request.POST.get('ldl'))
+            colesterol_total = parse_decimal(request.POST.get('ctotal'))
+            trigliceridios = parse_decimal(request.POST.get('trigliceridios'))
             
-            paciente = DadosPaciente(paciente=paciente,
-                                    data=datetime.now(),
-                                    peso=peso,
-                                    altura=altura,
-                                    percentual_gordura=gordura,
-                                    percentual_musculo=musculo,
-                                    colesterol_hdl=hdl,
-                                    colesterol_ldl=ldl,
-                                    colesterol_total=colesterol_total,
-                                    trigliceridios=trigliceridios)
-            paciente.save()
+            # Criar instância de DadosPaciente (não sobrescrever a variável paciente)
+            dados_paciente = DadosPaciente(
+                paciente=paciente,
+                data=datetime.now(),
+                peso=peso,
+                altura=altura,
+                percentual_gordura=gordura,
+                percentual_musculo=musculo,
+                colesterol_hdl=hdl,
+                colesterol_ldl=ldl,
+                colesterol_total=colesterol_total,
+                trigliceridios=trigliceridios
+            )
             
-            messages.add_message(request, constants.SUCCESS, 'Dados cadastrado com sucesso')
-            return redirect('/dados_paciente/')
-from django.views.decorators.csrf import csrf_exempt
+            dados_paciente.save()
+            
+            messages.add_message(request, constants.SUCCESS, 'Dados cadastrados com sucesso')
+            return redirect(f'/dados_paciente/{id}/')
+            
+        except Exception as e:
+            messages.add_message(request, constants.ERROR, f'Erro ao salvar dados: {str(e)}')
+            return redirect(f'/dados_paciente/{id}/')
+
+
+
 @login_required(login_url='/auth/logar/')
 @csrf_exempt
 def grafico_peso(request, id):
@@ -115,16 +149,33 @@ def grafico_peso(request, id):
             'labels': labels}
     return JsonResponse(data)
 
+@login_required(login_url='/auth/logar/')
 def plano_alimentar_listar(request):
     if request.method == "GET":
         pacientes = Pacientes.objects.filter(nutri=request.user)
-        return render(request, 'plano_alimentar_listar.html', {'pacientes': pacientes})
+        # Buscar também os planos alimentares existentes
+        planos = PlanoAlimentar.objects.filter(paciente__nutri=request.user)
+        
+        return render(request, 'plano_alimentar_listar.html', {
+            'pacientes': pacientes,
+            'planos': planos
+        })
     
+@login_required(login_url='/auth/logar/')
 def plano_alimentar(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
     if not paciente.nutri == request.user:
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
         return redirect('/plano_alimentar_listar/')
+    
+    if request.method == "GET":
+        # Use o novo sistema de refeições
+        refeicoes = Refeicao.objects.filter(paciente=paciente).order_by("horario")
+        
+        return render(request, 'plano_alimentar.html', {
+            'paciente': paciente, 
+            'refeicoes': refeicoes
+        })
     
     if request.method == "GET":
         r1 = Refeicao.objects.filter(paciente=paciente).order_by("horario")
@@ -279,25 +330,7 @@ def imprimir_opcao(request, paciente_id):
         
     })
 
-def buscar_alimentos_plano(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        termo = request.GET.get('q', '')
-        alimentos = Alimento.objects.filter(
-            nome__icontains=termo, 
-            ativo=True
-        )[:10]
-        
-        resultados = [{
-            'id': a.id,
-            'nome': a.nome,
-            'categoria': a.categoria.nome if a.categoria else '',
-            'medida': a.medida_caseira,
-            'energia': float(a.energia_kcal),
-            'proteinas': float(a.proteina_g),
-            'carboidratos': float(a.carboidrato_g)
-        } for a in alimentos]
-        
-        return JsonResponse(resultados, safe=False)
+
     
     
 def calcular_nutrientes_plano(request, plano_id):
@@ -315,31 +348,166 @@ def calcular_nutrientes_plano(request, plano_id):
     
     return JsonResponse(total_nutrientes)
 
-# plataforma/views.py
 
 
-def adicionar_alimento_refeicao(request):
+
+
+@login_required
+def criar_plano_alimentar(request, paciente_id):
+    paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
+    
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        data_inicio = request.POST.get('data_inicio')
+        data_fim = request.POST.get('data_fim')
+        objetivo = request.POST.get('objetivo')
+        
+        plano = PlanoAlimentar(
+            paciente=paciente,
+            nome=nome,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            objetivo=objetivo
+        )
+        plano.save()
+        
+        messages.success(request, 'Plano alimentar criado com sucesso!')
+        return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+    
+    return render(request, 'criar_plano_alimentar.html', {'paciente': paciente})
+
+@login_required
+def detalhes_plano_alimentar(request, plano_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    if plano.paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plano_alimentar_listar')
+    
+    # Obter todas as refeições do paciente para poder adicionar ao plano
+    refeicoes_disponiveis = Refeicao.objects.filter(paciente=plano.paciente).exclude(id__in=plano.refeicoes.values_list('id', flat=True))
+    
+    if request.method == 'POST':
+        # Adicionar refeição ao plano
+        refeicao_id = request.POST.get('refeicao_id')
+        if refeicao_id:
+            refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+            plano.refeicoes.add(refeicao)
+            messages.success(request, f'Refeição "{refeicao.titulo}" adicionada ao plano.')
+    
+    return render(request, 'detalhes_plano_alimentar.html', {
+        'plano': plano,
+        'refeicoes_disponiveis': refeicoes_disponiveis,
+        'total_nutrientes': plano.total_nutrientes()
+    })
+
+@login_required
+def adicionar_refeicao(request, paciente_id):
+    paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
+    
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo')
+        titulo = request.POST.get('titulo')
+        horario = request.POST.get('horario')
+        observacoes = request.POST.get('observacoes', '')
+        
+        refeicao = Refeicao(
+            paciente=paciente,
+            tipo=tipo,
+            titulo=titulo,
+            horario=horario,
+            observacoes=observacoes
+        )
+        refeicao.save()
+        
+        messages.success(request, 'Refeição criada com sucesso!')
+        return redirect('editar_refeicao', refeicao_id=refeicao.id)
+    
+    return render(request, 'adicionar_refeicao.html', {
+        'paciente': paciente,
+        'tipos_refeicao': Refeicao.TIPO_CHOICES
+    })
+
+@login_required
+def editar_refeicao(request, refeicao_id):
+    refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+    if refeicao.paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plano_alimentar_listar')
+    
+    alimentos = Alimento.objects.filter(ativo=True)
+    
+    if request.method == 'POST':
+        # Adicionar alimento à refeição
+        alimento_id = request.POST.get('alimento_id')
+        quantidade = request.POST.get('quantidade', 100)
+        observacoes = request.POST.get('observacoes', '')
+        
+        if alimento_id:
+            alimento = get_object_or_404(Alimento, id=alimento_id)
+            item = ItemRefeicao(
+                refeicao=refeicao,
+                alimento=alimento,
+                quantidade_g=quantidade,
+                observacoes=observacoes
+            )
+            item.save()
+            messages.success(request, f'{alimento.nome} adicionado à refeição.')
+    
+    return render(request, 'editar_refeicao.html', {
+        'refeicao': refeicao,
+        'alimentos': alimentos,
+        'itens': refeicao.itens.all(),
+        'total_nutrientes': refeicao.total_nutrientes()
+    })
+
+@login_required
+def remover_item_refeicao(request, item_id):
+    item = get_object_or_404(ItemRefeicao, id=item_id)
+    if item.refeicao.paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plano_alimentar_listar')
+    
+    refeicao_id = item.refeicao.id
+    item.delete()
+    messages.success(request, 'Item removido da refeição.')
+    return redirect('editar_refeicao', refeicao_id=refeicao_id)
+
+@login_required
+def buscar_alimentos_refeicao(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        termo = request.GET.get('q', '')
+        alimentos = Alimento.objects.filter(
+            nome__icontains=termo, 
+            ativo=True
+        )[:10]
+        
+        resultados = [{
+            'id': a.id,
+            'nome': a.nome,
+            'categoria': a.categoria.nome if a.categoria else '',
+            'medida': a.medida_caseira,
+            'energia': float(a.energia_kcal),
+            'proteinas': float(a.proteina_g),
+            'carboidratos': float(a.carboidrato_g),
+            'lipidios': float(a.lipidios_g)
+        } for a in alimentos]
+        
+        return JsonResponse(resultados, safe=False)
+
+@login_required
+def calcular_nutrientes_item(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         try:
-            refeicao_id = request.POST.get('refeicao_id')
             alimento_id = request.POST.get('alimento_id')
-            quantidade_g = float(request.POST.get('quantidade_g', 100))
+            quantidade = float(request.POST.get('quantidade', 100))
             
-            # Aqui você precisaria ter o modelo Refeicao
-            # refeicao = get_object_or_404(Refeicao, id=refeicao_id)
             alimento = get_object_or_404(Alimento, id=alimento_id)
-            
-            # Simulação - depois implemente com seu modelo real
-            nutrientes = alimento.calcular_nutrientes_por_porcao(quantidade_g)
+            nutrientes = alimento.calcular_nutrientes_por_porcao(quantidade)
             
             return JsonResponse({
                 'success': True,
-                'alimento': alimento.nome,
-                'quantidade': quantidade_g,
-                'nutrientes': nutrientes,
-                'medida_caseira': alimento.medida_caseira
+                'nutrientes': nutrientes
             })
-            
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     

@@ -1,0 +1,781 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'title' %}Plano Alimentar - {{ plano.nome }} - Nutri-Minsas{% endblock %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>Plano Alimentar: {{ plano.nome }}</h1>
+        <ul class="breadcrumb">
+            <li><a href="{% url 'plano_alimentar_listar' %}">Planos Alimentares</a></li>
+            <li><a href="{% url 'plano_alimentar' plano.paciente.id %}">{{ plano.paciente.nome }}</a></li>
+            <li>{{ plano.nome }}</li>
+        </ul>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <!-- Estatísticas do Plano -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ plano.data_inicio|date:"d/m/Y" }}</div>
+                <div class="stat-label">Início</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ plano.data_fim|date:"d/m/Y" }}</div>
+                <div class="stat-label">Término</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🍽️</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ plano.refeicoes.count }}</div>
+                <div class="stat-label">Refeições</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-info">
+                <div class="stat-number">{{ plano_duracao }} dias</div>
+                <div class="stat-label">Duração</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações do Plano -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Informações do Plano</h3>
+                </div>
+                <div class="card-body">
+                    <div class="plano-info">
+                        <div class="info-item">
+                            <strong>Paciente:</strong> {{ plano.paciente.nome }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Status:</strong>
+                            <span class="badge {% if plano.ativo %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if plano.ativo %}Ativo{% else %}Inativo{% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Período:</strong>
+                            {{ plano.data_inicio|date:"d/m/Y" }} - {{ plano.data_fim|date:"d/m/Y" }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Criado em:</strong>
+                            {{ plano.data_criacao|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+
+                    {% if plano.objetivo %}
+                    <div class="objetivo-section">
+                        <strong>Objetivo:</strong>
+                        <p>{{ plano.objetivo }}</p>
+                    </div>
+                    {% endif %}
+ 
+                    <div class="form-actions">
+                        <a href="{% url 'plano_alimentar' plano.paciente.id %}" class="btn btn-secondary">
+                            ↩️ Voltar
+                        </a>
+                        {% if plano.ativo %}
+                        <a href="{% url 'desativar_plano' plano.id %}" class="btn btn-warning"
+                        onclick="return confirm('Tem certeza que deseja desativar este plano?')">
+                            ⏸️ Desativar
+                        </a>
+                        {% else %}
+                        <a href="{% url 'reativar_plano' plano.id %}" class="btn btn-success"
+                        onclick="return confirm('Tem certeza que deseja reativar este plano?')">
+                            ▶️ Reativar
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo Nutricional -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Resumo Nutricional Diário</h3>
+                </div>
+                <div class="card-body">
+                    <div class="nutrientes-totais">
+                        <div class="nutriente-item">
+                            <span class="nutriente-label">Energia:</span>
+                            <span class="nutriente-valor">{{ total_nutrientes.energia|floatformat:0 }} kcal</span>
+                        </div>
+                        <div class="nutriente-item">
+                            <span class="nutriente-label">Proteínas:</span>
+                            <span class="nutriente-valor">{{ total_nutrientes.proteina|floatformat:1 }}g</span>
+                        </div>
+                        <div class="nutriente-item">
+                            <span class="nutriente-label">Carboidratos:</span>
+                            <span class="nutriente-valor">{{ total_nutrientes.carboidrato|floatformat:1 }}g</span>
+                        </div>
+                        <div class="nutriente-item">
+                            <span class="nutriente-label">Lipídios:</span>
+                            <span class="nutriente-valor">{{ total_nutrientes.lipidios|floatformat:1 }}g</span>
+                        </div>
+                        <div class="nutriente-item">
+                            <span class="nutriente-label">Fibras:</span>
+                            <span class="nutriente-valor">{{ total_nutrientes.fibra|floatformat:1 }}g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Refeições do Plano -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3>Refeições do Plano</h3>
+                        <span class="badge">{{ plano.refeicoes.count }} refeições</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if refeicoes_disponiveis.exists %}
+                    <!-- Formulário para adicionar refeições -->
+                    <div class="add-refeicao-form">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="form-row align-items-center">
+                                <div class="col-md-8">
+                                    <select name="refeicao_id" class="form-control" required>
+                                        <option value="">Selecione uma refeição para adicionar...</option>
+                                        {% for refeicao in refeicoes_disponiveis %}
+                                        <option value="{{ refeicao.id }}">
+                                            {{ refeicao.get_tipo_display }}: {{ refeicao.titulo }} ({{ refeicao.horario }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        ➕ Adicionar Refeição
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <hr>
+                    {% endif %}
+
+                    <!-- Lista de Refeições -->
+                    {% if plano.refeicoes.all %}
+                    <div class="refeicoes-list">
+                        {% for refeicao in plano.refeicoes.all %}
+                        <div class="refeicao-item">
+                            <div class="refeicao-header">
+                                <h4>{{ refeicao.get_tipo_display }}: {{ refeicao.titulo }}</h4>
+                                <span class="horario">{{ refeicao.horario }}</span>
+                            </div>
+                            
+                            {% if refeicao.observacoes %}
+                            <div class="refeicao-observacoes">
+                                <p>{{ refeicao.observacoes }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Alimentos da Refeição -->
+                            {% with itens=refeicao.itens.all %}
+                            {% if itens %}
+                            <div class="alimentos-list">
+                                <h5>Alimentos ({{ itens.count }}):</h5>
+                                {% for item in itens %}
+                                <div class="alimento-item">
+                                    <span class="alimento-nome">{{ item.alimento.nome }}</span>
+                                    <span class="alimento-quantidade">{{ item.quantidade_g }}g</span>
+                                    <span class="alimento-nutrientes">
+                                        {{ item.calcular_nutrientes.energia|floatformat:0 }} kcal
+                                    </span>
+                                </div>
+                                {% endfor %}
+
+                                <!-- Total da Refeição -->
+                                <div class="refeicao-total">
+                                    <strong>Total:</strong>
+                                    {{ refeicao.total_nutrientes.energia|floatformat:0 }} kcal |
+                                    P: {{ refeicao.total_nutrientes.proteina|floatformat:1 }}g |
+                                    C: {{ refeicao.total_nutrientes.carboidrato|floatformat:1 }}g
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <small>⚠️ Esta refeição não possui alimentos cadastrados.</small>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+
+                            <div class="refeicao-actions">
+                                <a href="{% url 'editar_refeicao' refeicao.id %}" class="btn btn-sm btn-primary">
+                                    ✏️ Editar
+                                </a>
+                                <form method="post" action="{% url 'remover_refeicao_plano' plano.id refeicao.id %}" 
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Remover esta refeição do plano?')">
+                                        🗑️ Remover
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">🍽️</div>
+                        <h4>Nenhuma refeição no plano</h4>
+                        <p>Adicione refeições para começar a construir o plano alimentar.</p>
+                        <a href="{% url 'adicionar_refeicao' plano.paciente.id %}" class="btn btn-primary">
+                            ➕ Criar Primeira Refeição
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ações do Plano -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Ações do Plano</h3>
+                </div>
+                <div class="card-body">
+                    <div class="action-buttons">
+                        <a href="{% url 'adicionar_refeicao' plano.paciente.id %}" class="btn btn-primary">
+                            🍽️ Criar Nova Refeição
+                        </a>
+                        <a href="#" class="btn btn-secondary" onclick="window.print()">
+                            📄 Imprimir Plano
+                        </a>
+                        <a href="{% url 'plano_alimentar' plano.paciente.id %}" class="btn btn-info">
+                            👀 Ver Todas as Refeições
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary: #2c7da0;
+        --secondary: #a9d6e5;
+        --accent: #01497c;
+        --light: #f2f8fc;
+        --dark: #012a4a;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --gray: #6c757d;
+    }
+    
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Header */
+    .header {
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        flex-wrap: wrap;
+    }
+    
+    .breadcrumb li {
+        margin-right: 0.5rem;
+    }
+    
+    .breadcrumb li:after {
+        content: ">";
+        margin-left: 0.5rem;
+        color: var(--secondary);
+    }
+    
+    .breadcrumb li:last-child:after {
+        content: "";
+    }
+    
+    .breadcrumb a {
+        color: var(--secondary);
+        text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Estatísticas */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+    
+    .stat-label {
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    /* Card */
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    /* Informações do plano */
+    .plano-info {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .info-item strong {
+        color: var(--dark);
+    }
+    
+    .objetivo-section {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e8f4f8;
+        border-radius: 6px;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .objetivo-section p {
+        margin: 8px 0 0 0;
+        color: var(--dark);
+    }
+    
+    /* Refeições */
+    .refeicoes-list {
+        display: grid;
+        gap: 20px;
+    }
+    
+    .refeicao-item {
+        padding: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #fafafa;
+    }
+    
+    .refeicao-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .refeicao-header h4 {
+        margin: 0;
+        color: var(--primary);
+    }
+    
+    .horario {
+        background-color: var(--secondary);
+        color: var(--dark);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: bold;
+    }
+    
+    .refeicao-observacoes {
+        margin-bottom: 15px;
+        padding: 12px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        font-style: italic;
+    }
+    
+    /* Alimentos */
+    .alimentos-list {
+        margin: 15px 0;
+    }
+    
+    .alimentos-list h5 {
+        margin-bottom: 10px;
+        color: var(--dark);
+        font-size: 1rem;
+    }
+    
+    .alimento-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        background-color: white;
+        border-radius: 4px;
+        border-left: 3px solid var(--success);
+    }
+    
+    .alimento-nome {
+        flex: 2;
+        font-weight: 500;
+    }
+    
+    .alimento-quantidade {
+        flex: 1;
+        text-align: right;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    .alimento-nutrientes {
+        flex: 1;
+        text-align: right;
+        color: var(--primary);
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    .refeicao-total {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: var(--light);
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+        color: var(--accent);
+    }
+    
+    /* Ações */
+    .refeicao-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent);
+    }
+    
+    .btn-secondary {
+        background-color: var(--gray);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn-success {
+        background-color: var(--success);
+        color: white;
+    }
+    
+    .btn-danger {
+        background-color: var(--danger);
+        color: white;
+    }
+    
+    .btn-warning {
+        background-color: var(--warning);
+        color: var(--dark);
+    }
+    
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    /* Formulários */
+    .add-refeicao-form {
+        margin-bottom: 20px;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .form-control {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    
+    /* Badge */
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: bold;
+    }
+    
+    .badge-success {
+        background-color: var(--success);
+        color: white;
+    }
+    
+    .badge-secondary {
+        background-color: var(--gray);
+        color: white;
+    }
+    
+    /* Nutrientes */
+    .nutrientes-totais {
+        display: grid;
+        gap: 8px;
+    }
+    
+    .nutriente-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .nutriente-label {
+        font-weight: bold;
+        color: var(--dark);
+    }
+    
+    .nutriente-valor {
+        font-weight: bold;
+        color: var(--primary);
+    }
+    
+    /* Mensagens */
+    .messages {
+        margin-bottom: 20px;
+    }
+    
+    .alert {
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+    
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state h4 {
+        color: var(--dark);
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        color: var(--gray);
+        margin-bottom: 20px;
+    }
+    
+    /* Flex utilities */
+    .d-flex {
+        display: flex;
+    }
+    
+    .justify-content-between {
+        justify-content: space-between;
+    }
+    
+    .align-items-center {
+        align-items: center;
+    }
+    
+    .mt-3 {
+        margin-top: 1rem;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .form-row {
+            flex-direction: column;
+        }
+        
+        .refeicao-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .refeicao-actions {
+            flex-direction: column;
+        }
+        
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .alimento-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Adicionar confirmação para ações importantes
+        const linksDestrutivos = document.querySelectorAll('a[href*="desativar"], a[href*="reativar"]');
+        linksDestrutivos.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (!confirm('Tem certeza que deseja realizar esta ação?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        // Manter para formulários de remoção também
+        const formsDestrutivos = document.querySelectorAll('form[action*="remover"]');
+        formsDestrutivos.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Tem certeza que deseja realizar esta ação?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

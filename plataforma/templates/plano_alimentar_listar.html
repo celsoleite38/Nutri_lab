@@ -7,108 +7,247 @@
 <div class="container">
     <div class="header">
         <h1>Planos Alimentares</h1>
+        <p>Gerencie os planos alimentares dos seus pacientes</p>
     </div>
 
-    <div class="action-bar">
-        <a href="{% url 'pacientes' %}" class="btn btn-secondary">
-            ← Voltar para Pacientes
-        </a>
+    <!-- Abas para alternar entre Pacientes e Planos -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('pacientes')">Pacientes</button>
+        <button class="tab-btn" onclick="showTab('planos')">Planos Existentes</button>
     </div>
 
-    <!-- Lista de Planos Existentes -->
-    {% if planos %}
-    <div class="card">
-        <div class="card-header">
-            <span>Planos Alimentares Ativos</span>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Paciente</th>
-                            <th>Plano</th>
-                            <th>Período</th>
-                            <th>Refeições</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for plano in planos %}
-                        <tr>
-                            <td>{{ plano.paciente.nome }}</td>
-                            <td>{{ plano.nome }}</td>
-                            <td>{{ plano.data_inicio }} a {{ plano.data_fim }}</td>
-                            <td>{{ plano.refeicoes.count }}</td>
-                            <td>
-                                <a href="{% url 'detalhes_plano_alimentar' plano.id %}" class="btn btn-sm btn-primary">
-                                    Ver Detalhes
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- Tab de Pacientes -->
+    <div id="pacientes-tab" class="tab-content active">
+        <div class="card">
+            <div class="card-header">
+                <h3>Escolha o Paciente</h3>
+            </div>
+            <div class="card-body">
+                {% if pacientes %}
+                <div class="pacientes-grid">
+                    {% for paciente in pacientes %}
+                    <div class="paciente-card">
+                        <div class="paciente-info">
+                            <h4>{{ paciente.nome }}</h4>
+                            <p>CPF: {{ paciente.cpf }}</p>
+                            
+                            <p>Email: {{ paciente.email }}</p>
+                        </div>
+                        <div class="paciente-actions">
+                            <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-primary">
+                                👀 Ver Refeições
+                            </a>
+                            <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-success">
+                                🆕 Criar Plano
+                            </a>
+                            <a href="{% url 'detalhes_paciente_planos' paciente.id %}" class="btn btn-info">
+                                📋 Ver Planos
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>Nenhum paciente cadastrado.</p>
+                    <a href="{% url 'pacientes' %}" class="btn btn-primary">
+                        ➕ Cadastrar Primeiro Paciente
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    {% endif %}
 
-    <!-- Lista de Pacientes para criar novos planos -->
-    <div class="card">
-        <div class="card-header">
-            <span>Selecionar Paciente</span>
-        </div>
-        <div class="card-body">
-            {% if pacientes %}
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Paciente</th>
-                            <th>Idade</th>
-                            <th>Último Registro</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for paciente in pacientes %}
-                        <tr>
-                            <td>{{ paciente.nome }}</td>
-                            <td>{% if paciente.idade %}{{ paciente.idade }} anos{% else %}N/A{% endif %}</td>
-                            <td>
-                                {% with ultimo_dado=paciente.dadospaciente_set.last %}
-                                    {% if ultimo_dado %}
-                                        {{ ultimo_dado.data|date:"d/m/Y" }} - {{ ultimo_dado.peso }}kg
+    <!-- Tab de Planos Existentes -->
+    <div id="planos-tab" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>Planos Alimentares Existentes</h3>
+                    <span class="badge">{{ planos.count }} planos</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if planos %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Nome do Plano</th>
+                                <th>Período</th>
+                                <th>Status</th>
+                                <th>Refeições</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plano in planos %}
+                            <tr>
+                                <td>{{ plano.paciente.nome }}</td>
+                                <td>{{ plano.nome }}</td>
+                                <td>
+                                    {{ plano.data_inicio|date:"d/m/Y" }}<br>
+                                    à {{ plano.data_fim|date:"d/m/Y" }}
+                                </td>
+                                <td>
+                                    <span class="badge {% if plano.ativo %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if plano.ativo %}Ativo{% else %}Inativo{% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ plano.refeicoes.count }}</td>
+                                <td>
+                                    <a href="{% url 'detalhes_plano_alimentar' plano.id %}" class="btn btn-info btn-sm">
+                                        👀 Detalhes
+                                    </a>
+                                    {% if plano.ativo %}
+                                    <a href="{% url 'desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
+                                       onclick="return confirm('Desativar este plano?')">
+                                        ⏸️ Desativar
+                                    </a>
                                     {% else %}
-                                        Nenhum registro
+                                    <a href="{% url 'reativar_plano' plano.id %}" class="btn btn-success btn-sm"
+                                       onclick="return confirm('Reativar este plano?')">
+                                        ▶️ Reativar
+                                    </a>
                                     {% endif %}
-                                {% endwith %}
-                            </td>
-                            <td>
-                                <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-sm btn-primary">
-                                    Gerenciar Refeições
-                                </a>
-                                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-sm btn-secondary">
-                                    Criar Plano
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <p>Nenhum plano alimentar criado ainda.</p>
+                    <p>Selecione um paciente acima para criar o primeiro plano.</p>
+                </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">👥</div>
-                <h3>Nenhum paciente cadastrado</h3>
-                <p>Você precisa cadastrar pacientes primeiro para criar planos alimentares.</p>
-                <a href="{% url 'pacientes' %}" class="btn btn-primary">
-                    + Cadastrar Primeiro Paciente
-                </a>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: bold;
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+    }
+    
+    .tab-btn.active {
+        color: #2c7da0;
+        border-bottom-color: #2c7da0;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .pacientes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .paciente-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        background: white;
+    }
+    
+    .paciente-info h4 {
+        margin: 0 0 10px 0;
+        color: #2c7da0;
+    }
+    
+    .paciente-info p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .paciente-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-primary { background: #2c7da0; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-info { background: #17a2b8; color: white; }
+    .btn-warning { background: #ffc107; color: black; }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    function showTab(tabName) {
+        // Esconde todas as tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Mostra a tab selecionada
+        document.getElementById(tabName + '-tab').classList.add('active');
+        
+        // Atualiza botões
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+</script>
 {% endblock %}

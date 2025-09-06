@@ -154,7 +154,7 @@ def plano_alimentar_listar(request):
     if request.method == "GET":
         pacientes = Pacientes.objects.filter(nutri=request.user)
         # Buscar também os planos alimentares existentes
-        planos = PlanoAlimentar.objects.filter(paciente__nutri=request.user)
+        planos = PlanoAlimentar.objects.filter(paciente__nutri=request.user).order_by('-data_criacao')
         
         return render(request, 'plano_alimentar_listar.html', {
             'pacientes': pacientes,
@@ -348,10 +348,6 @@ def calcular_nutrientes_plano(request, plano_id):
     
     return JsonResponse(total_nutrientes)
 
-
-
-
-
 @login_required
 def criar_plano_alimentar(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
@@ -512,3 +508,82 @@ def calcular_nutrientes_item(request):
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'Requisição inválida'})
+
+
+@login_required(login_url='/auth/logar/')
+def desativar_plano(request, plano_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    
+    # Verifica se o usuário tem permissão (nutricionista do paciente)
+    if plano.paciente.nutri != request.user:
+        messages.error(request, "Você não tem permissão para desativar este plano.")
+        return redirect('plano_alimentar_listar')
+    
+    # Desativa o plano
+    plano.ativo = False
+    plano.save()
+    
+    messages.success(request, f"Plano '{plano.nome}' desativado com sucesso!")
+    return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+
+@login_required(login_url='/auth/logar/')
+def reativar_plano(request, plano_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    
+    if plano.paciente.nutri != request.user:
+        messages.error(request, "Você não tem permissão para reativar este plano.")
+        return redirect('plano_alimentar_listar')
+    
+    # Reativa o plano
+    plano.ativo = True
+    plano.save()
+    
+    messages.success(request, f"Plano '{plano.nome}' reativado com sucesso!")
+    return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+
+
+@login_required(login_url='/auth/logar/')
+def remover_refeicao_plano(request, plano_id, refeicao_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+    
+    # Verifica permissões
+    if plano.paciente.nutri != request.user or refeicao.paciente.nutri != request.user:
+        messages.error(request, "Você não tem permissão para realizar esta ação.")
+        return redirect('plano_alimentar_listar')
+    
+    # Remove a refeição do plano
+    plano.refeicoes.remove(refeicao)
+    
+    messages.success(request, f"Refeição '{refeicao.titulo}' removida do plano.")
+    return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+
+@login_required(login_url='/auth/logar/')
+def adicionar_refeicao_existente(request, plano_id):
+    if request.method == 'POST':
+        plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+        refeicao_id = request.POST.get('refeicao_id')
+        
+        if refeicao_id:
+            refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+            
+            # Verifica permissões
+            if plano.paciente.nutri != request.user or refeicao.paciente.nutri != request.user:
+                messages.error(request, "Você não tem permissão para realizar esta ação.")
+                return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+            
+            # Adiciona a refeição ao plano
+            plano.refeicoes.add(refeicao)
+            messages.success(request, f"Refeição '{refeicao.titulo}' adicionada ao plano.")
+        
+        return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+    
+@login_required(login_url='/auth/logar/')
+def detalhes_paciente_planos(request, paciente_id):
+    paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
+    planos = PlanoAlimentar.objects.filter(paciente=paciente).order_by('-data_criacao')
+    
+    return render(request, 'detalhes_paciente_planos.html', {
+        'paciente': paciente,
+        'planos': planos
+    })

@@ -1,0 +1,6 @@
+
+quando banco estiver zerado 
+rodas os seguintes comandos
+
+python manage.py importar_taco
+python manage.py tbca

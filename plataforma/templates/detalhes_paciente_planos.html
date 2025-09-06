@@ -1,0 +1,83 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'title' %}Planos de {{ paciente.nome }} - Nutri-Lab{% endblock %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <div class="header">
+        <h1>Planos Alimentares de {{ paciente.nome }}</h1>
+        <a href="{% url 'plano_alimentar_listar' %}" class="btn btn-secondary">
+            ↩️ Voltar
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Planos do Paciente</h3>
+                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-success">
+                    ➕ Criar Novo Plano
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if planos %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome do Plano</th>
+                            <th>Período</th>
+                            <th>Status</th>
+                            <th>Refeições</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plano in planos %}
+                        <tr>
+                            <td>{{ plano.nome }}</td>
+                            <td>
+                                {{ plano.data_inicio|date:"d/m/Y" }}<br>
+                                à {{ plano.data_fim|date:"d/m/Y" }}
+                            </td>
+                            <td>
+                                <span class="badge {% if plano.ativo %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {% if plano.ativo %}Ativo{% else %}Inativo{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ plano.refeicoes.count }}</td>
+                            <td>
+                                <a href="{% url 'detalhes_plano_alimentar' plano.id %}" class="btn btn-info btn-sm">
+                                    👀 Detalhes
+                                </a>
+                                {% if plano.ativo %}
+                                <a href="{% url 'desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
+                                   onclick="return confirm('Desativar este plano?')">
+                                    ⏸️ Desativar
+                                </a>
+                                {% else %}
+                                <a href="{% url 'reativar_plano' plano.id %}" class="btn btn-success btn-sm"
+                                   onclick="return confirm('Reativar este plano?')">
+                                    ▶️ Reativar
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Nenhum plano alimentar para este paciente.</p>
+                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-primary">
+                    ➕ Criar Primeiro Plano
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

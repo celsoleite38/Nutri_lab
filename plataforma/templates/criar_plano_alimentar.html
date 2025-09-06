@@ -1,0 +1,521 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'title' %}Criar Plano Alimentar - {{ paciente.nome }} - Nutri-Minsas{% endblock %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <!-- Cabeçalho -->
+    <div class="header">
+        <h1>Criar Plano Alimentar - {{ paciente.nome }}</h1>
+        <ul class="breadcrumb">
+            <li><a href="{% url 'plano_alimentar_listar' %}">Planos Alimentares</a></li>
+            <li><a href="{% url 'plano_alimentar' paciente.id %}">{{ paciente.nome }}</a></li>
+            <li>Criar Plano</li>
+        </ul>
+    </div>
+
+    <!-- Mensagens -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Formulário de criação do plano -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Dados do Plano Alimentar</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="nome">Nome do Plano *</label>
+                            <input type="text" name="nome" id="nome" class="form-control" 
+                                   value="Plano Alimentar {{ paciente.nome }}" required
+                                   placeholder="Ex: Plano de Emagrecimento, Plano de Ganho de Massa...">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="data_inicio">Data de Início *</label>
+                                <input type="date" name="data_inicio" id="data_inicio" 
+                                       class="form-control" required
+                                       min="{{ today|date:'Y-m-d' }}">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="data_fim">Data de Término *</label>
+                                <input type="date" name="data_fim" id="data_fim" 
+                                       class="form-control" required
+                                       min="{{ today|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="objetivo">Objetivo do Plano</label>
+                            <textarea name="objetivo" id="objetivo" class="form-control" 
+                                      rows="4" placeholder="Descreva os objetivos principais deste plano alimentar..."></textarea>
+                        </div>
+                        
+                        <!-- Botões de ação -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                ✅ Criar Plano Alimentar
+                            </button>
+                            <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-secondary">
+                                ↩️ Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações do paciente e orientações -->
+        <div class="col-md-6">
+            <!-- Dados do Paciente -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Informações do Paciente</h3>
+                </div>
+                <div class="card-body">
+                    <div class="paciente-info">
+                        <div class="info-item">
+                            <strong>Nome:</strong> {{ paciente.nome }}
+                        </div>
+                        </div class="info-item">
+                            <strong>Data Nascimento</strong> {{ paciente.datanascimento|date:"d/m/Y" }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Sexo:</strong> {{ paciente.sexo }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Email:</strong> {{ paciente.email }}
+                        </div>
+                        {% with ultimo_dado=paciente.dadospaciente_set.last %}
+                        {% if ultimo_dado %}
+                        <div class="info-item">
+                            <strong>Último Peso:</strong> {{ ultimo_dado.peso }} kg
+                        </div>
+                        <div class="info-item">
+                            <strong>Altura:</strong> {{ ultimo_dado.altura }} m
+                        </div>
+                        <div class="info-item">
+                            <strong>IMC:</strong> {{ ultimo_dado.imc|floatformat:1 }}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orientações -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Orientações para Criação do Plano</h3>
+                </div>
+                <div class="card-body">
+                    <div class="orientacoes-list">
+                        <div class="orientacao-item">
+                            <strong>📅 Período Realista</strong>
+                            <p>Defina um período adequado para os objetivos do paciente.</p>
+                        </div>
+                        <div class="orientacao-item">
+                            <strong>🎯 Objetivos Claros</strong>
+                            <p>Descreva objetivos específicos e mensuráveis.</p>
+                        </div>
+                        <div class="orientacao-item">
+                            <strong>🍽️ Refeições Balanceadas</strong>
+                            <p>Após criar o plano, adicione refeições completas.</p>
+                        </div>
+                        <div class="orientacao-item">
+                            <strong>📊 Acompanhamento</strong>
+                            <p>O plano poderá ser ajustado conforme a evolução.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Refeições Existentes -->
+            {% with refeicoes=paciente.refeicao_set.all %}
+            {% if refeicoes %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>Refeições Disponíveis</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Este paciente já tem {{ refeicoes.count }} refeição(ões) cadastrada(s) que poderão ser adicionadas ao plano.</p>
+                    <div class="refeicoes-count">
+                        <span class="badge">{{ refeicoes.count }} refeições</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary: #2c7da0;
+        --secondary: #a9d6e5;
+        --accent: #01497c;
+        --light: #f2f8fc;
+        --dark: #012a4a;
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --gray: #6c757d;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Header */
+    .header {
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        flex-wrap: wrap;
+    }
+    
+    .breadcrumb li {
+        margin-right: 0.5rem;
+    }
+    
+    .breadcrumb li:after {
+        content: ">";
+        margin-left: 0.5rem;
+        color: var(--secondary);
+    }
+    
+    .breadcrumb li:last-child:after {
+        content: "";
+    }
+    
+    .breadcrumb a {
+        color: var(--secondary);
+        text-decoration: none;
+    }
+    
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Card */
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 20px;
+        font-weight: bold;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    /* Formulário */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: var(--dark);
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.25);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    /* Informações do paciente */
+    .paciente-info {
+        display: grid;
+        gap: 10px;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .info-item strong {
+        color: var(--dark);
+    }
+    
+    /* Orientações */
+    .orientacoes-list {
+        display: grid;
+        gap: 12px;
+    }
+    
+    .orientacao-item {
+        padding: 12px;
+        border-left: 4px solid var(--primary);
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    .orientacao-item strong {
+        color: var(--primary);
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .orientacao-item p {
+        margin: 0;
+        color: var(--dark);
+        font-size: 0.9rem;
+    }
+    
+    /* Ações */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: var(--accent);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background-color: var(--gray);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    /* Badge */
+    .badge {
+        padding: 6px 12px;
+        background-color: var(--secondary);
+        color: var(--dark);
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: bold;
+    }
+    
+    /* Mensagens */
+    .messages {
+        margin-bottom: 20px;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+    
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .text-muted {
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .row {
+            flex-direction: column;
+        }
+        
+        .col-md-6 {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .breadcrumb {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .breadcrumb li:after {
+            content: "";
+            margin: 0;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configurar datas padrão
+        const hoje = new Date();
+        const dataInicio = document.getElementById('data_inicio');
+        const dataFim = document.getElementById('data_fim');
+        
+        // Se não tiver valor, setar padrão (início: hoje, fim: 30 dias)
+        if (!dataInicio.value) {
+            dataInicio.value = hoje.toISOString().split('T')[0];
+        }
+        
+        if (!dataFim.value) {
+            const trintaDias = new Date();
+            trintaDias.setDate(hoje.getDate() + 30);
+            dataFim.value = trintaDias.toISOString().split('T')[0];
+        }
+        
+        // Validação do formulário
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const nome = document.getElementById('nome').value;
+            const dataInicioVal = new Date(dataInicio.value);
+            const dataFimVal = new Date(dataFim.value);
+            
+            if (!nome.trim()) {
+                e.preventDefault();
+                alert('Por favor, informe um nome para o plano.');
+                return false;
+            }
+            
+            if (dataFimVal <= dataInicioVal) {
+                e.preventDefault();
+                alert('A data de término deve ser posterior à data de início.');
+                return false;
+            }
+            
+            if ((dataFimVal - dataInicioVal) > (365 * 24 * 60 * 60 * 1000)) {
+                e.preventDefault();
+                alert('O plano não pode ter mais de 1 ano de duração.');
+                return false;
+            }
+        });
+        
+        // Focar no campo nome
+        document.getElementById('nome').focus();
+    });
+    
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Seleciona todos os blocos de pacientes
+                            const pacientes = document.querySelectorAll('.paciente');
+                            
+                            pacientes.forEach(paciente => {
+                                const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
+                                const dataNasc = new Date(dataNascStr);
+                                const hoje = new Date();
+                                
+                                let idade = hoje.getFullYear() - dataNasc.getFullYear();
+                                const mesAtual = hoje.getMonth();
+                                const mesNasc = dataNasc.getMonth();
+                                
+                                // Ajuste se ainda não fez aniversário este ano
+                                if (mesNasc > mesAtual || 
+                                    (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
+                                    idade--;
+                                }
+                                
+                                // Insere a idade no campo correto
+                                paciente.querySelector('.idade').textContent = idade;
+                            });
+                        });
+                    
+</script>
+{% endblock %}

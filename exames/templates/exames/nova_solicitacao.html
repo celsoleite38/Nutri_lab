@@ -1,0 +1,25 @@
+{% extends 'base_plataforma.html' %}
+
+{% block 'plataforma' %}
+    <div class="container">
+        <h3>Nova Solicitação para {{ paciente.nome }}</h3>
+        <hr>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form action="{% url 'exames:nova_solicitacao' paciente.id %}" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="data_solicitacao">Data da Solicitação</label>
+                <input type="date" name="data_solicitacao" id="data_solicitacao" class="form-control" value="{{ data_hoje }}" required>
+            </div>
+              
+
+            <button type="submit" class="btn btn-success">Criar e Adicionar Exames</button>
+        </form>
+    </div>
+{% endblock %}

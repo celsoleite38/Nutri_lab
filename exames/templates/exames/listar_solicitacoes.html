@@ -1,0 +1,40 @@
+{% extends 'base_plataforma.html' %} 
+
+{% block 'plataforma' %}
+    <div class="container">
+        <h3>Exames de {{ paciente.nome }}</h3>
+        <hr>
+
+        <a href="{% url 'exames:nova_solicitacao' paciente.id %}" class="btn btn-success">Nova Solicitação de Exames</a>
+          
+  
+
+
+        {% if solicitacoes %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Data da Solicitação</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for solicitacao in solicitacoes %}
+                        <tr>
+                            <td>{{ solicitacao.data_solicitacao|date:"d/m/Y" }}</td>
+                            <td>{{ solicitacao.get_status_display }}</td>
+                            <td>
+                                <a href="{% url 'exames:detalhe_solicitacao' solicitacao.id %}" class="btn btn-primary btn-sm">
+                                    Ver / Adicionar Resultados
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nenhuma solicitação de exame encontrada para este paciente.</p>
+        {% endif %}
+    </div>
+{% endblock %}

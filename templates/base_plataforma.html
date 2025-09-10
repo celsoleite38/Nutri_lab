@@ -37,14 +37,6 @@
                     </div>
                 </a>
                 <br>
-                <a href="{% url 'alimentos:dashboard' %}" class="link-lateral">
-                    <div class="card-lateral">
-                        <i class="fas fa-chart-pie fa-3x"></i>
-                        <br>
-                        <h3>Nutricional</h3>
-                    </div>
-                </a>
-                <br>
                 <a href="{% url 'plano_alimentar_listar' %}" class="link-lateral">
                     <div class="card-lateral">
                         <img src="{% static 'plataforma/img/plano_alimentar.png' %}">
@@ -52,8 +44,14 @@
                         <h3>Plano alimentar</h3>
                     </div>
                 </a>
-                
-                
+                <br>
+                <a href="{% url 'alimentos:dashboard' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <i class="fas fa-chart-pie fa-3x"></i>
+                        <br>
+                        <h3>Nutricional</h3>
+                    </div>
+                </a>
             </div>
             <div class="col-md-8">
                 {% block 'plataforma' %}

@@ -1,0 +1,111 @@
+{% extends 'base_plataforma.html' %}
+{% load static %}
+
+{% block 'plataforma' %}
+
+<style>
+    /* Estilos para impressão, escondendo elementos desnecessários */
+    @media print {
+        @page {
+            size: A4;
+            margin: 1.5cm; /* Margem um pouco maior para documentos formais */
+        }
+        body * {
+            visibility: hidden;
+        }
+        .printable-area, .printable-area * {
+            visibility: visible;
+        }
+        .printable-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+
+    /* Estilos para a assinatura no final da página */
+    .assinatura {
+        margin-top: 100px;
+        text-align: center;
+    }
+
+    .linha-assinatura {
+        border-top: 1px solid #000;
+        width: 350px;
+        margin: 0 auto;
+        padding-top: 5px;
+    }
+</style>
+
+<div class="container mt-4 printable-area">
+    <!-- Botão de Imprimir (não será impresso) -->
+    <div class="mb-4 no-print">
+        <a href="{% url 'exames:detalhe_solicitacao' solicitacao.id %}" class="btn btn-secondary">← Voltar</a>
+        <button class="btn btn-success" onclick="window.print()">
+            🖨️ Imprimir Pedido
+        </button>
+    </div>
+
+    <!-- 1. Cabeçalho com dados do Profissional e Logo -->
+    <div class="border-bottom pb-3 mb-4 row">
+        <div class="col-8">
+            {% if perfil %}
+                <h4>{{ perfil.nome_completo }}</h4>
+                <p class="mb-0">Nutricionista - CFN: {{ perfil.cfn }}</p>
+                <p class="mb-0">{{ perfil.nomeclinica }}</p>
+                <p class="mb-0">{{ perfil.rua }}, {{ perfil.numero }}, {{ perfil.bairro }}</p>
+                <p class="mb-0">{{ perfil.cidade }} - {{ perfil.estado }}</p>
+            {% else %}
+                <h4>[Nome do Profissional]</h4>
+                <p>[Dados da Clínica]</p>
+            {% endif %}
+        </div>
+        <div class="col-4 text-end">
+            {% if perfil.logotipo %}
+                <img src="{{ perfil.logotipo.url }}" height="80">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. Título do Documento -->
+    <h2 class="text-center my-4">Solicitação de Exames Laboratoriais</h2>
+
+    <!-- 3. Dados do Paciente -->
+    <div class="mb-4">
+        
+        <p class="ms-3 mb-0"><strong>Nome:</strong> {{ paciente.nome }}</p>
+        <p class="ms-3 mb-0"><strong>Data de Nascimento:</strong> {{ paciente.datanascimento|date:"d/m/Y" }}</p>
+    </div>
+
+    <!-- 4. Lista de Exames Solicitados -->
+    <div class="mb-5">
+        <h5>Exames Solicitados:</h5>
+        <ul class="list-group">
+            {% for exame in exames_solicitados %}
+                <li class="list-group-item border-0 ps-3">› {{ exame.tipo_exame.nome }}</li>
+            {% empty %}
+                <li class="list-group-item border-0 ps-3">Nenhum exame nesta solicitação.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <!-- 5. Data e Assinatura -->
+    <div class="mt-5">
+        <p class="text-end">Data da Solicitação: {{ solicitacao.data_solicitacao|date:"d/m/Y" }}</p>
+        
+        <div class="assinatura">
+            <div class="linha-assinatura"></div>
+            <div class="mt-1">
+                <strong>{{ perfil.nome_completo|default:"[Nome do Profissional]" }}</strong>  
+
+                <small>Assinatura e Carimbo do Profissional</small>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

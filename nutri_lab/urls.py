@@ -10,6 +10,7 @@ urlpatterns = [
     path('' , include('plataforma.urls')),
     path('agenda/', include('agenda.urls',namespace='agenda')),
     path("alimentos/", include("alimentos.urls")),
+    path('exames/', include('exames.urls', namespace='exames')),
 
 ]
 

@@ -1,4 +1,3 @@
-# models.py - Modelos ajustados
 from django.db import models
 from django.contrib.auth.models import User
 from alimentos.models import Alimento

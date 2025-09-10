@@ -33,6 +33,9 @@
     <a href="{% url 'imprimir_dados_paciente' paciente.id %}" class="btn btn-outline-success">
        <strong>Imprimir Dados do Paciente</strong> 
     </a>
+    <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-info">
+       <strong> Gerenciar Exames Laboratoriais
+    </a>
 
     <br>
     <br>

@@ -1,0 +1,91 @@
+{% extends 'base_plataforma.html' %}
+
+{% block 'plataforma' %}
+<div class="container">
+    <h3>Gerenciar Solicitação de {{ paciente.nome }} ({{ solicitacao.data_solicitacao|date:"d/m/Y" }})</h3>
+    <hr>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulário para SOLICITAR novos exames (sem resultado) -->
+    <div class="card card-body mb-4">
+        <h4>1. Solicitar Novos Exames</h4>
+        <p>Adicione aqui os exames que o paciente precisa realizar.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Exame</label>
+                    <select name="tipo_exame" class="form-control">
+                        <option value="">Selecione um exame para adicionar...</option>
+                        {% for tipo in tipos_de_exame %}
+                            <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" name="adicionar_exame" class="btn btn-info">Adicionar à Solicitação</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Formulário para PREENCHER os resultados -->
+    <div class="card card-body">
+        <h4>2. Preencher Resultados</h4>
+        <p>Quando o paciente trouxer os resultados, preencha os valores abaixo.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Exame Solicitado</th>
+                        <th style="width: 150px;">Resultado</th>
+                        <th>Pré-diagnóstico (IA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resultado in resultados %}
+                        <tr>
+                            <td>{{ resultado.tipo_exame.nome }} ({{ resultado.tipo_exame.unidade_padrao }})</td>
+                            <td>
+                                <input type="text" 
+                                       name="resultado_{{ resultado.id }}" 
+                                       class="form-control" 
+                                       value="{{ resultado.resultado|default_if_none:'' }}"
+                                       placeholder="Pendente">
+                            </td>
+                            <td>
+                                {% if "ABAIXO" in resultado.pre_diagnostico_ia %}
+                                    <span class="badge bg-warning text-dark">{{ resultado.pre_diagnostico_ia }}</span>
+                                {% elif "ACIMA" in resultado.pre_diagnostico_ia %}
+                                    <span class="badge bg-danger">{{ resultado.pre_diagnostico_ia }}</span>
+                                {% elif "DENTRO" in resultado.pre_diagnostico_ia %}
+                                    <span class="badge bg-success">{{ resultado.pre_diagnostico_ia }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ resultado.pre_diagnostico_ia }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">Nenhum exame solicitado ainda. Use o formulário acima.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if resultados %}
+            <button type="submit" name="atualizar_resultados" class="btn btn-success">Salvar Resultados</button>
+            {% endif %}
+        </form>
+    </div>
+    <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-secondary">Voltar para Lista</a>
+    <a href="{% url 'exames:imprimir_solicitacao' solicitacao.id %}" class="btn btn-primary" target="_blank">
+        🖨️ Imprimir
+    </a>
+</div>
+{% endblock %}

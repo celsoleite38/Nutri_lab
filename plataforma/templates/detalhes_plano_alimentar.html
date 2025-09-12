@@ -1,13 +1,13 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Plano Alimentar - {{ plano.nome }} - Nutri-Minsas{% endblock %}
+{% block 'title' %}Plano Alimentar - {{ plano.nome }} - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
     <!-- Cabeçalho -->
     <div class="header">
-        <h1>Plano Alimentar: {{ plano.nome }}</h1>
+        <h1> {{ plano.nome }}</h1>
        
     </div>
 
@@ -49,7 +49,7 @@
         <div class="stat-card">
             <div class="stat-icon">⏱️</div>
             <div class="stat-info">
-                <div class="stat-number">{{ plano_duracao }} dias</div>
+                <div class="stat-number">{{ plano.duracao_dias }} dias</div>
                 <div class="stat-label">Duração</div>
             </div>
         </div>
@@ -118,11 +118,11 @@
                     <div class="nutrientes-totais">
                         <div class="nutriente-item">
                             <span class="nutriente-label">Energia:</span>
-                            <span class="nutriente-valor">{{ total_nutrientes.energia|floatformat:0 }} kcal</span>
+                            <span class="nutriente-valor">{{ nutrientes_diarios.energia|floatformat:0 }} kcal</span>
                         </div>
                         <div class="nutriente-item">
                             <span class="nutriente-label">Proteínas:</span>
-                            <span class="nutriente-valor">{{ total_nutrientes.proteina|floatformat:1 }}g</span>
+                            <span class="nutriente-valor">{{ nutrientes_diarios.proteina|floatformat:1 }}g</span>
                         </div>
                         <div class="nutriente-item">
                             <span class="nutriente-label">Carboidratos:</span>

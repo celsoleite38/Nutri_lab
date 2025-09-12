@@ -1,15 +1,15 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Criar Plano Alimentar - {{ paciente.nome }} - Nutri-Minsas{% endblock %}
+{% block 'title' %}Criar Plano Alimentar - {{ paciente.nome }} - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
     <!-- Cabeçalho -->
-    <div class="header">
-        <h1>Criar Plano Alimentar para {{ paciente.nome }}</h1>
+    
+        <h1 class="titulo">Criar Plano Alimentar para {{ paciente.nome }}</h1>
        
-    </div>
+    <br>
 
     <!-- Mensagens -->
     {% if messages %}

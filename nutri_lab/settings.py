@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'agenda',
     'alimentos',
     'exames',
+    'paginas_vendas',
 ]
 
 MIDDLEWARE = [

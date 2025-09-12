@@ -1,13 +1,13 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Plano Alimentar - {{ paciente.nome }} - Nutri-Minsas{% endblock %}
+{% block 'title' %}Plano Alimentar - {{ paciente.nome }} - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
     <div class="header">
-        <h1>Plano Alimentar - {{ paciente.nome }}</h1>
-        
+        <h1 class="titulo">Plano Alimentar - {{ paciente.nome }}</h1>
+        <br>
     </div>
 
     <div class="action-bar">
@@ -17,33 +17,33 @@
         <a href="{% url 'adicionar_refeicao' paciente.id %}" class="btn btn-primary">
             + Nova Refeição
         </a>
-        <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-secondary">
-            Criar Plano Completo
+        <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-info">
+           <strong> Criar Plano Completo</strong>
         </a>
     </div>
 
     {% if refeicoes %}
     <div class="card">
-        <div class="card-header">
-            <span>Refeições do Paciente</span>
+        <div class="card-header subtitulo">
+            <span>Refeições</span>
         </div>
         <div class="card-body">
             <div class="refeicoes-list">
                 {% for refeicao in refeicoes %}
                 <div class="refeicao-item">
                     <div class="refeicao-info">
-                        <h4>{{ refeicao.titulo }} ({{ refeicao.get_tipo_display }})</h4>
+                        <h3 class="subtitulo">{{ refeicao.titulo }} ({{ refeicao.get_tipo_display }})</h3>
                         <p>Horário: {{ refeicao.horario }}</p>
                         {% if refeicao.observacoes %}
                         <p>{{ refeicao.observacoes }}</p>
                         {% endif %}
                     </div>
                     <div class="refeicao-actions">
-                        <a href="{% url 'editar_refeicao' refeicao.id %}" class="btn btn-sm btn-primary">
+                        <a href="{% url 'editar_refeicao' refeicao.id %}" class="btn btn-info">
                             Editar
                         </a>
                         <span class="badge">
-                            {{ refeicao.itens.count }} alimento(s)
+                            <h8 class='infoalimentar'>{{ refeicao.itens.count }} alimento(s)</h8>
                         </span>
                     </div>
                 </div>

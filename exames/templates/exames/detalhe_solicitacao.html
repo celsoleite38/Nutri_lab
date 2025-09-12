@@ -2,14 +2,14 @@
 
 {% block 'plataforma' %}
 <div class="container">
-    <h3>Gerenciar Solicitação de {{ paciente.nome }} ({{ solicitacao.data_solicitacao|date:"d/m/Y" }})</h3>
+    <h3 class="titulo">Gerenciar Solicitação de Exames de {{ paciente.nome }} ({{ solicitacao.data_solicitacao|date:"d/m/Y" }})</h3>
     <hr>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% for message in messages %}
+            <div class="alert {{message.tags}}">
+                {{message}}
+            </div>
         {% endfor %}
-    {% endif %}
 
     <!-- Formulário para SOLICITAR novos exames (sem resultado) -->
     <div class="card card-body mb-4">

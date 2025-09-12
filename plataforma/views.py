@@ -18,6 +18,9 @@ from decimal import Decimal, InvalidOperation
 def pacientes(request):
     if request.method =="GET":
         pacientes = Pacientes.objects.filter(nutri=request.user)
+        query = request.GET.get('q')
+        if query:
+            pacientes = pacientes.filter(nome__icontains=query)
         return render(request, 'pacientes.html' , {'pacientes' : pacientes})
     elif request.method == "POST":
         nome = request.POST.get('nome')
@@ -78,13 +81,13 @@ def dados_paciente_listar(request):
 def dados_paciente(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
     
-    # Verificar se o paciente pertence ao nutricionista logado
     if not paciente.nutri == request.user:
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
         return redirect('/pacientes/')
    
     if request.method == "GET":
         dados_paciente = DadosPaciente.objects.filter(paciente=paciente).order_by('-data')
+        
         return render(request, 'dados_paciente.html', {
             'paciente': paciente, 
             'dados_paciente': dados_paciente
@@ -108,10 +111,7 @@ def dados_paciente(request, id):
             altura = parse_decimal(request.POST.get('altura'))
             gordura = parse_decimal(request.POST.get('gordura'))
             musculo = parse_decimal(request.POST.get('musculo'))
-            hdl = parse_decimal(request.POST.get('hdl'))
-            ldl = parse_decimal(request.POST.get('ldl'))
-            colesterol_total = parse_decimal(request.POST.get('ctotal'))
-            trigliceridios = parse_decimal(request.POST.get('trigliceridios'))
+            
             
             # Criar instância de DadosPaciente (não sobrescrever a variável paciente)
             dados_paciente = DadosPaciente(
@@ -121,10 +121,7 @@ def dados_paciente(request, id):
                 altura=altura,
                 percentual_gordura=gordura,
                 percentual_musculo=musculo,
-                colesterol_hdl=hdl,
-                colesterol_ldl=ldl,
-                colesterol_total=colesterol_total,
-                trigliceridios=trigliceridios
+                
             )
             
             dados_paciente.save()
@@ -143,22 +140,49 @@ def dados_paciente(request, id):
 def grafico_peso(request, id):
     paciente = Pacientes.objects.get(id=id)
     dados = DadosPaciente.objects.filter(paciente=paciente).order_by("data")
-    pesos = [dado.peso for dado in dados]
-    labels = list(range(len(pesos)))
-    data = {'peso': pesos,
-            'labels': labels}
+    pesos = []
+    gorduras = []
+    musculos = []
+    labels = []
+    
+    for dado in dados:
+        if dado.peso is not None:
+            pesos.append(float(dado.peso))
+        else:
+            pesos.append(None)
+            
+        if dado.percentual_gordura is not None:
+            gorduras.append(float(dado.percentual_gordura))
+        else:
+            gorduras.append(None)
+            
+        if dado.percentual_musculo is not None:
+            musculos.append(float(dado.percentual_musculo))
+        else:
+            musculos.append(None)
+            
+        labels.append(dado.data.strftime("%d/%m/%Y") if dado.data else "")
+    
+    data = {
+        'peso': pesos,
+        'percentual_gordura': gorduras,
+        'percentual_musculo': musculos,
+        'labels': labels
+    }
     return JsonResponse(data)
 
 @login_required(login_url='/auth/logar/')
 def plano_alimentar_listar(request):
     if request.method == "GET":
         pacientes = Pacientes.objects.filter(nutri=request.user)
-        # Buscar também os planos alimentares existentes
+        query = request.GET.get('q')
+        if query:
+            pacientes = pacientes.filter(nome__icontains=query)
         planos = PlanoAlimentar.objects.filter(paciente__nutri=request.user).order_by('-data_criacao')
         
         return render(request, 'plano_alimentar_listar.html', {
             'pacientes': pacientes,
-            'planos': planos
+            'planos': planos,
         })
     
 @login_required(login_url='/auth/logar/')
@@ -375,15 +399,22 @@ def criar_plano_alimentar(request, paciente_id):
 @login_required
 def detalhes_plano_alimentar(request, plano_id):
     plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    
+    
+    
     if plano.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
         return redirect('plano_alimentar_listar')
     
-    # Obter todas as refeições do paciente para poder adicionar ao plano
-    refeicoes_disponiveis = Refeicao.objects.filter(paciente=plano.paciente).exclude(id__in=plano.refeicoes.values_list('id', flat=True))
     
+    refeicoes_disponiveis = Refeicao.objects.filter(paciente=plano.paciente).exclude(id__in=plano.refeicoes.values_list('id', flat=True))
+    total_nutrientes = plano.total_nutrientes()
+    duracao_dias = plano.duracao_dias()
+    nutrientes_diarios = {}
+    for key, value in total_nutrientes.items():
+        nutrientes_diarios[key] = value / duracao_dias if duracao_dias > 0 else 0
+        
     if request.method == 'POST':
-        # Adicionar refeição ao plano
         refeicao_id = request.POST.get('refeicao_id')
         if refeicao_id:
             refeicao = get_object_or_404(Refeicao, id=refeicao_id)
@@ -393,7 +424,8 @@ def detalhes_plano_alimentar(request, plano_id):
     return render(request, 'detalhes_plano_alimentar.html', {
         'plano': plano,
         'refeicoes_disponiveis': refeicoes_disponiveis,
-        'total_nutrientes': plano.total_nutrientes()
+        'total_nutrientes': plano.total_nutrientes(),
+        'nutrientes_diarios': nutrientes_diarios
     })
 
 @login_required

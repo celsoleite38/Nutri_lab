@@ -1,0 +1,38 @@
+{% extends 'base_vendas.html' %}
+{% load static %}
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'autenticacao/css/css.css' %}">
+{% endblock %}
+{% block 'titulo' %}Teste Ativado - FisioLab{% endblock %}
+
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 sidebar">
+            <div class="logo_sidebar">
+                <h2 class="logo">
+                    <img class="img_logo_sidebar" src="{% static 'autenticacao/img/log FM-SF.png' %}">
+                </h2>
+            </div>
+        </div>
+        
+        <!-- Área principal -->
+        <div class="col-md-9">
+            <div class="area_cadastrar">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <h2 class="titulo">Teste Ativado com Sucesso!</h2>
+                    <hr>
+                    <p class="lead">Seu acesso grátis está válido até <strong>{{ validade|date:"d/m/Y" }}</strong>.</p>
+                    <div class="mt-4">
+                        <a href="/auth/cadastro" class="btn btn-first">
+                            <i class="fas fa-arrow-right mr-2"></i> Acessar Plataforma
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

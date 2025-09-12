@@ -7,12 +7,8 @@
 <div class="container">
     <!-- Cabeçalho -->
     <div class="header">
-        <h1>Adicionar Nova Refeição</h1>
-        <ul class="breadcrumb">
-            <li><a href="{% url 'plano_alimentar_listar' %}">Planos Alimentares</a></li>
-            <li><a href="{% url 'plano_alimentar' paciente.id %}"><strong>{{ paciente.nome }}</strong></a></li>
-            <li>Nova Refeição</li>
-        </ul>
+        <h1 class="titulo">Adicionar Nova Refeição</h1>
+        
     </div>
 
     <!-- Mensagens -->
@@ -70,7 +66,7 @@
                 
                 <!-- Ações -->
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Criar Refeição</button>
+                    <button type="submit" class="btn btn-info">Criar Refeição</button>
                     <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
@@ -175,8 +171,8 @@
     }
     
     .card-header {
-        background-color: var(--primary);
-        color: white;
+        background-color: #afe4b6ff;
+        color: #333;
         padding: 15px 20px;
         font-weight: bold;
     }

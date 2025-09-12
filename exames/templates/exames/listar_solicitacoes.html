@@ -2,7 +2,7 @@
 
 {% block 'plataforma' %}
     <div class="container">
-        <h3>Exames de {{ paciente.nome }}</h3>
+        <h3 class="titulo">Exames de {{ paciente.nome }}</h3>
         <hr>
 
         <a href="{% url 'exames:nova_solicitacao' paciente.id %}" class="btn btn-success">Nova Solicitação de Exames</a>

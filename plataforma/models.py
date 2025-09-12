@@ -34,14 +34,12 @@ class Pacientes(models.Model):
 class DadosPaciente(models.Model):
     paciente = models.ForeignKey(Pacientes, on_delete=models.CASCADE)
     data = models.DateTimeField()
-    peso = models.DecimalField(max_digits=5, decimal_places=2)  # Alterado para Decimal
-    altura = models.DecimalField(max_digits=3, decimal_places=2)  # Alterado para Decimal
-    percentual_gordura = models.DecimalField(max_digits=4, decimal_places=1)  # Alterado para Decimal
-    percentual_musculo = models.DecimalField(max_digits=4, decimal_places=1)  # Alterado para Decimal
-    colesterol_hdl = models.IntegerField()
-    colesterol_ldl = models.IntegerField()
-    colesterol_total = models.IntegerField()
-    trigliceridios = models.IntegerField()
+    peso = models.FloatField(null=True, blank=True)  # Ex: 99.99 kg
+    altura = models.FloatField(null=True, blank=True)  # Ex: 1.99 m
+    percentual_gordura = models.FloatField(null=True, blank=True)  # Ex: 25.50%
+    percentual_musculo = models.FloatField(null=True, blank=True)  # Ex: 45.75%
+    
+    
     
     def __str__(self):
         return f"Paciente({self.paciente.nome}, {self.peso})"
@@ -134,3 +132,9 @@ class PlanoAlimentar(models.Model):
                 total[key] += nutrientes.get(key, 0)
         
         return total
+    
+    def duracao_dias(self):
+        """Calcula a duração do plano em dias"""
+        if self.data_inicio and self.data_fim:
+            return (self.data_fim - self.data_inicio).days + 1  # +1 para incluir ambos os dias
+        return 0

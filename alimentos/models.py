@@ -52,11 +52,11 @@ class Alimento(models.Model):
         """Calcula os nutrientes para uma quantidade específica em gramas"""
         fator = quantidade_g / 100
         return {
-            'energia_kcal': round(float(self.energia_kcal) * fator, 2),
-            'proteina_g': round(float(self.proteina_g) * fator, 2),
-            'lipidios_g': round(float(self.lipidios_g) * fator, 2),
-            'carboidrato_g': round(float(self.carboidrato_g) * fator, 2),
-            'fibra_alimentar_g': round(float(self.fibra_alimentar_g) * fator, 2),
+            'energia': round(float(self.energia_kcal) * fator, 2),
+            'proteina': round(float(self.proteina_g) * fator, 2),
+            'lipidios': round(float(self.lipidios_g) * fator, 2),
+            'carboidrato': round(float(self.carboidrato_g) * fator, 2),
+            'fibra': round(float(self.fibra_alimentar_g) * fator, 2),
             'calcio_mg': round(float(self.calcio_mg) * fator, 2),
             'ferro_mg': round(float(self.ferro_mg) * fator, 2),
             'sodio_mg': round(float(self.sodio_mg) * fator, 2),

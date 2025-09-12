@@ -1,0 +1,51 @@
+{% extends 'base_vendas.html' %}
+{% load static %}
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'autenticacao/css/css.css' %}">
+{% endblock %}
+{% block 'titulo' %}Fisiominas - Teste Grátis{% endblock %}
+{% block 'body' %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 sidebar">
+                <div class="logo_sidebar">
+                    <h2 class="logo">
+                        <img class="img_logo_sidebar" src="{% static 'autenticacao/img/log FM-SF.png' %}">
+                    </h2>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="area_cadastrar">
+                    {% if messages %}
+                        <br>
+                        {% for message in messages %}
+                            <div class="alert {{message.tags}}">
+                                {{message}}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <h2 class="titulo">Experimente 7 Dias Grátis</h2>
+                    <p class="sub-titulo">Preencha com seu e-mail para começar</p>
+                    <hr>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <span class="bold">Seu e-mail</span>
+                        <input class="form-control input-form" 
+                               name="email" 
+                               type="email" 
+                               placeholder="exemplo@email.com" 
+                               required>
+                        <br>
+                        <button class="btn-first">
+                            <i class="fas fa-play-circle mr-2"></i> Ativar Teste
+                        </button>
+                    </form>
+                    <h3 style="position: absolute; bottom: 65px; font-weight: bold">
+                        Já tem uma conta?&nbsp 
+                        <a href="{% url 'logar' %}" class="btn btn-outline-success btn-lg">Acessar</a>
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -18,6 +18,12 @@
     color: #F59E0B;
 }
 
+.subtitulo{
+    color: #194b2cff;
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
 .card-paciente{
     background-color: #EAEAEA;
     border-radius: 10px;
@@ -48,4 +54,9 @@
     .descricao{
         margin-left: 1px;
     }
+}
+.infoalimentar{
+    
+    font-size: 0,2rem;
+    color: #ffffffff;
 }

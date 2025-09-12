@@ -13,6 +13,14 @@
     {% endif %}
     
         <h1 class="titulo">Dados do Paciente ->Escolha o Paciente</h1>
+    <div class="mb-4">
+        <form method="GET" action="">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+        </form>
+    </div>
     <div class="row">
         {% for paciente in pacientes%}
             <div class="col-md-4">

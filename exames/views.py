@@ -5,6 +5,8 @@ from django.contrib import messages
 from .models import SolicitacaoExame, ResultadoExame, TipoExame
 from plataforma.models import Pacientes
 from django.utils import timezone
+from autenticacao.models import PerfilProfissional
+
 
 def listar_solicitacoes(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id)
@@ -71,10 +73,11 @@ def detalhe_solicitacao(request, solicitacao_id):
                 try:
                     resultado_exame = ResultadoExame.objects.get(id=resultado_id, solicitacao=solicitacao)
                     if value: # Só atualiza se o campo não estiver vazio
-                        resultado_exame.resultado = value.replace(',', '.') # Aceita vírgula e ponto
+                        resultado_exame.resultado = value.replace(',', '.') 
                         resultado_exame.save()
                 except (ResultadoExame.DoesNotExist, ValueError):
-                    continue # Ignora erros ou IDs inválidos
+                    continue
+        solicitacao.atualizar_status()
         messages.success(request, "Resultados atualizados com sucesso!")
         return redirect('exames:detalhe_solicitacao', solicitacao_id=solicitacao.id)
 
@@ -90,25 +93,26 @@ def detalhe_solicitacao(request, solicitacao_id):
     }
     return render(request, 'exames/detalhe_solicitacao.html', context)
 
-
-
-
 def imprimir_solicitacao(request, solicitacao_id):
     solicitacao = get_object_or_404(SolicitacaoExame, id=solicitacao_id)
-       
+    paciente = solicitacao.paciente
+
+    perfil_profissional = None
+    if paciente.nutri:
+        try:
+            # 2. Buscar usando o modelo CORRETO
+            perfil_profissional = PerfilProfissional.objects.get(usuario=paciente.nutri)
+        except PerfilProfissional.DoesNotExist:
+            perfil_profissional = None
+
     exames_solicitados = ResultadoExame.objects.filter(solicitacao=solicitacao).order_by('tipo_exame__nome')
 
-    try:
-        perfil_profissional = request.user.perfilnutri 
-    except AttributeError:
-        perfil_profissional = None
-
     context = {
-        'paciente': solicitacao.paciente,
+        'paciente': paciente,
         'solicitacao': solicitacao,
         'exames_solicitados': exames_solicitados,
-        'perfil': perfil_profissional, 
-        'data_atual': timezone.now().date(), 
+        'perfil': perfil_profissional,
+        'data_atual': timezone.now().date(),
     }
     
     return render(request, 'exames/imprimir_solicitacao.html', context)

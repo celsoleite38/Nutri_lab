@@ -6,7 +6,7 @@
 {% block 'plataforma' %}
 <div class="container">
     <div class="header">
-        <h1>Planos Alimentares</h1>
+        <h1>Planos Alimentares -> Escolha o Paciente </h1>
         <p>Gerencie os planos alimentares dos seus pacientes</p>
     </div>
 
@@ -20,7 +20,7 @@
     <div id="pacientes-tab" class="tab-content active">
         <div class="card">
             <div class="card-header">
-                <h3>Escolha o Paciente</h3>
+                <h3></h3>
             </div>
             <div class="card-body">
                 {% if pacientes %}
@@ -29,9 +29,7 @@
                     <div class="paciente-card">
                         <div class="paciente-info">
                             <h4>{{ paciente.nome }}</h4>
-                            <p>CPF: {{ paciente.cpf }}</p>
                             
-                            <p>Email: {{ paciente.email }}</p>
                         </div>
                         <div class="paciente-actions">
                             <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-primary">
@@ -174,13 +172,13 @@
     
     .paciente-info h4 {
         margin: 0 0 10px 0;
-        color: #2c7da0;
+        color: #000000ff;
     }
     
     .paciente-info p {
         margin: 5px 0;
         font-size: 0.9rem;
-        color: #6c757d;
+        color: #000000ff;
     }
     
     .paciente-actions {

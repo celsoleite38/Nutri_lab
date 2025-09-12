@@ -17,15 +17,13 @@ class TipoExame(models.Model):
         return self.nome
 
 # Modelo para a solicitação em si
+# exames/models.py
+
 class SolicitacaoExame(models.Model):
-    """
-    Representa o "pedido de exames" feito em uma data para um paciente.
-    Funciona como um contêiner para os resultados.
-    """
     STATUS_CHOICES = [
         ('P', 'Pendente'),
         ('C', 'Concluído'),
-        ('A', 'Analisado'),
+        ('A', 'Analisado'), # 'Analisado' pode ser um status futuro, definido manualmente pelo nutri
     ]
     paciente = models.ForeignKey(Pacientes, on_delete=models.CASCADE, related_name="solicitacoes_exames")
     data_solicitacao = models.DateField()
@@ -34,6 +32,32 @@ class SolicitacaoExame(models.Model):
 
     def __str__(self):
         return f"Pedido de {self.paciente.nome} em {self.data_solicitacao.strftime('%d/%m/%Y')}"
+
+    # MÉTODO NOVO AQUI
+    def atualizar_status(self):
+        """
+        Verifica todos os exames dentro desta solicitação e atualiza o status geral.
+        """
+        # Pega todos os resultados associados a esta solicitação.
+        resultados = self.resultados.all()
+
+        # Se não houver nenhum exame solicitado, o status deve ser Pendente.
+        if not resultados.exists():
+            self.status = 'P'
+            self.save()
+            return
+
+        # Verifica se TODOS os resultados têm um valor preenchido.
+        # O 'filter(resultado__isnull=True)' busca por exames onde o resultado é NULO.
+        # Se a contagem for 0, significa que todos foram preenchidos.
+        if resultados.filter(resultado__isnull=True).count() == 0:
+            self.status = 'C' # 'C' de Concluído
+        else:
+            self.status = 'P' # 'P' de Pendente (pois ainda falta pelo menos um resultado)
+        
+        self.save()
+
+
 
 
 class ResultadoExame(models.Model):

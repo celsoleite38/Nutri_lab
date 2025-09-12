@@ -8,11 +8,7 @@
     <!-- Cabeçalho -->
     <div class="header">
         <h1>Plano Alimentar: {{ plano.nome }}</h1>
-        <ul class="breadcrumb">
-            <li><a href="{% url 'plano_alimentar_listar' %}">Planos Alimentares</a></li>
-            <li><a href="{% url 'plano_alimentar' plano.paciente.id %}">{{ plano.paciente.nome }}</a></li>
-            <li>{{ plano.nome }}</li>
-        </ul>
+       
     </div>
 
     <!-- Mensagens -->

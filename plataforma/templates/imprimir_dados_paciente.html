@@ -43,9 +43,8 @@
         {% endfor %}
     {% endif %}
 
-<!-- detalhes_paciente.html -->
+
 <div class="container mt-4">
-    <!-- Cabeçalho Institucional -->
     <div class="border-bottom pb-3 mb-4">
         <h3 class="text-center">{{perfil.nomeclinica}} - Dados Clinicos</h3>
         <div class="d-flex justify-content-between">
@@ -64,10 +63,11 @@
     </div>
     {% if perfil.logotipo %}
             <img src="{{ perfil.logotipo.url }}" height="80" class="mb-2">
-            <!--<img src="{{ MEDIA_URL }}logos_profissionais/{{ perfil.logotipo }}" height="80" class="mb-2">-->
+            
     {% endif %}
 {% endif %}
 </div>
+<button type="button" onclick="history.back()"class="btn btn-secondary">← Voltar</a>
 <button class="btn btn-success no-print" onclick="window.print()">
     🖨️ Imprimir
 </button>

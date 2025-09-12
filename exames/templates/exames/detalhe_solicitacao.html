@@ -80,12 +80,12 @@
             </table>
             {% if resultados %}
             <button type="submit" name="atualizar_resultados" class="btn btn-success">Salvar Resultados</button>
+            <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-secondary">Voltar para Lista</a>
+            <a href="{% url 'exames:imprimir_solicitacao' solicitacao.id %}" class="btn btn-primary">🖨️ Imprimir Pedido de Exames </a
             {% endif %}
         </form>
     </div>
-    <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-secondary">Voltar para Lista</a>
-    <a href="{% url 'exames:imprimir_solicitacao' solicitacao.id %}" class="btn btn-primary" target="_blank">
-        🖨️ Imprimir
-    </a>
+    
+        >
 </div>
 {% endblock %}

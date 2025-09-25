@@ -1,83 +1,11 @@
 {% extends 'base_vendas.html' %}
 {% load static %}
+
 {% block 'head' %}
-    <link rel="stylesheet" href="{% static 'paginas_vendas/css/css.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    .navbar .btn:hover {
-            background-color: #16b5ce;
-            color: #ffffff;
-        }
-     body {
-            background: linear-gradient(to right, #448b96, #fdfbfb);
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
-        }
-
-        .card-header {
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            background: rgba(76, 192, 153, 0.6);
-            color: #113523;
-            font-weight: 600;
-            border-bottom: none;
-            text-align: center;
-        }
-
-        .btn {
-            border-radius: 8px;
-        }
-
-        .area_cadastrar {
-            padding: 50px 30px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
-            border-radius: 20px;
-        }
-
-        .card-text {
-            color: #221010; /* ou #333 se quiser contraste mais suave */
-        }
-
-        .glass-card, .glass-highlight {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .glass-highlight {
-            border: 2px solid #17a2b8;
-            box-shadow: 0 0 25px rgba(23, 162, 184, 0.4);
-        }
-
-        .card:hover {
-            transform: translateY(-6px);
-        }
-
-        .navbar .btn:hover {
-            background-color: #16b5ce;
-            color: #ffffff;
-        }
-</style>
+    <link rel="stylesheet" href="{% static 'autenticacao/css/css.css' %}">
 {% endblock %}
 
-{% block 'titulo' %}Recursos - Fisio Minas{% endblock %}
+{% block 'titulo' %}Recursos - Nutri Innosoft{% endblock %}
 
 {% block 'body' %}
 <div class="container-fluid">
@@ -85,117 +13,175 @@
         <!-- Sidebar -->
         <div class="col-md-3 sidebar bg-light py-4">
             <div class="logo_sidebar text-center mb-4">
-                <h2 class="logo_sidebar text-center mb-4">
-                    <img class="img_logo_sidebar img-fluid" src="{% static 'autenticacao/img/log FM-SF.png' %}" alt="Logo">
-                </h2>
+                <img class="img_logo_sidebar img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo">
             </div>
-            
         </div>
 
         <!-- Área principal -->
-
         <div class="col-md-9">
-            <nav style="background-image: linear-gradient(to right, #4cc099, #0babf5);" class="navbar navbar-expand-lg navbar-dark">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
                 <div class="container">
                     <a class="navbar-brand" href="/">
-                        <img src="{% static 'autenticacao/img/log FM-SF.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
-                        <strong>FISIO MINAS</strong>
+                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="align-top" alt="">
+                        <strong>NUTRI INNOSOFT</strong>
                     </a>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav me-auto">
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'pagina_vendas' %}"><strong>Planos</strong></a>
+                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}"><strong>Planos</strong></a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'recursos' %}"><strong>Recursos</strong></a>
+                                <a class="nav-link fw-bold" href="{% url 'recursos' %}"><strong>Recursos</strong></a>
                             </li>
                         </ul>
-                        <ul class="navbar-nav">
-                            {% if user.is_authenticated %}
+                        <div class="d-flex justify-content-between w-100 align-items-center">
+                            <div></div>
+                            <ul class="navbar-nav">
+                                {% if user.is_authenticated %}
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                                        <i class="fas fa-user-circle mr-1"></i> {{ user.email }}
+                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user-circle me-1"></i> {{ user.email }}
                                     </a>
-                                    <div class="dropdown-menu dropdown-menu-end">
-                                        <a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="{% url 'sair' %}">Sair</a>
-                                    </div>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{% url 'sair' %}">Sair</a></li>
+                                    </ul>
                                 </li>
-                            {% else %}
+                                {% else %}
                                 <li class="nav-item">
-                                <a class="btn btn-outline-light ms-2" href="{% url 'logar' %}">
-                                    <i class="fas fa-sign-in-alt me-1"></i><strong>  Entrar no Sistema </strong>
-                                </a>
-                            </li>
-                                
-                            {% endif %}
-                        </ul>
+                                    <a class="btn btn-outline-light ms-2" href="{% url 'logar' %}">
+                                        <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </nav>
-            <div class="area_cadastrar py-5">
-                <h1 class="mb-4 text-center">Escolha seu Plano</h1>
-                
-               <!-- Seção 1: Gestão Clínica -->
-        <div class="card mb-4 shadow">
-            <div style="background-image: linear-gradient(to right, #4cc099, #0babf5);" class="card-header bg-primary text-white">
-                <h3 ><i class="fas fa-clinic-medical mr-2"></i> Gestão Clínica Completa</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <ul class="feature-list">
-                            <li><i class="fas fa-check-circle text-success mr-2"></i> Prontuários de Evoluções</li>
-                            <li><i class="fas fa-check-circle text-success mr-2"></i> Agenda com lembretes automáticos</li>
-                            <li><i class="fas fa-check-circle text-success mr-2"></i> Prescrição digital de exercícios</li>
-                        </ul>
+
+            <div class="area_cadastrar_vendas my-3">
+                <h1 class="mb-4 text-center text-dark">Recursos</h1>
+
+                <!-- Seção 1: Gestão Clínica -->
+                <div class="card mb-4 shadow glass-card">
+                    <div class="card-header text-white text-center" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
+                        <h3><i class="fas fa-clinic-medical me-2 "></i> Gestão Clínica Completa</h3>
                     </div>
-                    <div class="col-md-6">
-                        <ul class="feature-list">
-                            <li><i class="fas fa-check-circle text-success mr-2"></i> Anamnese digital </li>
-                            <li><i class="fas fa-check-circle text-success mr-2"></i> Controle de evolução do paciente</li>
-                            <li><i class="fas fa-check-circle text-success mr-2"></i> Armazenamento em nuvem seguro</li>
-                        </ul>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="feature-list">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Prontuários de Evoluções</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Agenda com lembretes automáticos</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Prescrição de Exames</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="feature-list">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Anamnese digital</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Controle de evolução do paciente</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Armazenamento em nuvem seguro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção 2: Ferramentas para Fisioterapeutas -->
+                <div class="card mb-4 shadow glass-card">
+                    <div class="card-header text-white text-center" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
+                        <h3><i class="fas fa-tools me-2"></i> Ferramentas para Fisioterapeutas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line fa-3x mb-3" style="color: #F59E0B;"></i>
+                                    <h5>Análise de Progresso</h5>
+                                    <p>Gráficos detalhados da evolução dos pacientes</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="feature-icon">
+                                    <i class="fas fa-video fa-3x mb-3" style="color: #F59E0B;"></i>
+                                    <h5>Análise de evoluções</h5>
+                                    <p>Atendimento remoto integrado</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="feature-icon">
+                                    <i class="fas fa-print fa-3x mb-3" style="color: #F59E0B;"></i>
+                                    <h5>Impressão digitalizada</h5>
+                                    <p>Controle completo de impressões</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção adicional para manter consistência -->
+                <div class="card mb-4 shadow glass-card">
+                    <div class="card-header text-white text-center" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
+                        <h3><i class="fas fa-shield-alt me-2"></i> Segurança e Confiabilidade</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="feature-list">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Dados criptografados</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Backup automático</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Conformidade com LGPD</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="feature-list">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Acesso multi-dispositivo</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Suporte técnico</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i> Atualizações constantes</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-<div class="card mb-4 shadow">
-            <div style="background-image: linear-gradient(to right, #4cc099, #0babf5);" class="card-header bg-primary text-white">
-                <h3><i class="fas fa-tools mr-2"></i> Ferramentas para Fisioterapeutas</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-3">
-                        <div class="feature-icon">
-                            <i  class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
-                            <h5>Análise de Progresso</h5>
-                            <p>Gráficos detalhados da evolução dos pacientes</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <div class="feature-icon">
-                            <i class="fas fa-video fa-3x mb-3 text-primary"></i>
-                            <h5>Analise de evoluções</h5>
-                            <p>Atendimento remoto</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-center mb-3">
-                        <div class="feature-icon">
-                            <i class="fas fa-print fa-3x mb-3 text-primary"></i>
-                            <h5>Impressão digitalizada</h5>
-                            <p>Controle de impressões</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        
     </div>
 </div>
+
+<style>
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+}
+
+.feature-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.feature-list li {
+    padding: 8px 0;
+    font-size: 1.1rem;
+}
+
+.feature-icon {
+    padding: 20px;
+}
+
+.feature-icon h5 {
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+.feature-icon p {
+    color: #7f8c8d;
+}
+</style>
 {% endblock %}

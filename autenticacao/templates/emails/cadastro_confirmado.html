@@ -1,8 +1,107 @@
+<!DOCTYPE html>
 <html>
-    <head>
-    </head>
-    <body>
-        <h1>Seja bem vindo {{username}}, sua conta foi criada com sucesso.</h1>
-        <span><a href="{{link_ativacao}}">CLIQUE AQUI</a>ativar sua conta.</span>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ativação de Conta - Nutri Innosoft</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            line-height: 1.6; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f4f4; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #ffffff; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            margin-top: 20px; 
+        }
+        .header { 
+            text-align: center; 
+            background: linear-gradient(135deg, #a9ebd5, #F59E0B 100%); 
+            color: #2c18dfff; 
+            padding: 30px 20px; 
+            border-radius: 10px 10px 10px 10px; 
+            margin: -20px -20px 20px -20px; 
+        }
+        .logo { 
+            max-width: 120px; 
+            height: auto; 
+            margin-bottom: 5px;
+        }
+        .button { 
+            background: linear-gradient(135deg, #a9ebd5, #F59E0B ); 
+            color: #2c18dfff; 
+            padding: 12px 30px; 
+            text-decoration: 'none'; 
+            border-radius: 25px; 
+            display: inline-block; 
+            font-weight: bold; 
+            text-align: center;
+            margin: 20px 0; 
+        }
+        .footer { 
+            margin-top: 30px; 
+            font-size: 12px; 
+            color: #777; 
+            text-align: center; 
+            border-top: 1px solid #eee; 
+            padding-top: 20px; 
+        }
+        .code { 
+            background-color: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 5px; 
+            border-left: 4px solid #667eea; 
+            word-break: break-all; 
+            font-family: monospace; 
+        }
+        .welcome-text { 
+            font-size: 18px; 
+            color: #333; 
+            margin-bottom: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://nutri.innosoft.com.br/static/autenticacao/img/logo3.png" alt="Nutri Innosoft" class="logo">
+            <h1>Nutri Innosoft</h1>
+            <p>Sistema de Gestão Nutricional</p>
+        </div>
+        
+        <div class="welcome-text">
+            <h2>Olá, <strong>{{username}}</strong>! 👋</h2>
+            <p>Seja bem-vindo(a) ao Nutri INNOSOFT!</p>
+        </div>
+        
+        <p>Sua conta foi criada com sucesso e está quase pronta para uso.</p>
+        <p>Para ativar sua conta e começar a utilizar nosso sistema, clique no botão abaixo:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{link_ativacao}}" class="button">✅ Ativar Minha Conta</a>
+        </div>
+        
+        <p>Se o botão acima não funcionar, copie e cole o link abaixo no seu navegador:</p>
+        
+        <div class="code">
+            {{link_ativacao}}
+        </div>
+        
+        <p><strong>Importante:</strong> Este link de ativação expira em 24 horas.</p>
+        
+        <div class="footer">
+            <p>Se você não solicitou este cadastro, por favor ignore este email.</p>
+            <p>Atenciosamente,<br>
+            <strong>Equipe INNOSOFT</strong><br>
+            💼 Innosoft - Soluções em Tecnologia</p>
+        </div>
+    </div>
+</body>
 </html>

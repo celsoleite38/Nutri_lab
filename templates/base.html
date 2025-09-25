@@ -12,7 +12,7 @@
     </head>
     <body>
         {% if user.is_authenticated %}
-        <nav style="background-image: linear-gradient(to right, #10B981, #F59E0B);" class="navbar navbar-expand-lg navbar-dark">
+        <nav style="background-image: linear-gradient(to right, #73eec7ff, #F59E0B);" class="navbar navbar-expand-lg navbar-dark">
             <a href="javascript:history.back()">
                 <img src="{% static 'autenticacao/img/logo3.png' %}" style="width: 70px; height: auto;">
             </a>
@@ -72,6 +72,64 @@
         {% block 'body' %}{% endblock %}
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" ></script>
+        {% block 'scripts' %}
+        <script>
+        $(document).ready(function() {
+            // Feedback após envio do formulário
+            $('#formReenviarAtivacao').on('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitButton = $(this).find('button[type="submit"]');
+                const originalText = submitButton.text();
+                
+                // Mostrar loading
+                submitButton.text('Enviando...');
+                submitButton.prop('disabled', true);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Sucesso - mostrar mensagem e fechar modal após 2 segundos
+                        $('#modalReenviarAtivacao .modal-body').html('<div class="alert alert-success">' + data.message + '</div>');
+                        
+                        setTimeout(() => {
+                            $('#modalReenviarAtivacao').modal('hide');
+                            location.reload(); // Recarregar para mostrar mensagens
+                        }, 2000);
+                    } else {
+                        // Erro - mostrar mensagem de erro
+                        $('#modalReenviarAtivacao .modal-body').html(
+                            '<div class="alert alert-danger">' + data.message + '</div>' +
+                            '<form id="formReenviarAtivacao" method="POST" action="{% url 'reenviar_ativacao' %}">' +
+                            '{% csrf_token %}' +
+                            '<div class="form-group">' +
+                            '<label class="bold">Digite seu email:</label>' +
+                            '<input class="form-control input-form" type="email" name="email" required placeholder="seu@email.com">' +
+                            '</div>' +
+                            '</form>'
+                        );
+                        
+                        // Re-adicionar o event listener
+                        $('#formReenviarAtivacao').on('submit', arguments.callee);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    submitButton.text(originalText);
+                    submitButton.prop('disabled', false);
+                });
+            });
+        });
+        </script>
+        {% endblock %}
     </body>
 </html>
 

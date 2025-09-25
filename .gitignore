@@ -16,10 +16,7 @@ __pycache__/
 .idea/
 
 # Arquivos de mídia ou imagens grandes
-*.png
-*.jpg
-*.jpeg
-*.svg
+
 *.cdr
 
 

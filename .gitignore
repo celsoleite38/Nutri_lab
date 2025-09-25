@@ -22,6 +22,7 @@ __pycache__/
 *.svg
 *.cdr
 
+
 # Arquivos do sistema
 .DS_Store
 Thumbs.db

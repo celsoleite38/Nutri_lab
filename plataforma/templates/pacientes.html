@@ -16,8 +16,11 @@
     <h1 class="titulo">Escolha o Paciente <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modal">
         Novo Paciente
         </button></h1>
-
-       
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
+        <button class="btn btn-primary" type="submit">Buscar</button>
+    </div>
+       <br>
    
     <div class="row">
 

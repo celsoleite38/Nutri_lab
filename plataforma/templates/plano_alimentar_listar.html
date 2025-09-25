@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Planos Alimentares - Nutri-Minas{% endblock %}
+{% block 'title' %}Planos Alimentares - Nutri-Innosoft{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -46,9 +46,9 @@
                             <p>{{ paciente.datanascimento|date:"d \d\e F \d\e Y" }}</p>
                             
                             <div class="actions">
-                                <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-primary">👀 Ver Refeições</a>
-                                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-success">✅ Criar Plano</a>
-                                <a href="{% url 'detalhes_paciente_planos' paciente.id %}" class="btn btn-info btn-full-width">📋 Ver Planos</a>
+                                <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-primary btn-full-width">👀 Ver Refeições</a>
+                                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-success btn-full-width">✅ Criar Plano</a>
+                                <a href="{% url 'detalhes_paciente_planos' paciente.id %}" class="btn btn-info btn-full-width ">📋 Ver Planos</a>
                             </div>
                             <br>
                         </div>
@@ -253,6 +253,7 @@
         border: 1px solid #e6fcecff;
         border-radius: 10px;
         box-shadow: 3px 3px 3px gray;
+        width: 280px;
         padding: 1.5rem;
         text-align: center;
         width: 80%%; 

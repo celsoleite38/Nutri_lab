@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Editar Refeição - {{ refeicao.titulo }} - Nutri-Minsas{% endblock %}
+{% block 'title' %}Editar Refeição - {{ refeicao.titulo }} - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -22,7 +22,7 @@
     <!-- Formulário para editar dados da refeição -->
     <div class="card">
         <div class="card-header">
-            <h3>Dados da Refeição - {{ refeicao.titulo }}</h3>
+            <h3 class= 'tiutlo' >Dados da Refesssição - {{ refeicao.titulo }}</h3>
         </div>
         <div class="card-body">
             <form method="post" action="{% url 'editar_refeicao' refeicao.id %}">

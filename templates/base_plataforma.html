@@ -4,60 +4,62 @@
 {% block 'head' %}
     <link rel="stylesheet" href="{% static 'plataforma/css/css.css' %}">
     <link rel="stylesheet" href="{% static 'plataforma/css/plano_alimentar.css' %}">
-    
-
 {% endblock %}
 
 {% block 'body' %}
     <div class="container-fluid">
         <div class="row">
+            <!-- MENU LATERAL - ESQUERDA -->
             <div class="col-md-2">
-                <br>
-                <a href="{% url 'agenda:calendario' %}" class="link-lateral">
-                    <div class="card-lateral">
-                        <img src="{% static 'plataforma/img/calendarwsf.png' %}">
-                        <br>
-                        <h3>Agenda</h3>
-                    </div>
-                </a>
-                <br>
-                <a href="{% url 'pacientes' %}" class="link-lateral">
-                    <div class="card-lateral">
-                        <img src="{% static 'plataforma/img/paciente.png' %}">
-                        <br>
-                        <h3>Gerenciar Pacientes</h3>
-                    </div>
-                </a>
-                <br>
-                <a href="{% url 'dados_paciente_listar' %}" class="link-lateral">
-                    <div class="card-lateral">
-                        <img src="{% static 'plataforma/img/dados_paciente.png' %}">
-                        <br>
-                        <h3>Dados do Pacientes</h3>
-                    </div>
-                </a>
-                <br>
-                <a href="{% url 'plano_alimentar_listar' %}" class="link-lateral">
-                    <div class="card-lateral">
-                        <img src="{% static 'plataforma/img/plano_alimentar.png' %}">
-                        <br>
-                        <h3>Plano alimentar</h3>
-                    </div>
-                </a>
-                <br>
-                <a href="{% url 'alimentos:dashboard' %}" class="link-lateral">
-                    <div class="card-lateral">
-                        <i class="fas fa-chart-pie fa-3x"></i>
-                        <br>
-                        <h3>Nutricional</h3>
-                    </div>
-                </a>
+                <div class="sticky-top" style="top: 20px;">
+                    <br>
+                    <a href="{% url 'agenda:calendario' %}" class="link-lateral">
+                        <div class="card-lateral">
+                            <img src="{% static 'plataforma/img/calendarwsf.png' %}">
+                            <br>
+                            <h3>Agenda</h3>
+                        </div>
+                    </a>
+                    <br>
+                    <a href="{% url 'pacientes' %}" class="link-lateral">
+                        <div class="card-lateral">
+                            <img src="{% static 'plataforma/img/paciente.png' %}">
+                            <br>
+                            <h3>Gerenciar Pacientes</h3>
+                        </div>
+                    </a>
+                    <br>
+                    <a href="{% url 'dados_paciente_listar' %}" class="link-lateral">
+                        <div class="card-lateral">
+                            <img src="{% static 'plataforma/img/dados_paciente.png' %}">
+                            <br>
+                            <h3>Dados Pacientes</h3>
+                        </div>
+                    </a>
+                    <br>
+                    <a href="{% url 'plano_alimentar_listar' %}" class="link-lateral">
+                        <div class="card-lateral">
+                            <img src="{% static 'plataforma/img/plano_alimentar.png' %}">
+                            <br>
+                            <h3>Plano alimentar</h3>
+                        </div>
+                    </a>
+                    <br>
+                    <a href="{% url 'alimentos:dashboard' %}" class="link-lateral">
+                        <div class="card-lateral">
+                            <i class="fas fa-utensils" style="font-size:40px;"></i>
+                            <br>
+                            <h3>Nutricional</h3>
+                        </div>
+                    </a>
+                </div>
             </div>
-            <div class="col-md-8">
+            
+            <!-- CONTEÚDO PRINCIPAL - DIREITA -->
+            <div class="col-md-10">
                 {% block 'plataforma' %}
-
                 {% endblock %}
             </div>
         </div>
     </div>
-{% endblock%}
+{% endblock %}

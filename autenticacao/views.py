@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .utils import password_is_valid, email_html
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.models import User
@@ -16,6 +16,10 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+
 
 def cadastro(request):
     if request.method == "GET":
@@ -31,12 +35,13 @@ def cadastro(request):
                 return redirect ('/auth/cadastro')
             try:
                 user = User.objects.create_user(username=username,
+                                                email=email,
                                                 password=senha,
                                                 is_active=False)
                 user.save()
                 
                 token = sha256(f"{username}{email}" .encode()).hexdigest()
-                ativacao = Ativacao(token=token, user=user)
+                ativacao = Ativacao(token=token, user=user, email=email)
                 ativacao.save()
                 
                 path_template = os.path.join(settings.BASE_DIR, 'autenticacao/templates/emails/cadastro_confirmado.html')
@@ -101,11 +106,6 @@ def editar_perfil_profissional(request):
 
 
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views import View
-
 @method_decorator(csrf_exempt, name='dispatch')
 class ReenviarAtivacaoView(View):
     def post(self, request):
@@ -115,7 +115,11 @@ class ReenviarAtivacaoView(View):
             from django.contrib.auth import get_user_model
             User = get_user_model()
             
-            usuario = User.objects.get(email=email)
+            # Busca flexível por email ou username
+            try:
+                usuario = User.objects.get(email=email)
+            except User.DoesNotExist:
+                usuario = User.objects.get(username=email)
             
             if usuario.is_active:
                 return JsonResponse({
@@ -123,30 +127,25 @@ class ReenviarAtivacaoView(View):
                     'message': 'Esta conta já está ativa!'
                 })
             else:
-                # Gere novo link de ativação
-                from django.contrib.auth.tokens import default_token_generator
-                from django.utils.http import urlsafe_base64_encode
-                from django.utils.encoding import force_bytes
+                # Gera novo token usando o mesmo método do cadastro
+                token = sha256(f"{usuario.username}{usuario.email}".encode()).hexdigest()
                 
-                token = default_token_generator.make_token(usuario)
-                uid = urlsafe_base64_encode(force_bytes(usuario.pk))
-                link_ativacao = f"https://nutri.innosoft.com.br/ativar/{uid}/{token}/"
-                
-                # Envie o email
-                html_message = render_to_string('emails/ativacao_conta.html', {
-                    'username': usuario.username,
-                    'link_ativacao': link_ativacao
-                })
-                
-                plain_message = strip_tags(html_message)
-                
-                send_mail(
-                    'Ative sua conta - Nutri Innosoft',
-                    plain_message,
-                    'noreply@nutri.innosoft.com.br',
-                    [usuario.email],
-                    html_message=html_message
+                # Atualiza ou cria o token de ativação
+                ativacao, created = Ativacao.objects.get_or_create(
+                    user=usuario,
+                    defaults={'token': token, 'ativo': False, 'email': usuario.email}
                 )
+                if not created:
+                    ativacao.token = token
+                    ativacao.ativo = False
+                    ativacao.save()
+                
+                link_ativacao = f"https://nutri.innosoft.com.br/auth/ativar_conta/{token}/"
+                
+                # Envia o email
+                path_template = os.path.join(settings.BASE_DIR, 'autenticacao/templates/emails/cadastro_confirmado.html')
+                email_html(path_template, 'Cadastro confirmado', [usuario.email], 
+                          username=usuario.username, link_ativacao=link_ativacao)
                 
                 return JsonResponse({
                     'success': True,
@@ -159,7 +158,9 @@ class ReenviarAtivacaoView(View):
                 'message': 'Email não encontrado em nosso sistema.'
             })
         except Exception as e:
+            # Log para diagnóstico (aparece apenas no servidor)
+            print(f"Erro no reenvio de ativação para {email}: {str(e)}")
             return JsonResponse({
                 'success': False,
-                'message': f'Erro ao reenviar email: {str(e)}'
+                'message': 'Erro ao reenviar email de ativação. Tente novamente.'
             })

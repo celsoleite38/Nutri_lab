@@ -17,7 +17,7 @@ class PerfilProfissional(models.Model):
     cpf = models.CharField(max_length=14)
     cfn = models.CharField(max_length=20)
     nomeclinica = models.CharField(max_length=101, null=True)
-    logotipo = models.ImageField(upload_to='media/logos_profissionais/', blank=True, null=True)
+    logotipo = models.ImageField(upload_to='logos_profissionais/', blank=True, null=True)
 
     def __str__(self):
         return self.nome_completo

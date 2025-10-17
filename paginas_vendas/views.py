@@ -11,6 +11,9 @@ from django.utils import timezone  # Importe isto no topo do arquivo
 
 
 def pagina_vendas(request):
+    
+    if request.user.is_authenticated:
+        return redirect('/pacientes/')
    
     planos = [
         {"nome": "Plano Mensal", "duracao": "1 mês", "preco": "R$ 29,90", "link": "/pagamento/1-mes/"},

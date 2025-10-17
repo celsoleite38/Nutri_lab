@@ -2,16 +2,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/' , include('autenticacao.urls')),
-    path('' , include('plataforma.urls')),
+    path('auth/', include('autenticacao.urls')),
+    path('', RedirectView.as_view(url='/auth/logar/', permanent=False)),
+    path('plataforma' , include('plataforma.urls')),
     path('agenda/', include('agenda.urls',namespace='agenda')),
     path("alimentos/", include("alimentos.urls")),
     path('exames/', include('exames.urls', namespace='exames')),
-    path('', include('paginas_vendas.urls')),
+    #path('', include('paginas_vendas.urls')),
 
 ]
 

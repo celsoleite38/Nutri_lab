@@ -157,6 +157,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'josecelsoleite@gmail.com'
 EMAIL_HOST_PASSWORD = 'qutc nfnu jgyc ivjf'
-DEFAULT_FROM_EMAIL = 'Nutri-Minas <noreply@nutriminas.com.br>'
+DEFAULT_FROM_EMAIL = 'Nutri-Innosoft <noreply@nutriminas.com.br>'
 EMAIL_FAIL_SILENTLY = False
 

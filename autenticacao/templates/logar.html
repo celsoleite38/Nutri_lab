@@ -27,7 +27,7 @@
                         {% endfor %}
                     {% endif %}
                     
-                    <h2 class="titulo">Seja bem vindo</h2>
+                    <h2 class="titulo">Seja Bem Vindo</h2>
                     <p class="sub-titulo">Entre com sua conta</p>
                     <hr>
                     
@@ -40,16 +40,18 @@
                         <input class="form-control input-form" name="senha" type="password" placeholder="Digite sua senha...">
                         <br>
                         <button class="btn-first">ENTRAR</button>
+                        <br>
+                        <p><h5 style="position: absolute; bottom: 430px; font-weight: bold"></h5><a href="{% url 'password_reset' %}">Esqueceu a senha?</a></p>
                     </form>
                     
-                    <!-- LINK PARA ABRIR A MODAL (Bootstrap 4) -->
-                     <h3 style="position: absolute; bottom: 130px; font-weight: bold">Não tem uma conta ?&nbsp <a href= "{% url 'cadastro' %}" class="btn-first">Registre-se </a></h3>
-                    <h3 style="position: absolute; bottom: 65px;">
-                        Não recebeu o email de ativação? 
-                        <a href="#" class="btn-first" data-toggle="modal" data-target="#modalReenviarAtivacao">
+                    <!-- LINK PARA ABRIR A MODAL reenvio ativação -->
+                     <h5 style="position: absolute; bottom: 80px; ">Não tem uma conta?&nbsp <a href= "{% url 'cadastro' %}" >Registre-se </a>
+                    &nbsp;|&nbsp;
+                        Reenviar email de ativação? 
+                        <a href="#"  data-toggle="modal" data-target="#modalReenviarAtivacao">
                             Reenviar ativação
                         </a>
-                    </h3>
+                    </h5>
                 </div>
             </div>
         </div>

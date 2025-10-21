@@ -25,7 +25,7 @@
             <h3 class= 'tiutlo' >Dados da Refesssição - {{ refeicao.titulo }}</h3>
         </div>
         <div class="card-body">
-            <form method="post" action="{% url 'editar_refeicao' refeicao.id %}">
+            <form method="post" action="{% url 'plataforma:editar_refeicao' refeicao.id %}">
                 {% csrf_token %}
                 <div class="form-grid">
                     <div class="form-group">
@@ -50,7 +50,7 @@
                 <!-- BOTÕES DE AÇÃO PARA EDITAR A REFEIÇÃO -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    <a href="{% url 'plano_alimentar' refeicao.paciente.id %}" class="btn btn-secondary">Voltar</a>
+                    <a href="{% url 'plataforma:plano_alimentar' refeicao.paciente.id %}" class="btn btn-secondary">Voltar</a>
                 </div>
             </form>
         </div>
@@ -163,7 +163,7 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <form method="post" action="{% url 'remover_item_refeicao' item.id %}">
+                                        <form method="post" action="{% url 'plataforma:remover_item_refeicao' item.id %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-danger" 
                                                     onclick="return confirm('Tem certeza que deseja remover este alimento?')">
@@ -182,10 +182,10 @@
                     
                     <!-- BOTÕES DE AÇÃO NO FINAL DA LISTA -->
                     <div class="form-actions mt-3">
-                        <a href="{% url 'plano_alimentar' refeicao.paciente.id %}" class="btn btn-secondary">
+                        <a href="{% url 'plataforma:plano_alimentar' refeicao.paciente.id %}" class="btn btn-secondary">
                             ← Voltar
                         </a>
-                        <a href="{% url 'adicionar_refeicao' refeicao.paciente.id %}" class="btn btn-primary">
+                        <a href="{% url 'plataforma:adicionar_refeicao' refeicao.paciente.id %}" class="btn btn-primary">
                             + Adicionar Outra Refeição
                         </a>
                     </div>
@@ -509,7 +509,7 @@
                 return;
             }
             
-            fetch(`{% url 'buscar_alimentos_refeicao' %}?q=${encodeURIComponent(termo)}`, {
+            fetch(`{% url 'plataforma:buscar_alimentos_refeicao' %}?q=${encodeURIComponent(termo)}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }

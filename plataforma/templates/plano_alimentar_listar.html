@@ -46,9 +46,9 @@
                             <p>{{ paciente.datanascimento|date:"d \d\e F \d\e Y" }}</p>
                             
                             <div class="actions">
-                                <a href="{% url 'plano_alimentar' paciente.id %}" class="btn btn-primary btn-full-width">👀 Ver Refeições</a>
-                                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-success btn-full-width">✅ Criar Plano</a>
-                                <a href="{% url 'detalhes_paciente_planos' paciente.id %}" class="btn btn-info btn-full-width ">📋 Ver Planos</a>
+                                <a href="{% url 'plataforma:plano_alimentar' paciente.id %}" class="btn btn-primary btn-full-width">👀 Ver Refeições</a>
+                                <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-success btn-full-width">✅ Criar Plano</a>
+                                <a href="{% url 'plataforma:detalhes_paciente_planos' paciente.id %}" class="btn btn-info btn-full-width ">📋 Ver Planos</a>
                             </div>
                             <br>
                         </div>
@@ -107,16 +107,16 @@
                                 </td>
                                 <td>{{ plano.refeicoes.count }}</td>
                                 <td>
-                                    <a href="{% url 'detalhes_plano_alimentar' plano.id %}" class="btn btn-info btn-sm">
+                                    <a href="{% url 'plataforma:detalhes_plano_alimentar' plano.id %}" class="btn btn-info btn-sm">
                                         👀 Detalhes
                                     </a>
                                     {% if plano.ativo %}
-                                    <a href="{% url 'desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
+                                    <a href="{% url 'plataforma:desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
                                        onclick="return confirm('Desativar este plano?')">
                                         ⏸️ Desativar
                                     </a>
                                     {% else %}
-                                    <a href="{% url 'reativar_plano' plano.id %}" class="btn btn-success btn-sm"
+                                    <a href="{% url 'plataforma:reativar_plano' plano.id %}" class="btn btn-success btn-sm"
                                        onclick="return confirm('Reativar este plano?')">
                                         ▶️ Reativar
                                     </a>

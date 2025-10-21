@@ -11,13 +11,13 @@
     </div>
 
     <div class="action-bar">
-        <a href="{% url 'plano_alimentar_listar' %}" class="btn btn-secondary">
+        <a href="{% url 'plataforma:plano_alimentar_listar' %}" class="btn btn-secondary">
             ↩️ Voltar
         </a>
-        <a href="{% url 'adicionar_refeicao' paciente.id %}" class="btn btn-primary">
+        <a href="{% url 'plataforma:adicionar_refeicao' paciente.id %}" class="btn btn-primary">
             + Nova Refeição
         </a>
-        <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-info">
+        <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-info">
            <strong> Criar Plano Completo</strong>
         </a>
     </div>
@@ -39,11 +39,18 @@
                         {% endif %}
                     </div>
                     <div class="refeicao-actions">
-                        <a href="{% url 'editar_refeicao' refeicao.id %}" class="btn btn-info">
+                        <a href="{% url 'plataforma:editar_refeicao' refeicao.id %}" class="btn btn-info">
                             Editar
                         </a>
+                        <form method="POST" action="{% url 'plataforma:remover_refeicao' refeicao.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Tem certeza que deseja remover COMPLETAMENTE esta refeição?')">
+                                Remover
+                            </button>
+                        </form>
                         <span class="badge">
-                            <h8 class='infoalimentar'>{{ refeicao.itens.count }} alimento(s)</h8>
+                            <h2 class='infoalimentar' style="font-size: 16px;">{{ refeicao.itens.count }} alimento(s)</h2>
                         </span>
                     </div>
                 </div>
@@ -56,7 +63,7 @@
         <div class="empty-icon">🍽️</div>
         <h3>Nenhuma refeição cadastrada</h3>
         <p>Comece criando a primeira refeição para este paciente.</p>
-        <a href="{% url 'adicionar_refeicao' paciente.id %}" class="btn btn-primary">
+        <a href="{% url 'plataforma:adicionar_refeicao' paciente.id %}" class="btn btn-primary">
             + Criar Primeira Refeição
         </a>
     </div>

@@ -29,9 +29,9 @@
     <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modal">
         <strong>Adicionar Dados do Paciente</strong>
     </button>
-    <!--<button class="btn btn-primary" onclick="window.location.href='{% url 'imprimir_dados_paciente' paciente.id %}'">Imprimir Dados do Paciente</button>-->
-    <a href="{% url 'imprimir_dados_paciente' paciente.id %}" class="btn btn-outline-success">
-       <strong>Imprimir Dados do Paciente</strong> 
+
+    <a href="{% url 'plataforma:imprimir_dados_paciente' paciente.id %}" class="btn btn-outline-success">
+       <strong>Imprimir Dados do Paciente</strong>
     </a>
     <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-info">
        <strong> Gerenciar Exames Laboratoriais</strong>
@@ -69,8 +69,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-    fetch("/grafico_peso/{{paciente.id}}/", {
-        method: 'POST',
+    fetch("/plataforma/grafico_peso/{{paciente.id}}/", {
+        method: 'GET',
     }).then(function(result) {
         return result.json();
     }).then(function(data_paciente) {
@@ -176,7 +176,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{% url 'dados_paciente' paciente.id %}" method="POST">{% csrf_token %}
+                    <form action="{% url 'plataforma:dados_paciente' paciente.id %}" method="POST">{% csrf_token %}
                         <h4 class="titulo">Dados do paciente</h4>
                         <div class="form-row">
                             <div class='col-md'>

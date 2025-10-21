@@ -57,7 +57,7 @@ def cadastro(request):
 def logar(request):
     if request.method == "GET":
         if request.user.is_authenticated:
-            return redirect('pacientes')
+            return redirect('plataforma:pacientes')
         return render(request, 'logar.html')
     elif request.method == "POST":
         username = request.POST.get('usuario')
@@ -70,7 +70,7 @@ def logar(request):
             return redirect('/auth/logar')
         else:
             auth.login(request, usuario)
-            return redirect('/pacientes')
+            return redirect('/plataforma/pacientes/')
         
 def sair(request):
     auth.logout(request) 

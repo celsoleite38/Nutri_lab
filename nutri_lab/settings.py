@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-$%%0@4ddhp06b0zvt8x)x-h7e6)z1ehh%g=evo(*3tay&pb94z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['nutri.innosoft.com.br', 'localhost', '127.0.0.1']
 
 
 # Application definition

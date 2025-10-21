@@ -8,7 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('autenticacao.urls')),
     path('', RedirectView.as_view(url='/auth/logar/', permanent=False)),
-    path('plataforma' , include('plataforma.urls')),
+    path('plataforma/', include('plataforma.urls', namespace='plataforma')),
     path('agenda/', include('agenda.urls',namespace='agenda')),
     path("alimentos/", include("alimentos.urls")),
     path('exames/', include('exames.urls', namespace='exames')),

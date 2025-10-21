@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from alimentos.models import Alimento
 from decimal import Decimal, InvalidOperation
 
-
+import json
 
 @login_required(login_url='/auth/logar/')
 def pacientes(request):
@@ -36,7 +36,7 @@ def pacientes(request):
         
         if (len(nome.strip()) == 0) or (len(sexo.strip()) == 0) or (len(cpf.strip()) == 0) or (len(estadocivil.strip()) == 0) or (len(datanascimento.strip()) == 0) or (len(naturalidade.strip()) == 0) or (len(profissao.strip()) == 0) or (len(email.strip()) == 0) or (len(telefone.strip()) == 0) or (len(endereco.strip()) == 0):
             messages.add_message(request, constants.ERROR, 'Preencha todos os campos')
-            return redirect('/pacientes/')
+            return redirect('/plataforma/pacientes/')
             
         
     
@@ -45,7 +45,7 @@ def pacientes(request):
         
         if paciente.exists():
                 messages.add_message(request, constants.ERROR, 'Já existe um paciente com esse E-mail')
-                return redirect('/pacientes/')
+                return redirect('/plataforma/pacientes/')
             
         try:
             p1 = Pacientes(
@@ -64,10 +64,10 @@ def pacientes(request):
                 
             p1.save()
             messages.add_message(request, constants.SUCCESS, 'Paciente cadastrado com sucesso')
-            return redirect('/pacientes/')
+            return redirect('/plataforma/pacientes/')
         except:
             messages.add_message(request, constants.ERROR, 'Erro Interno')
-            return redirect('/pacientes/')
+            return redirect('/plataforma/pacientes/')
 
 @login_required(login_url='/auth/logar/')
 def dados_paciente_listar(request):
@@ -194,11 +194,13 @@ def plano_alimentar(request, id):
     
     if request.method == "GET":
         # Use o novo sistema de refeições
+        plano = PlanoAlimentar.objects.filter(paciente=paciente).first()
         refeicoes = Refeicao.objects.filter(paciente=paciente).order_by("horario")
         
         return render(request, 'plano_alimentar.html', {
             'paciente': paciente, 
-            'refeicoes': refeicoes
+            'refeicoes': refeicoes,
+            'plano': plano
         })
     
     if request.method == "GET":
@@ -267,7 +269,7 @@ def editar_paciente(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
     if not paciente.nutri == request.user:
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
-        return redirect('/pacientes/')
+        return redirect('/plataforma/pacientes/')
     if request.method == "POST":
         paciente.nome = request.POST.get('nome')
         paciente.cpf = request.POST.get('cpf')
@@ -286,17 +288,17 @@ def editar_paciente(request, id):
             paciente.endereco
         ]):
             messages.add_message(request, constants.ERROR, 'Preencha todos os campos')
-            return redirect(f'/editar_paciente/{id}/')
+            return redirect(f'/plataforma/editar_paciente/{id}/')
 
         try:
             paciente.datanascimento = datetime.strptime(paciente.datanascimento, '%Y-%m-%d').date()
             paciente.save()
             messages.add_message(request, constants.SUCCESS, 'Paciente atualizado com sucesso!')
-            return redirect('/pacientes/')
+            return redirect('/plataforma/pacientes/')
         except:
             messages.add_message(request, constants.ERROR, 'Erro ao atualizar paciente')
             messages.add_message(request, constants.ERROR, 'Data de nascimento inválida')
-            return redirect(f'/editar_paciente/{id}/')
+            return redirect(f'/plataforma/editar_paciente/{id}/')
 
     return render(request, 'editar_paciente.html', {'paciente': paciente})
 
@@ -354,9 +356,6 @@ def imprimir_opcao(request, paciente_id):
         
     })
 
-
-    
-    
 def calcular_nutrientes_plano(request, plano_id):
     plano = get_object_or_404(PlanoAlimentar, id=plano_id)
     total_nutrientes = {
@@ -392,7 +391,7 @@ def criar_plano_alimentar(request, paciente_id):
         plano.save()
         
         messages.success(request, 'Plano alimentar criado com sucesso!')
-        return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+        return redirect('plataforma:detalhes_plano_alimentar', plano_id=plano.id)
     
     return render(request, 'criar_plano_alimentar.html', {'paciente': paciente})
 
@@ -448,7 +447,7 @@ def adicionar_refeicao(request, paciente_id):
         refeicao.save()
         
         messages.success(request, 'Refeição criada com sucesso!')
-        return redirect('editar_refeicao', refeicao_id=refeicao.id)
+        return redirect('plataforma:editar_refeicao', refeicao_id=refeicao.id)
     
     return render(request, 'adicionar_refeicao.html', {
         'paciente': paciente,
@@ -489,16 +488,52 @@ def editar_refeicao(request, refeicao_id):
     })
 
 @login_required
+def remover_refeicao_plano(request, plano_id, refeicao_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id, paciente__nutri=request.user)
+    refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+    
+    if request.method == 'POST':
+        paciente_id = refeicao.paciente.id
+        refeicao.delete()
+        messages.success(request, 'Refeição removida do plano com sucesso!')
+        return redirect('plataforma:plano_alimentar', id=paciente_id)
+    
+    return redirect('plataforma:plano_alimentar', id=refeicao.paciente.id)
+    
+@login_required
+def remover_refeicao(request, refeicao_id):
+    # Encontre a refeição e verifique permissões
+    refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+    
+    # Verifique se o usuário tem permissão para esta refeição
+    if refeicao.paciente.nutri != request.user:
+        messages.error(request, 'Você não tem permissão para remover esta refeição.')
+        return redirect('plataforma:plano_alimentar')
+    
+    if request.method == 'POST':
+        # Salve o ID do paciente antes de deletar
+        paciente_id = refeicao.paciente.id
+        
+        # DELETA COMPLETAMENTE A REFEIÇÃO
+        refeicao.delete()
+        
+        messages.success(request, 'Refeição removida com sucesso!')
+        return redirect('plataforma:plano_alimentar', id=paciente_id)
+    
+    return redirect('plataforma:plano_alimentar', id=refeicao.paciente.id)
+
+
+@login_required
 def remover_item_refeicao(request, item_id):
     item = get_object_or_404(ItemRefeicao, id=item_id)
     if item.refeicao.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
-        return redirect('plano_alimentar_listar')
+        return redirect('plataforma:plano_alimentar_listar')
     
     refeicao_id = item.refeicao.id
     item.delete()
     messages.success(request, 'Item removido da refeição.')
-    return redirect('editar_refeicao', refeicao_id=refeicao_id)
+    return redirect('plataforma:editar_refeicao', refeicao_id=refeicao_id)
 
 @login_required
 def buscar_alimentos_refeicao(request):
@@ -588,7 +623,7 @@ def remover_refeicao_plano(request, plano_id, refeicao_id):
     plano.refeicoes.remove(refeicao)
     
     messages.success(request, f"Refeição '{refeicao.titulo}' removida do plano.")
-    return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+    return redirect('plataforma:detalhes_plano_alimentar', plano_id=plano.id)
 
 @login_required(login_url='/auth/logar/')
 def adicionar_refeicao_existente(request, plano_id):
@@ -614,8 +649,68 @@ def adicionar_refeicao_existente(request, plano_id):
 def detalhes_paciente_planos(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
     planos = PlanoAlimentar.objects.filter(paciente=paciente).order_by('-data_criacao')
+    outros_pacientes = Pacientes.objects.filter(nutri=request.user).exclude(id=paciente_id).prefetch_related('planoalimentar_set')
     
     return render(request, 'detalhes_paciente_planos.html', {
         'paciente': paciente,
-        'planos': planos
+        'planos': planos,
+        'outros_pacientes': outros_pacientes,
     })
+
+
+
+@login_required
+@csrf_exempt
+def copiar_plano_alimentar(request, paciente_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            plano_origem_id = data.get('plano_origem_id')
+            
+            paciente_destino = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
+            plano_origem = get_object_or_404(PlanoAlimentar, id=plano_origem_id)
+            
+            # Verifica se o usuário tem acesso ao plano de origem
+            if plano_origem.paciente.nutri != request.user:
+                return JsonResponse({'success': False, 'error': 'Acesso negado ao plano de origem'})
+            
+            nome_novo_plano = f"Plano Alimentar {paciente_destino.nome}"
+            
+            novo_plano = PlanoAlimentar.objects.create(
+                paciente=paciente_destino,
+                nome=f"{nome_novo_plano} (Padrão)",
+                objetivo=plano_origem.objetivo,
+                data_inicio=plano_origem.data_inicio,
+                data_fim=plano_origem.data_fim,
+                #observacoes=f"Cópia do plano de {plano_origem.paciente.nome}\n{plano_origem.observacoes}",
+                ativo=True
+            )
+            
+            # Copia as refeições
+            for refeicao in plano_origem.refeicoes.all():
+                nova_refeicao = Refeicao.objects.create(
+                    paciente=paciente_destino,
+                    titulo=refeicao.titulo,
+                    tipo=refeicao.tipo,
+                    horario=refeicao.horario,
+                    observacoes=refeicao.observacoes
+                )
+                
+                # Copia os itens da refeição
+                for item in refeicao.itens.all():
+                    ItemRefeicao.objects.create(
+                        refeicao=nova_refeicao,
+                        alimento=item.alimento,
+                        quantidade_g=item.quantidade_g,
+                        observacoes=item.observacoes
+                    )
+                
+                # Adiciona a refeição ao novo plano
+                novo_plano.refeicoes.add(nova_refeicao)
+            
+            return JsonResponse({'success': True, 'novo_plano_id': novo_plano.id})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Método não permitido'})

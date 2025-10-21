@@ -5,7 +5,7 @@
     padding: 10px;
     color: white;
     font-weight: bold;
-    text-decoration: none;
+    text-decoration: none!important;
     text-align: center;
     box-shadow: 5px 5px 5px gray;
 }
@@ -27,7 +27,7 @@
 }
 
 .link-hover:hover{
-    text-decoration: none;
+    text-decoration: none!important;
 }
 
 .foto-perfil{
@@ -47,4 +47,12 @@
     .descricao{
         margin-left: 1px;
     }
+}
+
+.col-md-10 a {
+    text-decoration: none;
+}
+
+.col-md-10 a:hover {
+    text-decoration: none;
 }

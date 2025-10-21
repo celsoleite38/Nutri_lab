@@ -91,16 +91,16 @@
                     {% endif %}
  
                     <div class="form-actions">
-                        <a href="{% url 'plano_alimentar' plano.paciente.id %}" class="btn btn-secondary">
+                        <a href="{% url 'plataforma:plano_alimentar' plano.paciente.id %}" class="btn btn-secondary">
                             ↩️ Voltar
                         </a>
                         {% if plano.ativo %}
-                        <a href="{% url 'desativar_plano' plano.id %}" class="btn btn-warning"
+                        <a href="{% url 'plataforma:desativar_plano' plano.id %}" class="btn btn-warning"
                         onclick="return confirm('Tem certeza que deseja desativar este plano?')">
                             ⏸️ Desativar
                         </a>
                         {% else %}
-                        <a href="{% url 'reativar_plano' plano.id %}" class="btn btn-success"
+                        <a href="{% url 'plataforma:reativar_plano' plano.id %}" class="btn btn-success"
                         onclick="return confirm('Tem certeza que deseja reativar este plano?')">
                             ▶️ Reativar
                         </a>
@@ -225,10 +225,10 @@
                             {% endwith %}
 
                             <div class="refeicao-actions">
-                                <a href="{% url 'editar_refeicao' refeicao.id %}" class="btn btn-sm btn-primary">
+                                <a href="{% url 'plataforma:editar_refeicao' refeicao.id %}" class="btn btn-sm btn-primary">
                                     ✏️ Editar
                                 </a>
-                                <form method="post" action="{% url 'remover_refeicao_plano' plano.id refeicao.id %}" 
+                                <form method="post" action="{% url 'plataforma:remover_refeicao_plano' plano.id refeicao.id %}" 
                                       style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-sm btn-danger"
@@ -245,7 +245,7 @@
                         <div class="empty-icon">🍽️</div>
                         <h4>Nenhuma refeição no plano</h4>
                         <p>Adicione refeições para começar a construir o plano alimentar.</p>
-                        <a href="{% url 'adicionar_refeicao' plano.paciente.id %}" class="btn btn-primary">
+                        <a href="{% url 'plataforma:adicionar_refeicao' plano.paciente.id %}" class="btn btn-primary">
                             ➕ Criar Primeira Refeição
                         </a>
                     </div>
@@ -260,13 +260,13 @@
                 </div>
                 <div class="card-body">
                     <div class="action-buttons">
-                        <a href="{% url 'adicionar_refeicao' plano.paciente.id %}" class="btn btn-primary">
+                        <a href="{% url 'plataforma:adicionar_refeicao' plano.paciente.id %}" class="btn btn-primary">
                             🍽️ Criar Nova Refeição
                         </a>
                         <a href="#" class="btn btn-secondary" onclick="window.print()">
                             📄 Imprimir Plano
                         </a>
-                        <a href="{% url 'plano_alimentar' plano.paciente.id %}" class="btn btn-info">
+                        <a href="{% url 'plataforma:plano_alimentar' plano.paciente.id %}" class="btn btn-info">
                             👀 Ver Todas as Refeições
                         </a>
                     </div>

@@ -7,16 +7,21 @@
 <div class="container">
     <div class="header">
         <h1 class="titulo">Planos Alimentares de {{ paciente.nome }}</h1>
-        <a href="{% url 'plano_alimentar_listar' %}" class="btn btn-secondary">
-            ↩️ Voltar
-        </a>
+        <div class="header-actions">
+            <a href="{% url 'plataforma:plano_alimentar_listar' %}" class="btn btn-secondary">
+                ↩️ Voltar
+            </a>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#copiarPlanoModal">
+                📋 Copiar Plano de Outro Paciente
+            </button>
+        </div>
     </div>
 
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h3>Planos do Paciente</h3>
-                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-success">
+                <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-success">
                     ➕ Criar Novo Plano
                 </a>
             </div>
@@ -49,16 +54,16 @@
                             </td>
                             <td>{{ plano.refeicoes.count }}</td>
                             <td>
-                                <a href="{% url 'detalhes_plano_alimentar' plano.id %}" class="btn btn-info btn-sm">
+                                <a href="{% url 'plataforma:detalhes_plano_alimentar' plano.id %}" class="btn btn-info btn-sm">
                                     👀 Detalhes
                                 </a>
                                 {% if plano.ativo %}
-                                <a href="{% url 'desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
+                                <a href="{% url 'plataforma:desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
                                    onclick="return confirm('Desativar este plano?')">
                                     ⏸️ Desativar
                                 </a>
                                 {% else %}
-                                <a href="{% url 'reativar_plano' plano.id %}" class="btn btn-success btn-sm"
+                                <a href="{% url 'plataforma:reativar_plano' plano.id %}" class="btn btn-success btn-sm"
                                    onclick="return confirm('Reativar este plano?')">
                                     ▶️ Reativar
                                 </a>
@@ -72,7 +77,7 @@
             {% else %}
             <div class="empty-state">
                 <p>Nenhum plano alimentar para este paciente.</p>
-                <a href="{% url 'criar_plano_alimentar' paciente.id %}" class="btn btn-primary">
+                <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-primary">
                     ➕ Criar Primeiro Plano
                 </a>
             </div>
@@ -80,4 +85,207 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para Copiar Plano -->
+<div class="modal fade" id="copiarPlanoModal" tabindex="-1" aria-labelledby="copiarPlanoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="copiarPlanoModalLabel">Copiar Plano de Outro Paciente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="buscarPaciente" class="form-control" placeholder="Buscar paciente...">
+                </div>
+                
+                <div id="listaPacientes" style="max-height: 400px; overflow-y: auto;">
+                    {% for outro_paciente in outros_pacientes %}
+                    <div class="card mb-2 paciente-item">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ outro_paciente.nome }}</h6>
+                            <div class="planos-paciente">
+                                {% for plano in outro_paciente.planoalimentar_set.all %}
+                                <div class="form-check">
+                                    <input class="form-check-input plano-checkbox" type="radio" 
+                                           name="plano_selecionado" 
+                                           value="{{ plano.id }}"
+                                           data-paciente-origem="{{ outro_paciente.id }}"
+                                           data-paciente-nome="{{ outro_paciente.nome }}"
+                                           data-plano-nome="{{ plano.nome }}">
+                                    <label class="form-check-label">
+                                        <strong>{{ plano.nome }}</strong> 
+                                        ({{ plano.data_inicio|date:"d/m/Y" }} - {{ plano.data_fim|date:"d/m/Y" }})
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ plano.refeicoes.count }} refeições • 
+                                            {% if plano.ativo %}Ativo{% else %}Inativo{% endif %}
+                                        </small>
+                                    </label>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted"><small>Nenhum plano disponível</small></p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Nenhum outro paciente com planos disponíveis.</p>
+                    {% endfor %}
+                </div>
+                
+                <div id="resumoCopiar" class="mt-3 p-3 bg-light rounded" style="display: none;">
+                    <h6>Resumo da Cópia:</h6>
+                    <p id="resumoTexto"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnConfirmarCopiar" disabled>
+                    Confirmar Cópia
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.paciente-item {
+    border-left: 4px solid #2c7da0;
+}
+
+.plano-checkbox {
+    margin-right: 10px;
+}
+
+.planos-paciente {
+    margin-left: 20px;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+/* Melhorar responsividade */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Busca de pacientes
+    const buscarInput = document.getElementById('buscarPaciente');
+    if (buscarInput) {
+        buscarInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.paciente-item').forEach(item => {
+                const pacienteNome = item.querySelector('.card-title').textContent.toLowerCase();
+                if (pacienteNome.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Seleção de plano
+    document.querySelectorAll('.plano-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Desmarca outros checkboxes
+            document.querySelectorAll('.plano-checkbox').forEach(cb => {
+                if (cb !== this) cb.checked = false;
+            });
+            
+            if (this.checked) {
+                const pacienteNome = this.getAttribute('data-paciente-nome');
+                const planoNome = this.getAttribute('data-plano-nome');
+                
+                document.getElementById('resumoTexto').innerHTML = `
+                    <strong>De:</strong> ${pacienteNome}<br>
+                    <strong>Plano:</strong> ${planoNome}<br>
+                    <strong>Para:</strong> {{ paciente.nome }}
+                `;
+                document.getElementById('resumoCopiar').style.display = 'block';
+                document.getElementById('btnConfirmarCopiar').disabled = false;
+            } else {
+                document.getElementById('resumoCopiar').style.display = 'none';
+                document.getElementById('btnConfirmarCopiar').disabled = true;
+            }
+        });
+    });
+
+    // Confirmar cópia
+    const btnConfirmar = document.getElementById('btnConfirmarCopiar');
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', function() {
+            const planoSelecionado = document.querySelector('input[name="plano_selecionado"]:checked');
+            if (planoSelecionado) {
+                const planoId = planoSelecionado.value;
+                
+                // Mostrar loading
+                this.innerHTML = 'Copiando...';
+                this.disabled = true;
+                
+                // Envia requisição para copiar o plano
+                fetch("{% url 'plataforma:copiar_plano_alimentar' paciente.id %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        'plano_origem_id': planoId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Plano copiado com sucesso!');
+                        location.reload();
+                    } else {
+                        alert('Erro ao copiar plano: ' + data.error);
+                        this.innerHTML = 'Confirmar Cópia';
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    alert('Erro ao copiar plano');
+                    console.error('Error:', error);
+                    this.innerHTML = 'Confirmar Cópia';
+                    this.disabled = false;
+                });
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

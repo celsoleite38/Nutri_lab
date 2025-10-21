@@ -11,16 +11,16 @@
     {% endif %}
     <br>
     <h1 class="titulo">Editar Paciente</h1>
-    
-    <a button  href="{% url 'imprimir_paciente' paciente.id %}" class="btn btn-primary">
+
+    <a button  href="{% url 'plataforma:imprimir_paciente' paciente.id %}" class="btn btn-primary">
         Gerar PDF </button>
     </a>
         <div class="col-md-8" style="width: 80%; margin: auto;">
                 {% for paciente in pacientes %}
-                    
-                {% endfor %}                    
-                        <form action="{% url 'editar_paciente' paciente.id %}" method="POST"> {% csrf_token %}
-                            
+
+                {% endfor %}
+                        <form action="{% url 'plataforma:editar_paciente' paciente.id %}" method="POST"> {% csrf_token %}
+
                             <div class="form-group">
                                 <label for="nome">Nome</label>
                                 <input type="text" name="nome" class="form-control" value="{{paciente.nome}}">

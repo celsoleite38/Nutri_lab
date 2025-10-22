@@ -16,11 +16,15 @@ __pycache__/
 .idea/
 
 # Arquivos de mídia ou imagens grandes
-
 *.cdr
-
 
 # Arquivos do sistema
 .DS_Store
 Thumbs.db
+
+# Imagens estáticas específicas do servidor
+plataforma/static/autenticacao/img/logo3.png
+plataforma/static/plataforma/img/calendarwsf.png
+
+# Variáveis de ambiente
 .env

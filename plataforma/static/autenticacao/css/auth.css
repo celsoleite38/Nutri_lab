@@ -1,15 +1,14 @@
 .sidebar{
-    background-color: #27DB8F;
+    background-image: url('/static/autenticacao/img/prato.png'), linear-gradient(to bottom, #a9ebd5, #F59E0B) ;
     height: 100vh;
+    color: rgb(218, 124, 124);
 } 
+ 
 .logo_sidebar{
     text-align: center;
 }
 .img_logo_sidebar{
     width: 100%;
-}
-.sidebar{
-    background-image: url('/static/autenticacao/img/prato.png');
 }
 .area_cadastrar{
     margin-top: 8%;
@@ -43,6 +42,11 @@
     background-color: #27DB8F;
     color: white;
     font-weight: bold;
+}
+
+body {
+    background: linear-gradient(to right, #a9ebd5, #ffffffff);
+    font-family: 'Segoe UI', sans-serif;
 }
     
 {% load static %}

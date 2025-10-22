@@ -1,13 +1,14 @@
 .card-lateral{
 
-    background-color: #27DB8F;
+    background-image: url('/static/autenticacao/img/prato.png'), linear-gradient(to bottom, #10B981, #F59E0B) ;
     margin-top: 20px;
     padding: 10px;
     color: white;
     font-weight: bold;
     text-decoration: none!important;
     text-align: center;
-    box-shadow: 5px 5px 5px gray;
+    box-shadow: 5px 5px 5px rgb(160, 159, 159);
+    border-radius: 20px;
 }
 
 .link-lateral:hover{

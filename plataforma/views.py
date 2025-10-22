@@ -13,6 +13,7 @@ from alimentos.models import Alimento
 from decimal import Decimal, InvalidOperation
 
 import json
+from django.urls import reverse
 
 @login_required(login_url='/auth/logar/')
 def pacientes(request):
@@ -83,7 +84,7 @@ def dados_paciente(request, id):
     
     if not paciente.nutri == request.user:
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
-        return redirect('/pacientes/')
+        return redirect(reverse('plataforma:pacientes'))
    
     if request.method == "GET":
         dados_paciente = DadosPaciente.objects.filter(paciente=paciente).order_by('-data')
@@ -127,11 +128,11 @@ def dados_paciente(request, id):
             dados_paciente.save()
             
             messages.add_message(request, constants.SUCCESS, 'Dados cadastrados com sucesso')
-            return redirect(f'/dados_paciente/{id}/')
+            return redirect(reverse('plataforma:dados_paciente', kwargs={'id': id}))
             
         except Exception as e:
             messages.add_message(request, constants.ERROR, f'Erro ao salvar dados: {str(e)}')
-            return redirect(f'/dados_paciente/{id}/')
+            return redirect(reverse('plataforma:dados_paciente', kwargs={'id': id}))
 
 
 
@@ -399,31 +400,31 @@ def criar_plano_alimentar(request, paciente_id):
 def detalhes_plano_alimentar(request, plano_id):
     plano = get_object_or_404(PlanoAlimentar, id=plano_id)
     
-    
-    
     if plano.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
         return redirect('plano_alimentar_listar')
     
-    
     refeicoes_disponiveis = Refeicao.objects.filter(paciente=plano.paciente).exclude(id__in=plano.refeicoes.values_list('id', flat=True))
+    
+    # CALCULAR OS TOTAIS CORRETAMENTE
     total_nutrientes = plano.total_nutrientes()
-    duracao_dias = plano.duracao_dias()
-    nutrientes_diarios = {}
-    for key, value in total_nutrientes.items():
-        nutrientes_diarios[key] = value / duracao_dias if duracao_dias > 0 else 0
-        
+    nutrientes_diarios = total_nutrientes
+   
     if request.method == 'POST':
         refeicao_id = request.POST.get('refeicao_id')
         if refeicao_id:
             refeicao = get_object_or_404(Refeicao, id=refeicao_id)
             plano.refeicoes.add(refeicao)
             messages.success(request, f'Refeição "{refeicao.titulo}" adicionada ao plano.')
+            # Recarregar os totais após adicionar refeição
+            total_nutrientes = plano.total_nutrientes()
+            for key, value in total_nutrientes.items():
+                nutrientes_diarios[key] = value / duracao_dias if duracao_dias > 0 else 0
     
     return render(request, 'detalhes_plano_alimentar.html', {
         'plano': plano,
         'refeicoes_disponiveis': refeicoes_disponiveis,
-        'total_nutrientes': plano.total_nutrientes(),
+        'total_nutrientes': total_nutrientes,  # Use a variável calculada, não o método
         'nutrientes_diarios': nutrientes_diarios
     })
 

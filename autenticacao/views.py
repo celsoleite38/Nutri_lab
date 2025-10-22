@@ -98,7 +98,7 @@ def editar_perfil_profissional(request):
         if form.is_valid():
             form.save()
             messages.add_message(request, constants.SUCCESS, 'Usuário Editado com Sucesso')
-            return redirect('pacientes')  # ou qualquer outra página
+            return redirect('plataforma:pacientes')  
     else:
         form = PerfilProfissionalForm(instance=perfil)
     

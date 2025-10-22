@@ -80,9 +80,27 @@ class Refeicao(models.Model):
         }
         
         for item in self.itens.all():
-            nutrientes = item.calcular_nutrientes()
-            for key in total:
-                total[key] += nutrientes.get(key, 0)
+            try:
+                nutrientes = item.calcular_nutrientes()
+                
+                # Mapeamento flexível de chaves
+                mapeamento_chaves = {
+                    'energia': ['energia', 'calorias', 'kcal', 'energia_kcal'],
+                    'proteina': ['proteina', 'proteinas', 'proteina_g'],
+                    'carboidrato': ['carboidrato', 'carboidratos', 'carboidrato_g'],
+                    'lipidios': ['lipidios', 'lipideos', 'gordura', 'gorduras', 'lipidios_g'],
+                    'fibra': ['fibra', 'fibras', 'fibra_g']
+                }
+                
+                for chave_destino, chaves_origem in mapeamento_chaves.items():
+                    for chave_origem in chaves_origem:
+                        if chave_origem in nutrientes:
+                            total[chave_destino] += float(nutrientes[chave_origem] or 0)
+                            break
+                        
+            except Exception as e:
+                print(f"Erro ao calcular nutrientes do item {item}: {e}")
+                continue
         
         return total
 
@@ -126,10 +144,22 @@ class PlanoAlimentar(models.Model):
             'fibra': 0
         }
         
-        for refeicao in self.refeicoes.all():
-            nutrientes = refeicao.total_nutrientes()
-            for key in total:
-                total[key] += nutrientes.get(key, 0)
+        try:
+            for refeicao in self.refeicoes.all():
+                nutrientes = refeicao.total_nutrientes()
+                
+                # Debug (remover depois)
+                print(f"DEBUG - Refeição {refeicao.titulo}: {nutrientes}")
+                
+                for key in total:
+                    valor = nutrientes.get(key, 0)
+                    total[key] += float(valor) if valor else 0
+                    
+        except Exception as e:
+            print(f"Erro ao calcular nutrientes do plano: {e}")
+        
+        # Debug final
+        print(f"DEBUG - Total do plano: {total}")
         
         return total
     

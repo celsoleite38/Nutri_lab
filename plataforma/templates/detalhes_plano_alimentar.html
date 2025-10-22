@@ -126,18 +126,22 @@
                         </div>
                         <div class="nutriente-item">
                             <span class="nutriente-label">Carboidratos:</span>
-                            <span class="nutriente-valor">{{ total_nutrientes.carboidrato|floatformat:1 }}g</span>
+                            <span class="nutriente-valor">{{ nutrientes_diarios.carboidrato|floatformat:1 }}g</span>
                         </div>
                         <div class="nutriente-item">
                             <span class="nutriente-label">Lipídios:</span>
-                            <span class="nutriente-valor">{{ total_nutrientes.lipidios|floatformat:1 }}g</span>
+                            <span class="nutriente-valor">{{ nutrientes_diarios.lipidios|floatformat:1 }}g</span>
                         </div>
                         <div class="nutriente-item">
                             <span class="nutriente-label">Fibras:</span>
-                            <span class="nutriente-valor">{{ total_nutrientes.fibra|floatformat:1 }}g</span>
+                            <span class="nutriente-valor">{{ nutrientes_diarios.fibra|floatformat:1 }}g</span>
                         </div>
                     </div>
+                    <div class="text-muted small mt-2">
+                        * Valores totais para um dia completo do plano
+                    </div>
                 </div>
+                
             </div>
         </div>
 

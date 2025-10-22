@@ -12,77 +12,168 @@
     {% endif %}
     <br>
     <div class="row">
-        
         <div class="col-md-3">
-            {% if paciente.sexo == "Masculino"%}
-                <img src="{% static 'plataforma/img/perfil2.png' %}">
+            {% if paciente.sexo == "Masculino" %}
+                <img src="{% static 'plataforma/img/perfil2.png' %}" alt="Perfil Masculino" style="max-width: 100%; height: auto;">
             {% else %}
-                <img src="{% static 'plataforma/img/perfil1.png' %}">
+                <img src="{% static 'plataforma/img/perfil1.png' %}" alt="Perfil Feminino" style="max-width: 100%; height: auto;">
             {% endif %}
         </div>
         <div class="col-md-7 dados descricao">
-            <h4>{{paciente.nome}}</h4>
-            <h6>{{paciente.datanascimento}} </h6>
+            <h4>{{ paciente.nome }}</h4>
+            <h6>{{ paciente.datanascimento|date:"d/m/Y" }}</h6>
         </div>
     </div>
     <hr>
-    <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#modal">
-        <strong>Adicionar Dados do Paciente</strong>
-    </button>
+    
+    <div class="mb-3">
+        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modal">
+            <strong>Adicionar Dados do Paciente</strong>
+        </button>
 
-    <a href="{% url 'plataforma:imprimir_dados_paciente' paciente.id %}" class="btn btn-outline-success">
-       <strong>Imprimir Dados do Paciente</strong>
-    </a>
-    <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-info">
-       <strong> Gerenciar Exames Laboratoriais</strong>
-    </a>
+        <a href="{% url 'plataforma:imprimir_dados_paciente' paciente.id %}" class="btn btn-outline-success">
+            <strong>Imprimir Dados do Paciente</strong>
+        </a>
+        <a href="{% url 'exames:listar_solicitacoes' paciente.id %}" class="btn btn-info">
+            <strong>Gerenciar Exames Laboratoriais</strong>
+        </a>
+    </div>
 
     <br>
-    <br>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Peso</th>
-            <th scope="col">Altura</th>
-            <th scope="col">% gordura</th>
-            <th scope="col">% músculo</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for dado in dados_paciente %}
-            <tr>
-                <th scope="row">{{ dado.data|date:"d/m/Y" }}</th>
-                <td>{% if dado.peso %}{{ dado.peso|floatformat:2 }} Kg{% else %}-{% endif %}</td>
-                <td>{% if dado.altura %}{{ dado.altura|floatformat:2 }} cm{% else %}-{% endif %}</td>
-                <td>{% if dado.percentual_gordura %}{{ dado.percentual_gordura|floatformat:2 }} %{% else %}-{% endif %}</td>
-                <td>{% if dado.percentual_musculo %}{{ dado.percentual_musculo|floatformat:2 }} %{% else %}-{% endif %}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-<br>
+    
+    {% if dados_paciente %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Data</th>
+                    <th scope="col">Peso</th>
+                    <th scope="col">Altura</th>
+                    <th scope="col">% Gordura</th>
+                    <th scope="col">% Músculo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dado in dados_paciente %}
+                <tr>
+                    <td>{{ dado.data|date:"d/m/Y" }}</td>
+                    <td>{% if dado.peso %}{{ dado.peso|floatformat:2 }} Kg{% else %}-{% endif %}</td>
+                    <td>{% if dado.altura %}{{ dado.altura|floatformat:2 }} cm{% else %}-{% endif %}</td>
+                    <td>{% if dado.percentual_gordura %}{{ dado.percentual_gordura|floatformat:2 }} %{% else %}-{% endif %}</td>
+                    <td>{% if dado.percentual_musculo %}{{ dado.percentual_musculo|floatformat:2 }} %{% else %}-{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Nenhum dado cadastrado para este paciente.
+    </div>
+    {% endif %}
 
-    <div style="width: 75%;">
+    <br>
+
+    {% if dados_paciente %}
+    <div class="chart-container" style="width: 100%; height: 400px;">
         <canvas id="myChart"></canvas>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% endif %}
 
-    <script>
-    fetch("/plataforma/grafico_peso/{{paciente.id}}/", {
+    <!-- Modal para adicionar dados -->
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Adicionar Dados do Paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- CORREÇÃO AQUI: URL absoluta com o caminho completo -->
+                    <form action="{% url 'plataforma:dados_paciente' paciente.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Peso (kg)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" placeholder="Ex: 70.5" name="peso" step="0.01" min="0" required>
+                                    <span class="input-group-text">Kg</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Altura (cm)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" placeholder="Ex: 175" name="altura" step="0.01" min="0" required>
+                                    <span class="input-group-text">cm</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Percentual de Gordura</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" placeholder="Ex: 25.5" name="gordura" step="0.01" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Percentual de Músculo</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" placeholder="Ex: 40.2" name="musculo" step="0.01" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">Salvar Dados</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block 'scripts' %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if dados_paciente %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Usando a URL com namespace correto
+    fetch("{% url 'plataforma:grafico_peso' paciente.id %}", {
         method: 'GET',
-    }).then(function(result) {
-        return result.json();
-    }).then(function(data_paciente) {
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('Erro na requisição: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data_paciente) {
+        console.log('Dados recebidos:', data_paciente); // Para debug
+        
+        // Verifica se há dados para mostrar
+        if (!data_paciente.labels || data_paciente.labels.length === 0) {
+            console.log('Não há dados para exibir no gráfico');
+            return;
+        }
+
         const data = {
-            labels: data_paciente['labels'],
+            labels: data_paciente.labels,
             datasets: [
                 {
                     label: 'Peso (kg)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 2,
-                    data: data_paciente['peso'],
+                    data: data_paciente.peso,
                     fill: false,
                     tension: 0.4,
                     yAxisID: 'y'
@@ -92,7 +183,7 @@
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 2,
-                    data: data_paciente['percentual_gordura'],
+                    data: data_paciente.percentual_gordura,
                     fill: false,
                     tension: 0.4,
                     yAxisID: 'y1'
@@ -102,7 +193,7 @@
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderColor: 'rgba(25, 107, 9, 1)',
                     borderWidth: 2,
-                    data: data_paciente['percentual_musculo'],
+                    data: data_paciente.percentual_musculo,
                     fill: false,
                     tension: 0.4,
                     yAxisID: 'y1'
@@ -115,6 +206,7 @@
             data: data,
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 interaction: {
                     mode: 'index',
                     intersect: false,
@@ -127,9 +219,19 @@
                     tooltip: {
                         mode: 'index',
                         intersect: false
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
                     }
                 },
                 scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Data'
+                        }
+                    },
                     y: {
                         type: 'linear',
                         display: true,
@@ -158,74 +260,16 @@
             }
         };
         
-        const myChart = new Chart(
-            document.getElementById('myChart'),
-            config
-        );
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, config);
+        
     }).catch(function(error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('Erro ao carregar dados do gráfico:', error);
+        // Mostra mensagem de erro no lugar do gráfico
+        document.getElementById('myChart').parentElement.innerHTML = 
+            '<div class="alert alert-warning">Erro ao carregar gráfico: ' + error.message + '</div>';
     });
+});
 </script>
-
-    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form action="{% url 'plataforma:dados_paciente' paciente.id %}" method="POST">{% csrf_token %}
-                        <h4 class="titulo">Dados do paciente</h4>
-                        <div class="form-row">
-                            <div class='col-md'>
-                                <label for="validationServerUsername">Peso</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" placeholder="--" name="peso" step="0.01">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupPrepend3">Kg</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='col-md'>
-                                <label for="validationServerUsername">Altura</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" placeholder="--" name="altura" step="0.01">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupPrepend3">cm</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <br>
-                        <div class="form-row">
-                            <div class='col-md'>
-                                <label for="validationServerUsername">Percentual de gordura</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" placeholder="--" name="gordura" step="0.01">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupPrepend3">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='col-md'>
-                                <label for="validationServerUsername">Percentual de músculo</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" placeholder="--" name="musculo" step="0.01">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="inputGroupPrepend3">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <br>
-                        
-                        <br>
-                        <input type="submit" value="Cadastrar" class="btn btn-success">
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock%}
+{% endif %}
+{% endblock %}

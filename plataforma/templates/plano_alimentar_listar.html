@@ -7,7 +7,6 @@
 <div class="container">
     <div class="header">
         <h1 class="titulo">Planos Alimentares -> Escolha o Paciente </h1>
-     
     </div>
 
     <div class="mb-4">
@@ -18,6 +17,7 @@
             </div>
         </form>
     </div>
+    
     <div class="tabs">
         <button class="tab-btn active" onclick="showTab('pacientes')">Pacientes</button>
         <button class="tab-btn" onclick="showTab('planos')">Planos Existentes</button>
@@ -31,35 +31,42 @@
             </div>
             <div class="card-body">
                 {% if pacientes %}
-                <div class="patient-card-container">
+                <div class="row">
                     {% for paciente in pacientes %}
-                        <div class="patient-card">
-                            <br>
-                            {% if paciente.sexo == 'Masculino' %}
-                                <img src="{% static 'plataforma/img/perfil2.png' %}" alt="Foto do Paciente">
-                            {% else %}
-                                <img src="{% static 'plataforma/img/perfil1.png' %}" alt="Foto do Paciente">
-                            {% endif %}
-                            
-                            <h5>{{ paciente.nome }}</h5>
-                            <p>{{ paciente.cpf }}</p>
-                            <p>{{ paciente.datanascimento|date:"d \d\e F \d\e Y" }}</p>
-                            
-                            <div class="actions">
-                                <a href="{% url 'plataforma:plano_alimentar' paciente.id %}" class="btn btn-primary btn-full-width">👀 Ver Refeições</a>
-                                <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-success btn-full-width">✅ Criar Plano</a>
-                                <a href="{% url 'plataforma:detalhes_paciente_planos' paciente.id %}" class="btn btn-info btn-full-width ">📋 Ver Planos</a>
-                            </div>
+                        <div class="col-md-4">
+                                <div class="card-paciente">
+                                    <div class="foto-perfil">
+                                        {% if paciente.sexo == 'Masculino' %}
+                                            <img src="{% static 'plataforma/img/perfil2.png' %}" alt="Foto do Paciente">
+                                        {% else %}
+                                            <img src="{% static 'plataforma/img/perfil1.png' %}" alt="Foto do Paciente">
+                                        {% endif %}
+                                    </div>
+                                    <br>
+                                    <p class="dados">{{ paciente.nome }}</p>
+                                    <p class="dados">{{ paciente.cpf }}</p>
+                                    <p class="dados">{{ paciente.datanascimento|date:"d \d\e F \d\e Y" }}</p>
+                                    
+                                    <div class="actions mt-3">
+                                        <a href="{% url 'plataforma:plano_alimentar' paciente.id %}" class="btn btn-primary w-100 mb-2">👀 Ver Refeições</a>
+                                        <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-success w-100 mb-2">✅ Criar Plano</a>
+                                        <a href="{% url 'plataforma:detalhes_paciente_planos' paciente.id %}" class="btn btn-info w-100 mb-2">📋 Ver Planos</a>
+                                    </div>
+                                    <br>
+                                </div>
+                            </a>
                             <br>
                         </div>
                     {% empty %}
-                        <p>Nenhum paciente encontrado.</p>
+                        <div class="col-12">
+                            <p>Nenhum paciente encontrado.</p>
+                        </div>
                     {% endfor %}
-    </div>
+                </div>
                 {% else %}
                 <div class="empty-state">
                     <p>Nenhum paciente cadastrado.</p>
-                    <a href="{% url 'pacientes' %}" class="btn btn-primary">
+                    <a href="{% url 'plataforma:pacientes' %}" class="btn btn-primary">
                         ➕ Cadastrar Primeiro Paciente
                     </a>
                 </div>
@@ -74,7 +81,7 @@
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3>Planos Alimentares Existentes</h3>
-                    <span class="badge">{{ planos.count }} planos</span>
+                    <span class="badge">{{ planos.count }}planos</span>
                 </div>
             </div>
             <div class="card-body">
@@ -137,164 +144,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .tabs {
-        display: flex;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #e9ecef;
-    }
-    
-    .tab-btn {
-        padding: 10px 20px;
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-weight: bold;
-        color: #6c757d;
-        border-bottom: 3px solid transparent;
-    }
-    
-    .tab-btn.active {
-        color: #2c7da0;
-        border-bottom-color: #2c7da0;
-    }
-    
-    .tab-content {
-        display: none;
-    }
-    
-    .tab-content.active {
-        display: block;
-    }
-    
-    .pacientes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-    }
-    
-    .paciente-card {
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 20px;
-        background: white;
-    }
-    
-    .paciente-info h4 {
-        margin: 0 0 10px 0;
-        color: #000000ff;
-    }
-    
-    .paciente-info p {
-        margin: 5px 0;
-        font-size: 0.9rem;
-        color: #000000ff;
-    }
-    
-    .paciente-actions {
-        margin-top: 15px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    
-    .btn {
-        padding: 8px 12px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 0.9rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .btn-sm {
-        padding: 5px 10px;
-        font-size: 0.8rem;
-    }
-    
-    .btn-primary { background: #2c7da0; color: white; }
-    .btn-success { background: #28a745; color: white; }
-    .btn-info { background: #17a2b8; color: white; }
-    .btn-warning { background: #ffc107; color: black; }
-    
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: #6c757d;
-    }
-    
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .table th, .table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #e9ecef;
-    }
-    
-    .table th {
-        background-color: #f8f9fa;
-        font-weight: bold;
-    }
-    
-    .patient-card-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2rem; /* Espaçamento entre os cards */
-        justify-content: flex-start;
-    }
-
-    .patient-card {
-        background-color: #EAEAEA;
-        border: 1px solid #e6fcecff;
-        border-radius: 10px;
-        box-shadow: 3px 3px 3px gray;
-        width: 280px;
-        padding: 1.5rem;
-        text-align: center;
-        width: 80%%; 
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .patient-card img {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 1rem;
-        border: 3px solid #e9ecef;
-    }
-
-    .patient-card h5 {
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-    }
-
-    .patient-card p {
-        color: #6c757d;
-        margin-bottom: 0.25rem;
-        font-size: 0.9rem;
-    }
-    
-    .patient-card .actions {
-        margin-top: 1.5rem;
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Duas colunas para os botões */
-        gap: 0.5rem; /* Espaço entre os botões */
-    }
-
-    .patient-card .actions .btn-full-width {
-        grid-column: 1 / -1; /* Faz o botão ocupar a largura total */
-    }
-
-</style>
 
 <script>
     function showTab(tabName) {

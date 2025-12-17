@@ -83,6 +83,9 @@
                             <label>Telefone:</label>
                             <input type="text" name="telefone" class="form-control" value="{{ paciente.telefone }}" required>
                             </div>
+                            <label>WhatsApp:</label>
+                            <input type="checkbox" name="whatsapp" {% if paciente.whatsapp %}checked{% endif %}>
+                            <small class="form-text text-muted">Marque se este telefone é WhatsApp</small>
                             <div>
                             <label>Endereço:</label>
                             <input type="text" name="endereco" class="form-control" value="{{ paciente.endereco }}" required>

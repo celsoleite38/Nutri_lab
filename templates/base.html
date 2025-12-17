@@ -22,7 +22,7 @@
             
             <!-- Deixa os textos soltos, sem link -->
             <span style="font-weight: bold" class="navbar-brand">&nbsp;&nbsp;
-                Bem Vindo : &nbsp;
+                Bem Vindo(a) : &nbsp;
                 <font color="#00007d" size="5">{{ perfil.nome_completo }}</font>&nbsp;&nbsp;
                 <font color="white" size="5">  CFN: {{ perfil.cfn }}</font>
             </span>
@@ -38,7 +38,7 @@
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <!-- Mostra a foto do perfil ou imagem padrão -->
                             {% if perfil.logotipo %}
-                                <img src="{{ perfil.logotipo.url }}" class="rounded-circle mr-2" width="32" height="32" alt="logo">
+                                <img src="{{ perfil.logotipo.url }}" class="rounded-circle mr-2" width="32" height="32" alt="logo">&nbsp;
                             {% else %}
                                 <i class="fas fa-user-circle fa-lg mr-2"></i>
                             {% endif %}

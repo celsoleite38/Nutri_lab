@@ -12,7 +12,9 @@
         {% endfor %}
     {% endif %}
     
-        <h1 class="titulo">Dados do Paciente ->Escolha o Paciente</h1>
+    <h1 class="titulo">Dados do Paciente -> Escolha o Paciente</h1>
+    
+    <!-- Formulário de Busca -->
     <div class="mb-4">
         <form method="GET" action="">
             <div class="input-group">
@@ -21,61 +23,61 @@
             </div>
         </form>
     </div>
+
     <div class="row">
-        {% for paciente in pacientes%}
+        {% for paciente in pacientes %}
             <div class="col-md-4">
-                <a href="{% url 'plataforma:dados_paciente' paciente.id %}"  class="link-hover">
+                <a href="{% url 'plataforma:dados_paciente' paciente.id %}" class="link-hover">
                     <div class="card-paciente">
                         <div class="foto-perfil">
-                            {% if paciente.sexo == "Masculino"%}
+                            {% if paciente.sexo == "Masculino" %}
                                 <img src="{% static 'plataforma/img/perfil2.png' %}">
                             {% else %}
                                 <img src="{% static 'plataforma/img/perfil1.png' %}">
                             {% endif %}
                         </div>
                         <br>
-                        <p class="dados">{{paciente.nome}}</p>
-                            <p class="dados">{{paciente.cpf}}</p>
-                            <p class="dados">{{paciente.datanascimento}}</p>
-                            <div class="paciente">
-                                <p class="dados">
-                                    <span class="dataNascimento" hidden>{{ paciente.datanascimento|date:"Y-m-d" }}</span>
-                                </p>
-                                <p class="dados"> <span class="idade"></span> anos</p>
-                                
-                                
-                            </div>
-        
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    // Seleciona todos os blocos de pacientes
-                                    const pacientes = document.querySelectorAll('.paciente');
-                                    
-                                    pacientes.forEach(paciente => {
-                                        const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
-                                        const dataNasc = new Date(dataNascStr);
-                                        const hoje = new Date();
-                                        
-                                        let idade = hoje.getFullYear() - dataNasc.getFullYear();
-                                        const mesAtual = hoje.getMonth();
-                                        const mesNasc = dataNasc.getMonth();
-                                        
-                                        // Ajuste se ainda não fez aniversário este ano
-                                        if (mesNasc > mesAtual || 
-                                            (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
-                                            idade--;
-                                        }
-                                        
-                                        // Insere a idade no campo correto
-                                        paciente.querySelector('.idade').textContent = idade;
-                                    });
-                                });
-                            </script>
+                        <p class="dados">{{ paciente.nome }}</p>
+                        <p class="dados">{{ paciente.cpf }}</p>
+                        <p class="dados">{{ paciente.datanascimento }}</p>
+                        <div class="paciente">
+                            <p class="dados">
+                                <span class="dataNascimento" hidden>{{ paciente.datanascimento|date:"Y-m-d" }}</span>
+                            </p>
+                            <p class="dados"><span class="idade"></span> anos</p>
+                        </div>
                     </div>
                     <br>
                 </a>
             </div>
+        {% empty %}
+            <div class="col-12">
+                <p>Nenhum paciente encontrado.</p>
+            </div>
         {% endfor %}
     </div>
-{% endblock%}
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pacientes = document.querySelectorAll('.paciente');
+            
+            pacientes.forEach(paciente => {
+                const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
+                const dataNasc = new Date(dataNascStr);
+                const hoje = new Date();
+                
+                let idade = hoje.getFullYear() - dataNasc.getFullYear();
+                const mesAtual = hoje.getMonth();
+                const mesNasc = dataNasc.getMonth();
+                
+                if (mesNasc > mesAtual || 
+                    (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
+                    idade--;
+                }
+                
+                paciente.querySelector('.idade').textContent = idade;
+            });
+        });
+    </script>
+
+{% endblock %}

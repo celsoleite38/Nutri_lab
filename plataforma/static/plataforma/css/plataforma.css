@@ -21,6 +21,7 @@
 
 .card-paciente{
     background-color: #EAEAEA;
+    border-radius: 15px;
     width: 80%;
     box-shadow: 3px 3px 3px gray;
     padding: 20px;
@@ -57,3 +58,61 @@
 .col-md-10 a:hover {
     text-decoration: none;
 }
+
+
+
+.tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: #27DB8F;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #f8fcff;
+        border-bottom: 3px solid transparent;
+    }
+
+.tab-btn.active {
+        color: #2c7da0;
+        border-bottom-color: #2c7da0;
+    }
+
+.btn-primary { background: #2c7da0; color: white; }
+.btn-success { background: #28a745; color: white; }
+.btn-info { background: #e7eb2d; color: white; }
+.btn-warning { background: #ffc107; color: black; }
+
+.patient-card .actions .btn-full-width {
+    grid-column: 1 / -1; /* Faz o botão ocupar a largura total */
+}
+
+<style>
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: bold;
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+    }
+    
+    .tab-btn.active {
+        color: #2c7da0;
+        border-bottom-color: #2c7da0;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+</style>

@@ -28,3 +28,5 @@ plataforma/static/plataforma/img/calendarwsf.png
 
 # Variáveis de ambiente
 .env
+
+*.csv

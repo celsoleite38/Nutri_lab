@@ -19,6 +19,7 @@ class Pacientes(models.Model):
     profissao = models.CharField(max_length=50)
     email = models.EmailField()
     telefone = models.CharField(max_length=25)
+    whatsapp = models.BooleanField(default=False, verbose_name="É WhatsApp?")
     endereco = models.CharField(max_length=50, null=True)
     nutri = models.ForeignKey(User, on_delete=models.CASCADE)
     

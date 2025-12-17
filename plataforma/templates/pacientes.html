@@ -16,80 +16,61 @@
     <h1 class="titulo">Escolha o Paciente <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modal">
         Novo Paciente
         </button></h1>
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
-        <button class="btn btn-primary" type="submit">Buscar</button>
+    
+    <!-- Formulário de Busca -->
+    <div class="mb-4">
+        <form method="GET" action="">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+        </form>
     </div>
-       <br>
-   
+    
     <div class="row">
-
-        {% for paciente in pacientes %}   
-        <div class="col-md-4">
-            <a href="#" class="link-hover"></a>
-                <div class="card-paciente">
-                    <div class="foto-perfil">
-
-                        {% if paciente.sexo == "Masculino"%}
-                            <img src="{% static 'plataforma/img/perfil2.png' %}">
-                        {% else %}
-                            <img src="{% static 'plataforma/img/perfil1.png' %}">
-                        {% endif %}
+        {% if pacientes %}
+            {% for paciente in pacientes %}   
+            <div class="col-md-4">
+                <a href="#" class="link-hover"></a>
+                    <div class="card-paciente">
+                        <div class="foto-perfil">
+                            {% if paciente.sexo == "Masculino"%}
+                                <img src="{% static 'plataforma/img/perfil2.png' %}">
+                            {% else %}
+                                <img src="{% static 'plataforma/img/perfil1.png' %}">
+                            {% endif %}
                         </div>
                         <br>
                         <p class="dados">{{paciente.nome}}</p>
-                    <p class="dados">{{paciente.cpf}}</p>
-                   <p class="dados">{{paciente.datanascimento}}</p>
-                    <p class="dados"> <span id="dataNascimento" hidden >{{ paciente.datanascimento|date:"y-m-d" }}</span></p>
-                    
-
-                    <div class="paciente">
-                        <p class="dados">
-                            <span class="dataNascimento" hidden>{{ paciente.datanascimento|date:"Y-m-d" }}</span>
-                        </p>
-                        <p class="dados"> <span class="idade"></span> anos</p>
+                        <p class="dados">{{paciente.cpf}}</p>
+                        <p class="dados">{{paciente.datanascimento}}</p>
+                        <p class="dados"> <span id="dataNascimento" hidden >{{ paciente.datanascimento|date:"y-m-d" }}</span></p>
                         
-                    </div>
-
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            // Seleciona todos os blocos de pacientes
-                            const pacientes = document.querySelectorAll('.paciente');
-                            
-                            pacientes.forEach(paciente => {
-                                const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
-                                const dataNasc = new Date(dataNascStr);
-                                const hoje = new Date();
-                                
-                                let idade = hoje.getFullYear() - dataNasc.getFullYear();
-                                const mesAtual = hoje.getMonth();
-                                const mesNasc = dataNasc.getMonth();
-                                
-                                // Ajuste se ainda não fez aniversário este ano
-                                if (mesNasc > mesAtual || 
-                                    (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
-                                    idade--;
-                                }
-                                
-                                // Insere a idade no campo correto
-                                paciente.querySelector('.idade').textContent = idade;
-                            });
-                        });
-                    </script>
-
+                        <div class="paciente">
+                            <p class="dados">
+                                <span class="dataNascimento" hidden>{{ paciente.datanascimento|date:"Y-m-d" }}</span>
+                            </p>
+                            <p class="dados"> <span class="idade"></span> anos</p>
+                        </div>
 
                         <a href="{% url 'plataforma:editar_paciente' paciente.pk %}" class="link-hover">
                             <button type="button" class="btn btn-primary">
-                                Editar </button>
+                                Editar 
+                            </button>
                         </a>
-                    
-                    
-                </div>        
-            
+                    </div>        
                 <br>
-        
-        </div>
-        {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Estado vazio quando não há pacientes -->
+            <div class="empty-state">
+                <p>Nenhum paciente encontrado.</p>
+                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modal">
+                    ➕ Cadastrar Primeiro Paciente
+                </button>
+            </div>
+        {% endif %}
     </div>
 
 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -118,7 +99,7 @@
                             <script>
                                 function formatarCPF(campo) {
                                     campo.value = campo.value
-                                        .replace(/\D/g, '') // Remove não números
+                                        .replace(/\D/g, '') 
                                         .replace(/(\d{3})(\d)/, '$1.$2')
                                         .replace(/(\d{3})(\d)/, '$1.$2')
                                         .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
@@ -144,7 +125,7 @@
                         <input type="date" placeholder="0" class="form-control" name="datanascimento">
                         <br>
                         <label>Naturalidade:</label>
-                        <input type="text" placeholder="Varginha-MG" class="form-control" name="naturalidade">
+                        <input type="text" placeholder="São Lourenço-MG" class="form-control" name="naturalidade">
                         <br>
                         <label>Profissão:</label>
                         <input type="text" placeholder="comerciante" class="form-control" name="profissao">
@@ -153,8 +134,11 @@
                         <input type="email" placeholder="exemple@email.com" class="form-control" name="email">
                         <br>
                         <label>Telefone:</label>
-                        <input type="tel" placeholder="+55 (00) 00000-0000" class="form-control" name="telefone">
-                        <br>
+                        <input type="tel" placeholder="(00)00000-0000" class="form-control" name="telefone">
+                        <label>WhatsApp:</label>
+                        <input type="checkbox" name="whatsapp" {% if paciente.whatsapp %}checked{% endif %}>
+                        <small class="form-text text-muted">Marque se este telefone é WhatsApp</small>
+                        <br><br>
                         <label>Endereço:</label>
                         <input type="text" placeholder="rua, numero, apto, cidade " class="form-control" name="endereco">
                         <input type="submit" class="btn btn-success btn-lg" value="Salvar">
@@ -163,5 +147,49 @@
         </div>          
     </div>
 </div>
+
+<style>
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+        width: 100%;
+    }
+    
+    .empty-state p {
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+    }
+    
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Seleciona todos os blocos de pacientes
+        const pacientes = document.querySelectorAll('.paciente');
+        
+        pacientes.forEach(paciente => {
+            const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
+            const dataNasc = new Date(dataNascStr);
+            const hoje = new Date();
+            
+            let idade = hoje.getFullYear() - dataNasc.getFullYear();
+            const mesAtual = hoje.getMonth();
+            const mesNasc = dataNasc.getMonth();
+            
+            // Ajuste se ainda não fez aniversário este ano
+            if (mesNasc > mesAtual || 
+                (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
+                idade--;
+            }
+            
+            // Insere a idade no campo correto
+            paciente.querySelector('.idade').textContent = idade;
+        });
+    });
+</script>
 
 {% endblock %}

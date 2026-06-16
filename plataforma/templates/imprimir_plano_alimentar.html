@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'body' %}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+        color: #1a1a2e;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+    /* ── Cabeçalho ── */
+    .cabecalho {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 3px solid #2c7da0;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    /* ── Resumo macros ── */
+    .macro-grid {
+        display: flex;
+        gap: 10px;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 14px;
+    }
+
+    .macro-item {
+        flex: 1;
+        text-align: center;
+        padding: 8px 4px;
+        border-right: 1px solid #2c7da0;
+    }
+    .macro-item:last-child { border-right: none; }
+    .macro-valor {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #01497c;
+}
+
+.macro-label {
+    font-size: 8pt;
+    color: #555;
+    margin-bottom: 3px;
+}
+
+    /* ── Refeição ── */
+    .refeicao-card {
+        border: 1px solid #dce8f0;
+        border-radius: 6px;
+        margin-bottom: 14px;
+        page-break-inside: avoid;
+    }
+
+    .refeicao-header {
+        background: #2c7da0;
+        color: white;
+        padding: 7px 14px;
+        display: flex;
+        justify-content: space-between;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .refeicao-header .rf-titulo { font-size: 10.5pt; font-weight: 700; }
+    .refeicao-header .rf-horario { font-size: 9pt; opacity: 0.85; }
+
+    .tabela-alimentos {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt;
+        table-layout: fixed;
+    }
+
+    .tabela-alimentos th:nth-child(1),
+    .tabela-alimentos td:nth-child(1) { width: 35%; text-align: left; }
+
+    .tabela-alimentos th:nth-child(2),
+    .tabela-alimentos td:nth-child(2) { width: 15%; text-align: center; }
+
+    .tabela-alimentos th:nth-child(3),
+    .tabela-alimentos td:nth-child(3) { width: 15%; text-align: center; }
+
+    .tabela-alimentos th:nth-child(4),
+    .tabela-alimentos td:nth-child(4) { width: 12%; text-align: center; }
+
+    .tabela-alimentos th:nth-child(5),
+    .tabela-alimentos td:nth-child(5) { width: 12%; text-align: center; }
+
+    .tabela-alimentos th:nth-child(6),
+    .tabela-alimentos td:nth-child(6) { width: 11%; text-align: center; }
+
+    .tabela-alimentos thead tr { background: #e8f4fb; }
+
+    .tabela-alimentos th {
+        padding: 5px 10px;
+        text-align: right;
+        font-size: 8pt;
+        text-transform: uppercase;
+        color: #2c7da0;
+        border-bottom: 1px solid #bee3f8;
+    }
+
+    .tabela-alimentos th:first-child {
+        text-align: left; /* ← só o primeiro à esquerda */
+    }
+
+    .tabela-alimentos th.num,
+    .tabela-alimentos td.num { text-align: right; }
+
+    .tabela-alimentos td {
+        padding: 5px 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .tabela-alimentos tbody tr:nth-child(even) { background: #fafcfe; }
+    .tabela-alimentos tbody tr:last-child td { border-bottom: none; }
+
+    .refeicao-total {
+        background: #f0f7fc;
+        padding: 6px 14px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 20px;
+        font-size: 8.5pt;
+        border-top: 1px solid #dce8f0;
+    }
+
+    .refeicao-total .t-valor { font-weight: 700; color: #01497c; }
+    .refeicao-total .t-label { font-size: 7.5pt; color: #888; }
+
+    .refeicao-obs {
+        padding: 6px 14px;
+        font-size: 8.5pt;
+        color: #666;
+        font-style: italic;
+        background: #fffdf0;
+        border-top: 1px solid #f0e8c0;
+    }
+
+    .objetivo-box {
+        background: #fff8e1;
+        border-left: 4px solid #f59e0b;
+        padding: 8px 12px;
+        margin-bottom: 14px;
+        font-size: 9pt;
+        color: #555;
+        border-radius: 0 4px 4px 0;
+    }
+
+    .secao-titulo {
+        font-size: 11pt;
+        font-weight: 700;
+        color: #01497c;
+        border-bottom: 2px solid #2c7da0;
+        padding-bottom: 4px;
+        margin-bottom: 12px;
+    }
+
+    .dados-grid {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .dados-box {
+        flex: 1;
+        background: #f0f7fc;
+        border: 1px solid #bee3f8;
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 9pt;
+    }
+
+    .dados-box h3 {
+        font-size: 8pt;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #2c7da0;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #bee3f8;
+        padding-bottom: 4px;
+    }
+
+    .dados-linha {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 0;
+    }
+
+    .dados-linha .label { color: #555; }
+    .dados-linha .valor { font-weight: 600; color: #1a1a2e; }
+
+    /* ── Assinatura e rodapé ── */
+    .footer-print {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        font-size: 8pt;
+        color: #888;
+        border-top: 1px solid #ddd;
+        padding-top: 12px;
+    }
+
+    .assinatura { text-align: center; }
+
+    .linha-assinatura {
+        border-top: 1px solid #555;
+        width: 220px;
+        margin: 40px auto 4px;
+    }
+
+    /* ── Print ── */
+    @media print {
+        @page {
+            size: A4;
+            margin: 1cm 1cm 1.5cm 1cm;
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 8pt;
+                color: #555;
+                font-family: Arial, sans-serif;
+            }
+        }
+
+        .no-print { display: none !important; }
+
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .refeicao-card { page-break-inside: avoid; }
+    }
+</style>
+
+<div class="container mt-4">
+
+    <!-- CABEÇALHO -->
+    <div class="cabecalho">
+        <div>
+            {% if perfil and perfil.logotipo %}
+                <img src="{{ perfil.logotipo.url }}" height="70" alt="Logo">
+            {% else %}
+                <span style="font-size:22pt; font-weight:800; color:#2c7da0;">🥗 Nutri</span>
+            {% endif %}
+        </div>
+        <div style="text-align:right;">
+            {% if perfil %}
+                <div style="font-size:13pt; font-weight:700; color:#01497c;">{{ perfil.nomeclinica|default:"Consultório" }}</div>
+                <div style="font-size:9pt; color:#444; margin-top:3px;">Nutricionista: {{ perfil.nome_completo }}</div>
+                <div style="font-size:8pt; color:#888; margin-top:2px;">CFN: {{ perfil.cfn }}</div>
+            {% endif %}
+            <div style="font-size:8pt; color:#888; margin-top:2px;">Emitido em: {{ today }}</div>
+        </div>
+    </div>
+
+    <!-- TÍTULO -->
+    <div style="background:linear-gradient(135deg,#2c7da0,#01497c); color:white; padding:10px 16px; border-radius:6px; margin-bottom:10px;">
+        <div style="font-size:12pt; font-weight:700;">{{ plano.nome }}</div>
+        
+    </div>
+
+    <!-- BOTÕES (some na impressão) -->
+    <div class="no-print" style="margin-bottom:14px; display:flex; gap:8px;">
+        <button type="button" onclick="history.back()" class="btn btn-secondary">← Voltar</button>
+        <button class="btn btn-success" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+
+    <!-- DADOS PACIENTE / PLANO -->
+    <div class="dados-grid">
+        <div class="dados-box">
+            <h3>Dados do Paciente</h3>
+            <div class="dados-linha"><span class="label">Nome</span><span class="valor">{{ paciente.nome }}</span></div>
+            <div class="dados-linha"><span class="label">CPF</span><span class="valor">{{ paciente.cpf }}</span></div>
+            <div class="dados-linha"><span class="label">Nascimento</span><span class="valor">{{ paciente.datanascimento|date:"d/m/Y" }}</span></div>
+            <div class="dados-linha"><span class="label">Sexo</span><span class="valor">{{ paciente.sexo }}</span></div>
+        </div>
+        <div class="dados-box">
+            <h3>Dados do Plano</h3>
+            <div class="dados-linha"><span class="label">Início</span><span class="valor">{{ plano.data_inicio|date:"d/m/Y" }}</span></div>
+            <div class="dados-linha"><span class="label">Término</span><span class="valor">{{ plano.data_fim|date:"d/m/Y" }}</span></div>
+            <div class="dados-linha"><span class="label">Duração</span><span class="valor">{{ duracao_dias }} dias</span></div>
+            <div class="dados-linha"><span class="label">Refeições/dia</span><span class="valor">{{ plano.refeicoes.count }}</span></div>
+        </div>
+    </div>
+
+    <!-- RESUMO NUTRICIONAL DIÁRIO -->
+    <div class="macro-grid">
+        <div class="macro-item">
+            <div class="macro-label">Energia</div>
+            <div class="macro-valor">{{ nutrientes_diarios.energia|floatformat:0 }} kcal</div>
+        </div>
+        <div class="macro-item">
+            <div class="macro-label">Proteínas</div>
+            <div class="macro-valor">{{ nutrientes_diarios.proteina|floatformat:1 }} g</div>
+        </div>
+        <div class="macro-item">
+            <div class="macro-label">Carboidratos</div>
+            <div class="macro-valor">{{ nutrientes_diarios.carboidrato|floatformat:1 }} g</div>
+        </div>
+        <div class="macro-item">
+            <div class="macro-label">Lipídios</div>
+            <div class="macro-valor">{{ nutrientes_diarios.lipidios|floatformat:1 }} g</div>
+        </div>
+        <div class="macro-item">
+            <div class="macro-label">Fibras</div>
+            <div class="macro-valor">{{ nutrientes_diarios.fibra|floatformat:1 }} g</div>
+        </div>
+    </div>
+
+    <!-- OBJETIVO -->
+    {% if plano.objetivo %}
+    <div class="objetivo-box">
+        <strong>Objetivo:</strong> {{ plano.objetivo }}
+    </div>
+    {% endif %}
+
+    <!-- REFEIÇÕES -->
+    <div class="secao-titulo">Refeições do Plano</div>
+
+    {% for refeicao in plano.refeicoes.all|dictsort:"horario" %}
+    {% with nutrientes=refeicao.total_nutrientes %}
+    <div class="refeicao-card">
+
+        <div class="refeicao-header">
+            <span class="rf-titulo">{{ refeicao.get_tipo_display }}: {{ refeicao.titulo }}</span>
+            <span class="rf-horario">{{ refeicao.horario }}</span>
+        </div>
+
+        {% with itens=refeicao.itens.all %}
+        {% if itens %}
+        <table class="tabela-alimentos">
+            <thead>
+                <tr>
+                    <th>Alimento</th>
+                    <th >Qtd (g)</th>
+                    <th class="num">Energia (kcal)</th>
+                    <th >Prot (g)</th>
+                    <th >Carb (g)</th>
+                    <th>Lip (g)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                {% with n=item.calcular_nutrientes %}
+                <tr>
+                    <td>
+                        {{ item.alimento.nome }}
+                        {% if item.observacoes %}
+                            <br><small style="color:#888; font-style:italic;">{{ item.observacoes }}</small>
+                        {% endif %}
+                    </td>
+                    
+                    <td >{{ item.quantidade_g }}</td>
+                    <td >{{ n.energia|floatformat:0 }}</td>
+                    <td >{{ n.proteina|floatformat:1 }}</td>
+                    <td >{{ n.carboidrato|floatformat:1 }}</td>
+                    <td >{{ n.lipidios|floatformat:1 }}</td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background:#f0f7fc; font-weight:700; color:#01497c;">
+                    <td colspan="2" style="text-align:right; padding:6px 12px;">Total:</td>
+                    <td style="text-align:center; padding:6px 10px;">{{ nutrientes.energia|floatformat:0 }} kcal</td>
+                    <td style="text-align:center; padding:6px 10px;">{{ nutrientes.proteina|floatformat:1 }}g</td>
+                    <td style="text-align:center; padding:6px 10px;">{{ nutrientes.carboidrato|floatformat:1 }}g</td>
+                    <td style="text-align:center; padding:6px 10px;">{{ nutrientes.lipidios|floatformat:1 }}g</td>
+                </tr>
+                <tr style="background:#f0f7fc; font-size:7.5pt; color:#888;">
+                    <td colspan="2"></td>
+                    <td style="text-align:center;">Energia</td>
+                    <td style="text-align:center;">Proteínas</td>
+                    <td style="text-align:center;">Carboidratos</td>
+                    <td style="text-align:center;">Lipídios</td>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+        <div style="padding:10px 14px; font-size:9pt; color:#aaa; font-style:italic;">Nenhum alimento cadastrado nesta refeição.</div>
+        {% endif %}
+        {% endwith %}
+
+        {% if refeicao.observacoes %}
+        <div class="refeicao-obs">⚠️ {{ refeicao.observacoes }}</div>
+        {% endif %}
+
+    </div>
+    {% endwith %}
+    {% endfor %}
+
+    <!-- RODAPÉ / ASSINATURA -->
+    <div class="footer-print">
+        <div>
+            <div>Documento gerado pelo Nutri-Innosoft</div>
+            <div>nutri.innosoft.com.br</div>
+        </div>
+        {% if perfil %}
+        <div class="assinatura">
+            <div class="linha-assinatura"></div>
+            <div style="font-size:9pt; font-weight:600; color:#333;">{{ perfil.nome_completo }}</div>
+            <div style="font-size:8pt; color:#888;">Nutricionista — CFN: {{ perfil.cfn }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

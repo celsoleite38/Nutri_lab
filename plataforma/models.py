@@ -148,19 +148,12 @@ class PlanoAlimentar(models.Model):
         try:
             for refeicao in self.refeicoes.all():
                 nutrientes = refeicao.total_nutrientes()
-                
-                # Debug (remover depois)
-                print(f"DEBUG - Refeição {refeicao.titulo}: {nutrientes}")
-                
                 for key in total:
                     valor = nutrientes.get(key, 0)
                     total[key] += float(valor) if valor else 0
                     
         except Exception as e:
             print(f"Erro ao calcular nutrientes do plano: {e}")
-        
-        # Debug final
-        print(f"DEBUG - Total do plano: {total}")
         
         return total
     

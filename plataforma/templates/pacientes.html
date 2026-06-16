@@ -23,6 +23,9 @@
             <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
                 <button class="btn btn-primary" type="submit">Buscar</button>
+                {% if request.GET.q %}
+                <a href="{% url 'plataforma:pacientes' %}" class="btn btn-secondary">Limpar</a>
+            {% endif %}
             </div>
         </form>
     </div>

@@ -11,4 +11,5 @@ urlpatterns = [
     path('nova_solicitacao/<int:paciente_id>/', views.nova_solicitacao, name='nova_solicitacao'),
     path('solicitacao/<int:solicitacao_id>/', views.detalhe_solicitacao, name='detalhe_solicitacao'),
     path('imprimir/<int:solicitacao_id>/', views.imprimir_solicitacao, name='imprimir_solicitacao'),
+    path('', views.selecionar_paciente, name='selecionar_paciente'),
 ]

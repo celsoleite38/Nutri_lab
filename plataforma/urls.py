@@ -31,6 +31,7 @@ urlpatterns = [
     
     path('plano/<int:plano_id>/desativar/', views.desativar_plano, name='desativar_plano'),
     path('plano/<int:plano_id>/reativar/', views.reativar_plano, name='reativar_plano'),
+    path('imprimir_plano/<int:plano_id>/', views.imprimir_plano_alimentar, name='imprimir_plano_alimentar'),
     
     path('plano/<int:plano_id>/adicionar-refeicao/', views.adicionar_refeicao_existente, name='adicionar_refeicao_existente'),
     

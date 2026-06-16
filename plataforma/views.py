@@ -209,11 +209,8 @@ def plano_alimentar(request, id):
             'plano': plano
         })
     
-    if request.method == "GET":
-        r1 = Refeicao.objects.filter(paciente=paciente).order_by("horario")
-        opcao = Opcao.objects.all()
-        return render(request, 'plano_alimentar.html', {'paciente': paciente, 'refeicao': r1, 'opcao':opcao})
     
+@login_required(login_url='/auth/logar/')    
 def refeicao(request, id_paciente):
     paciente = get_object_or_404(Pacientes, id=id_paciente)
     if not paciente.nutri == request.user:
@@ -239,6 +236,7 @@ def refeicao(request, id_paciente):
         messages.add_message(request, constants.SUCCESS, 'Refeição cadastrada')
         return redirect(f'/plano_alimentar/{id_paciente}')
 
+@login_required(login_url='/auth/logar/')
 def opcao(request, id_paciente):
     if request.method == "POST":
         id_refeicao = request.POST.get('refeicao')
@@ -256,19 +254,29 @@ def opcao(request, id_paciente):
 @login_required(login_url='/auth/logar/')
 def imprimir_dados_paciente(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
-    dados_paciente = DadosPaciente.objects.filter(paciente=paciente)
-    if not paciente.nutri == request.user:
-        messages.add_message(request, constants.ERROR, 'Acesso negado a este PACIENTE. ')
-        return redirect('/dados_paciente/')
-    if request.method == 'POST':
-        # Não há nada a fazer aqui, pois não estamos lidando com formulários
-        pass
-    else:
-        return render(request, 'imprimir_dados_paciente.html', {
-            'paciente': paciente,
-            'dados_paciente': dados_paciente,
-            'today': date.today()
-        })
+
+    if paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plataforma:pacientes')
+
+    from exames.models import SolicitacaoExame, ResultadoExame
+
+    dados_paciente = DadosPaciente.objects.filter(paciente=paciente).order_by('-data')
+    perfil = PerfilProfissional.objects.filter(usuario=request.user).first()
+
+    # Buscar todos os resultados de exames do paciente com resultado preenchido
+    resultados_exames = ResultadoExame.objects.filter(
+        solicitacao__paciente=paciente,
+        resultado__isnull=False
+    ).select_related('tipo_exame', 'solicitacao').order_by('solicitacao__data_solicitacao', 'tipo_exame__nome')
+
+    return render(request, 'imprimir_dados_paciente.html', {
+        'paciente': paciente,
+        'dados_paciente': dados_paciente,
+        'resultados_exames': resultados_exames,
+        'perfil': perfil,
+        'today': date.today(),
+    })
     
 @login_required(login_url='/auth/logar/')
 def editar_paciente(request, id):
@@ -308,6 +316,8 @@ def editar_paciente(request, id):
 
     return render(request, 'editar_paciente.html', {'paciente': paciente})
 
+
+@login_required(login_url='/auth/logar/')
 def imprimir_paciente(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
 
@@ -333,6 +343,8 @@ def imprimir_paciente(request, id):
 
     return response
 
+
+@login_required(login_url='/auth/logar/')
 def imprimir_opcao(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id)
     opcoes = Opcao.objects.filter(refeicao__paciente=paciente)
@@ -362,6 +374,8 @@ def imprimir_opcao(request, paciente_id):
         
     })
 
+
+@login_required(login_url='/auth/logar/')
 def calcular_nutrientes_plano(request, plano_id):
     plano = get_object_or_404(PlanoAlimentar, id=plano_id)
     total_nutrientes = {
@@ -377,7 +391,7 @@ def calcular_nutrientes_plano(request, plano_id):
     
     return JsonResponse(total_nutrientes)
 
-@login_required
+@login_required(login_url='/auth/logar/')
 def criar_plano_alimentar(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
     
@@ -401,39 +415,55 @@ def criar_plano_alimentar(request, paciente_id):
     
     return render(request, 'criar_plano_alimentar.html', {'paciente': paciente})
 
-@login_required
+
+# Substitua a função detalhes_plano_alimentar em plataforma/views.py
+
+@login_required(login_url='/auth/logar/')
 def detalhes_plano_alimentar(request, plano_id):
     plano = get_object_or_404(PlanoAlimentar, id=plano_id)
-    
+
     if plano.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
-        return redirect('plano_alimentar_listar')
-    
-    refeicoes_disponiveis = Refeicao.objects.filter(paciente=plano.paciente).exclude(id__in=plano.refeicoes.values_list('id', flat=True))
-    
-    # CALCULAR OS TOTAIS CORRETAMENTE
-    total_nutrientes = plano.total_nutrientes()
-    nutrientes_diarios = total_nutrientes
-   
+        return redirect('plataforma:plano_alimentar_listar')
+
     if request.method == 'POST':
         refeicao_id = request.POST.get('refeicao_id')
         if refeicao_id:
             refeicao = get_object_or_404(Refeicao, id=refeicao_id)
             plano.refeicoes.add(refeicao)
             messages.success(request, f'Refeição "{refeicao.titulo}" adicionada ao plano.')
-            # Recarregar os totais após adicionar refeição
-            total_nutrientes = plano.total_nutrientes()
-            for key, value in total_nutrientes.items():
-                nutrientes_diarios[key] = value / duracao_dias if duracao_dias > 0 else 0
-    
+        return redirect('plataforma:detalhes_plano_alimentar', plano_id=plano.id)
+
+    # Pré-calcular nutrientes por refeição (evita chamar métodos no template)
+    refeicoes_com_nutrientes = []
+    for refeicao in plano.refeicoes.all().order_by('horario'):
+        nutrientes = refeicao.total_nutrientes()
+        refeicoes_com_nutrientes.append({
+            'refeicao': refeicao,
+            'itens': refeicao.itens.select_related('alimento').all(),
+            'nutrientes': nutrientes,
+        })
+
+    # Refeições disponíveis para adicionar ao plano
+    refeicoes_disponiveis = Refeicao.objects.filter(
+        paciente=plano.paciente
+    ).exclude(id__in=plano.refeicoes.values_list('id', flat=True))
+
+    # Totais diários
+    duracao_dias = plano.duracao_dias()
+    total_nutrientes = plano.total_nutrientes()
+    nutrientes_diarios = total_nutrientes
+
     return render(request, 'detalhes_plano_alimentar.html', {
         'plano': plano,
+        'refeicoes_com_nutrientes': refeicoes_com_nutrientes,
         'refeicoes_disponiveis': refeicoes_disponiveis,
-        'total_nutrientes': total_nutrientes,  # Use a variável calculada, não o método
-        'nutrientes_diarios': nutrientes_diarios
+        'nutrientes_diarios': nutrientes_diarios,
+        'duracao_dias': duracao_dias,
     })
 
-@login_required
+
+@login_required(login_url='/auth/logar/')
 def adicionar_refeicao(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
     
@@ -460,7 +490,7 @@ def adicionar_refeicao(request, paciente_id):
         'tipos_refeicao': Refeicao.TIPO_CHOICES
     })
 
-@login_required
+@login_required(login_url='/auth/logar/')
 def editar_refeicao(request, refeicao_id):
     refeicao = get_object_or_404(Refeicao, id=refeicao_id)
     if refeicao.paciente.nutri != request.user:
@@ -493,20 +523,9 @@ def editar_refeicao(request, refeicao_id):
         'total_nutrientes': refeicao.total_nutrientes()
     })
 
-@login_required
-def remover_refeicao_plano(request, plano_id, refeicao_id):
-    plano = get_object_or_404(PlanoAlimentar, id=plano_id, paciente__nutri=request.user)
-    refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+
     
-    if request.method == 'POST':
-        paciente_id = refeicao.paciente.id
-        refeicao.delete()
-        messages.success(request, 'Refeição removida do plano com sucesso!')
-        return redirect('plataforma:plano_alimentar', id=paciente_id)
-    
-    return redirect('plataforma:plano_alimentar', id=refeicao.paciente.id)
-    
-@login_required
+@login_required(login_url='/auth/logar/')
 def remover_refeicao(request, refeicao_id):
     # Encontre a refeição e verifique permissões
     refeicao = get_object_or_404(Refeicao, id=refeicao_id)
@@ -529,7 +548,7 @@ def remover_refeicao(request, refeicao_id):
     return redirect('plataforma:plano_alimentar', id=refeicao.paciente.id)
 
 
-@login_required
+@login_required(login_url='/auth/logar/')
 def remover_item_refeicao(request, item_id):
     item = get_object_or_404(ItemRefeicao, id=item_id)
     if item.refeicao.paciente.nutri != request.user:
@@ -541,7 +560,7 @@ def remover_item_refeicao(request, item_id):
     messages.success(request, 'Item removido da refeição.')
     return redirect('plataforma:editar_refeicao', refeicao_id=refeicao_id)
 
-@login_required
+@login_required(login_url='/auth/logar/')
 def buscar_alimentos_refeicao(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         termo = request.GET.get('q', '')
@@ -563,7 +582,7 @@ def buscar_alimentos_refeicao(request):
         
         return JsonResponse(resultados, safe=False)
 
-@login_required
+@login_required(login_url='/auth/logar/')
 def calcular_nutrientes_item(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         try:
@@ -665,7 +684,7 @@ def detalhes_paciente_planos(request, paciente_id):
 
 
 
-@login_required
+@login_required(login_url='/auth/logar/')
 @csrf_exempt
 def copiar_plano_alimentar(request, paciente_id):
     if request.method == 'POST':
@@ -720,3 +739,23 @@ def copiar_plano_alimentar(request, paciente_id):
             return JsonResponse({'success': False, 'error': str(e)})
     
     return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+@login_required(login_url='/auth/logar/')
+def imprimir_plano_alimentar(request, plano_id):
+    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    if plano.paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plataforma:pacientes')
+    perfil = PerfilProfissional.objects.filter(usuario=request.user).first()
+    duracao_dias = plano.duracao_dias()
+    total_nutrientes = plano.total_nutrientes()
+    nutrientes_diarios = total_nutrientes
+    
+    return render(request, 'imprimir_plano_alimentar.html', {
+        'plano': plano,
+        'paciente': plano.paciente,
+        'perfil': perfil,
+        'nutrientes_diarios': nutrientes_diarios,
+        'duracao_dias': duracao_dias,
+        'today': date.today(),
+    })

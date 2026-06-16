@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 import os
 from decouple import config
@@ -7,19 +5,12 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-
-
-
 SECRET_KEY = config('SECRET_KEY')
 
-
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['nutri.innosoft.com.br', 'localhost', '127.0.0.1']
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -150,4 +141,3 @@ EMAIL_HOST_USER = 'josecelsoleite@gmail.com'
 EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
 DEFAULT_FROM_EMAIL = 'Nutri-Innosoft <noreply@nutriminas.com.br>'
 EMAIL_FAIL_SILENTLY = False
-

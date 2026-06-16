@@ -4,137 +4,215 @@
 {% block 'body' %}
 
 <style>
+    /* Estilos Gerais para Tela (Layout Compacto) */
+    .compact-container {
+        font-size: 13px;
+    }
+    .table-compact th, .table-compact td {
+        padding: 4px 8px !important;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+    .header-clinica {
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+    .info-block {
+        font-size: 12.5px;
+        line-height: 1.4;
+    }
+    .secao-titulo {
+        font-size: 15px;
+        font-weight: bold;
+        margin-top: 12px;
+        margin-bottom: 6px;
+        border-left: 3px solid #198754;
+        padding-left: 6px;
+    }
+    .assinatura {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 12px;
+    }
+    .linha-assinatura {
+        border-top: 1px solid #000;
+        width: 260px;
+        margin: 0 auto;
+        padding-top: 3px;
+    }
+
+    /* Otimização Exclusiva para Impressão */
     @media print {
         @page {
             size: A4;
-            margin: 0.5cm;
+            margin: 0.8cm 0.8cm 1cm 0.8cm;
+        }
+        body {
+            font-size: 10pt !important;
+            color: #000;
+            background: #fff;
+        }
+        .container, .compact-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
         .no-print {
-            display: none !important;}
-        
-    }
-
-    .assinatura {
-        margin-top: 80px;
-        text-align: center;
-    }
-
-    .linha-assinatura {
-        border-top: 1px solid #000;
-        width: 300px;
-        margin: 0 auto;
-        padding-top: 5px;
-    }
-
-    .footer-print {
-        position: relative;
-        bottom: 0;
-        width: 100%;
-        padding-top: 5px;
+            display: none !important;
+        }
+        .table-compact th, .table-compact td {
+            padding: 2px 4px !important;
+            font-size: 9.5pt !important;
+        }
+        .secao-titulo {
+            font-size: 11pt !important;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+        .info-block {
+            font-size: 9.5pt !important;
+        }
+        .header-clinica h4 {
+            font-size: 13pt !important;
+            margin-bottom: 4px;
+        }
+        .assinatura {
+            margin-top: 25px;
+            page-break-inside: avoid;
+        }
     }
 </style>
 
-    {% if messages %}
-        <br>
+{% if messages %}
+    <div class="container mt-2 no-print">
         {% for message in messages %}
-            <div class="alert {{message.tags}}">
+            <div class="alert {{message.tags}} p-2 mb-2" style="font-size: 13px;">
                 {{message}}
             </div>
         {% endfor %}
-    {% endif %}
+    </div>
+{% endif %}
 
-
-<div class="container mt-4">
-    <div class="border-bottom pb-3 mb-4">
-        <h3 class="text-center">{{perfil.nomeclinica}} - Dados Clinicos</h3>
-        <div class="d-flex justify-content-between">
-            <div>
-               <strong> Nome:</strong> {{ paciente.nome }}<br>
-                <strong>Data Nascimento:</strong> {{ paciente.datanascimento }}<br>
+<div class="container compact-container mt-3">
+    
+    <div class="header-clinica">
+        <h4 class="text-center mb-2 fw-bold">{{perfil.nomeclinica}} - Dados Clínicos</h4>
+        <div class="row align-items-center info-block">
+            <div class="col-6">
+                <strong>Paciente:</strong> {{ paciente.nome }}<br>
+                <strong>Nascimento:</strong> {{ paciente.datanascimento|date:"d/m/Y" }}<br>
                 <strong>CPF:</strong> {{ paciente.cpf }}
             </div>
-{% if perfil %}
-    <div class="mb-3">
-         <div>
-            <strong>Nutricionista:</strong> {{ perfil.nome_completo }}<br>
-            <strong>CPF:</strong> {{ perfil.cpf }}<br>
-            <strong>CFN:</strong> {{ perfil.cfn }}
+            <div class="col-4 text-end">
+                {% if perfil %}
+                    <strong>Nutricionista:</strong> {{ perfil.nome_completo }}<br>
+                    <strong>CPF:</strong> {{ perfil.cpf }} | <strong>CFN:</strong> {{ perfil.cfn }}
+                {% endif %}
+            </div>
+            <div class="col-2 text-end">
+                {% if perfil.logotipo %}
+                    <img src="{{ perfil.logotipo.url }}" height="50" style="object-fit: contain;">
+                {% endif %}
+            </div>
         </div>
     </div>
-    {% if perfil.logotipo %}
-            <img src="{{ perfil.logotipo.url }}" height="80" class="mb-2">
-            
-    {% endif %}
-{% endif %}
-</div>
-<button type="button" onclick="history.back()"class="btn btn-secondary">← Voltar</a>
-<button class="btn btn-success no-print" onclick="window.print()">
-    🖨️ Imprimir
-</button>
-<h2>Dados do Paciente</h2> 
-<div class="text-end mb-3">
-    
-</div>
 
-<div>
-    <table class="table table-striped">
-        <thead>
+    <div class="mb-3 no-print">
+        <button type="button" onclick="history.back()" class="btn btn-sm btn-secondary">← Voltar</button>
+        <button type="button" class="btn btn-sm btn-success" onclick="window.print()">🖨️ Imprimir Registro</button>
+    </div>
+
+    <div class="secao-titulo">Histórico Antropométrico</div>
+    <table class="table table-sm table-striped table-bordered table-compact mb-3">
+        <thead class="table-light">
             <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Peso</th>
-            <th scope="col">Altura</th>
-            <th scope="col">% gordura</th>
-            <th scope="col">% músculo</th>
+                <th>Data</th>
+                <th>Peso</th>
+                <th>Altura</th>
+                <th>% Gordura</th>
+                <th>% Músculo</th>
             </tr>
         </thead>
         <tbody>
             {% for dado in dados_paciente %}
             <tr>
-                <th scope="row">{{dado.data|date:"d/m/Y"}}</th>
-                <th scope="row">{{dado.peso}} Kg</th>
+                <td class="fw-bold">{{dado.data|date:"d/m/Y"}}</td>
+                <td>{{dado.peso}} Kg</td>
                 <td>{{dado.altura}} cm</td>
                 <td>{{dado.percentual_gordura}}%</td>
                 <td>{{dado.percentual_musculo}}%</td>
             </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <table class="table table-striped">
-        <thead>
+            {% empty %}
             <tr>
-            <th scope="col">Data</th>
-            <th scope="col">Colesterol HDL</th>
-            <th scope="col">Coleterol LDL</th>
-            <th scope="col">Coleterol Total</th>
-            <th scope="col">Triglicerídios</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for dado in dados_paciente %}
-            <tr>
-                <th scope="row">{{dado.data|date:"d/m/Y"}}</th>
-                <td scope="row">{{dado.colesterol_hdl}} mg/dL</td>
-                <td>{{dado.colesterol_hdl}} mg/dL</td>
-                <td>{{dado.colesterol_total}} mg/dL</td>
-                <td>{{dado.trigliceridios}} mg/dL</td>
+                <td colspan="5" class="text-muted text-center">Nenhum dado antropométrico registrado.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    
 
- 
-    <p>Data de Impressão: {{ today }}</p>
-    <br>
-    <br>
-    <br>
-        <div class="footer-print">
+    {% if resultados_exames %}
+        <div class="secao-titulo">Resultados de Exames Laboratoriais</div>
+        
+        {% regroup resultados_exames by solicitacao.data_solicitacao as exames_por_data %}
+        
+        {% for grupo in exames_por_data %}
+            <div class="fw-bold mt-2 mb-1 text-secondary" style="font-size: 12px;">
+                📅 Exames realizados em: {{ grupo.grouper|date:"d/m/Y" }}
+            </div>
+            <table class="table table-sm table-striped table-bordered table-compact mb-2">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 35%;">Exame</th>
+                        <th style="width: 20%;">Resultado</th>
+                        <th style="width: 25%;">Valores de Referência</th>
+                        <th style="width: 20%;">Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in grupo.list %}
+                    <tr>
+                        <td class="fw-bold">{{ r.tipo_exame.nome }}</td>
+                        <td>{{ r.resultado }} {{ r.tipo_exame.unidade_padrao }}</td>
+                        <td>
+                            {% if r.tipo_exame.ref_min and r.tipo_exame.ref_max %}
+                                {{ r.tipo_exame.ref_min }} – {{ r.tipo_exame.ref_max }} {{ r.tipo_exame.unidade_padrao }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if "ABAIXO" in r.pre_diagnostico_ia %}
+                                <span class="badge bg-danger text-white" style="font-size: 10px;">▼ Abaixo</span>
+                            {% elif "ACIMA" in r.pre_diagnostico_ia %}
+                                <span class="badge bg-warning text-dark" style="font-size: 10px;">▲ Acima</span>
+                            {% elif "DENTRO" in r.pre_diagnostico_ia %}
+                                <span class="badge bg-success text-white" style="font-size: 10px;">✓ Normal</span>
+                            {% else %}
+                                <span>—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% endif %}
+
+    <div class="mt-3 row align-items-end" style="page-break-inside: avoid;">
+        <div class="col-5">
+            <small class="text-muted">Data de Impressão: {{ today|date:"d/m/Y"|default:today }}</small>
+        </div>
+        <div class="col-7">
             <div class="assinatura">
                 <div class="linha-assinatura"></div>
-                <div class="mt-1">
+                <div class="mt-1 fw-bold">
                     Assinatura e Carimbo do Profissional
                 </div>
             </div>
         </div>
+    </div>
+
 </div>
 {% endblock %}

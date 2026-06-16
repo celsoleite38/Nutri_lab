@@ -4,6 +4,24 @@
 {% block 'head' %}
     <link rel="stylesheet" href="{% static 'plataforma/css/plataforma.css' %}">
     <link rel="stylesheet" href="{% static 'plataforma/css/plano_alimentar.css' %}">
+
+    <style>
+        .link-lateral, .link-lateral:hover, .link-lateral:focus {
+            text-decoration: none !important; /* Remove o sublinhado */
+            color: inherit !important;           /* Mantém a cor original do seu texto */
+        }
+        .card-lateral {
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        }
+
+        /* Efeito ao passar o mouse (Hover) */
+        .link-lateral:hover .card-lateral {
+            transform: translateY(-3px); /* Faz o botão subir de leve */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important; /* Deixa a sombra mais marcante */
+            filter: brightness(1.05); /* Dá um leve ganho de brilho no degradê */
+        }
+    </style>
+
 {% endblock %}
 
 {% block 'body' %}
@@ -25,7 +43,7 @@
                         <div class="card-lateral">
                             <img src="{% static 'plataforma/img/paciente.png' %}">
                             <br>
-                            <h3>Gerenciar Pacientes</h3>
+                            <h3>Pacientes</h3>
                         </div>
                     </a>
                     
@@ -33,7 +51,16 @@
                         <div class="card-lateral">
                             <img src="{% static 'plataforma/img/dados_paciente.png' %}">
                             <br>
-                            <h3>Dados Pacientes</h3>
+                            <h3>Anamnese</h3>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'exames:selecionar_paciente' %}" class="link-lateral">
+                        <div class="card-lateral">
+                            <img src="{% static 'plataforma/img/pedido_exames.png' %}"width="60" height="60">
+
+                            <br>
+                            <h3>Exames</h3>
                         </div>
                     </a>
                     

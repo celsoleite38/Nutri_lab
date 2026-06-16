@@ -4,9 +4,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import SolicitacaoExame, ResultadoExame, TipoExame
-from plataforma.models import Pacientes
+from plataforma.models import Pacientes, DadosPaciente
 from django.utils import timezone
 from autenticacao.models import PerfilProfissional
+
 
 
 @login_required(login_url='/auth/logar/')
@@ -142,3 +143,33 @@ def selecionar_paciente(request):
     if query:
         pacientes = pacientes.filter(nome__icontains=query)
     return render(request, 'exames/selecionar_paciente.html', {'pacientes': pacientes})
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from plataforma.models import Pacientes, DadosPaciente 
+
+# IMPORT CORRETO: Buscando o Perfil de dentro do app autenticacao
+from autenticacao.models import PerfilProfissional as Perfil
+
+@login_required
+def imprimir_resultados(request, paciente_id):
+    # 1. Busca o paciente (ajustado para 'Pacientes' com S)
+    paciente = get_object_or_404(Pacientes, id=paciente_id)
+    
+    # 2. Busca o perfil do nutricionista logado vindo do app autenticacao
+    perfil = Perfil.objects.filter(usuario=request.user).first() 
+    
+    # 3. Busca todos os resultados de exames do paciente
+    resultados_exames = ResultadoExame.objects.filter(
+        solicitacao__paciente=paciente
+    ).select_related('tipo_exame', 'solicitacao').order_by('-solicitacao__data_solicitacao')
+
+    context = {
+        'paciente': paciente,
+        'perfil': perfil,  # Agora vai preenchido com logotipo, nome, CFN, etc.
+        'resultados_exames': resultados_exames,
+    }
+    
+    return render(request, 'exames/imprimir_resultados.html', context)

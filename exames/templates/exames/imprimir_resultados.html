@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'body' %}
+
+<style>
+    /* Estilos Gerais para Tela (Layout Compacto) */
+    .compact-container {
+        font-size: 13px;
+    }
+    .table-compact th, .table-compact td {
+        padding: 4px 8px !important;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+    .header-clinica {
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+    .info-block {
+        font-size: 12.5px;
+        line-height: 1.4;
+    }
+    .secao-titulo {
+        font-size: 15px;
+        font-weight: bold;
+        margin-top: 12px;
+        margin-bottom: 6px;
+        border-left: 3px solid #198754;
+        padding-left: 6px;
+    }
+    .assinatura {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 12px;
+    }
+    .linha-assinatura {
+        border-top: 1px solid #000;
+        width: 260px;
+        margin: 0 auto;
+        padding-top: 3px;
+    }
+
+    /* Otimização Rígida Exclusiva para Impressão */
+    @media print {
+        @page {
+            size: A4;
+            margin: 0.8cm 0.8cm 1cm 0.8cm;
+        }
+        body {
+            font-size: 10pt !important;
+            color: #000;
+            background: #fff;
+        }
+        .container, .compact-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .no-print {
+            display: none !important;
+        }
+        .table-compact th, .table-compact td {
+            padding: 2px 4px !important;
+            font-size: 9.5pt !important;
+        }
+        .secao-titulo {
+            font-size: 11pt !important;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+        .info-block {
+            font-size: 9.5pt !important;
+        }
+        .header-clinica h4 {
+            font-size: 13pt !important;
+            margin-bottom: 4px;
+        }
+        .assinatura {
+            margin-top: 25px;
+            page-break-inside: avoid;
+        }
+
+        /* TRAVA DO CABEÇALHO PARA NÃO SUMIR E NÃO QUEBRAR */
+        .header-clinica .row {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            width: 100% !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        
+        .header-clinica .col-6 {
+            width: 50% !important;
+            flex: 0 0 50% !important;
+            max-width: 50% !important;
+            display: block !important;
+        }
+        
+        .header-clinica .col-4 {
+            width: 35% !important;
+            flex: 0 0 35% !important;
+            max-width: 35% !important;
+            display: block !important;
+            text-align: right !important;
+        }
+        
+        .header-clinica .col-2 {
+            width: 15% !important;
+            flex: 0 0 15% !important;
+            max-width: 15% !important;
+            display: block !important;
+            text-align: right !important;
+        }
+
+        /* FORÇA A EXIBIÇÃO DA IMAGEM DO LOGO */
+        .logo-impressao-laudo {
+            display: inline-block !important;
+            visibility: visible !important;
+            height: 50px !important;
+            width: auto !important;
+            object-fit: contain !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
+
+{% if messages %}
+    <div class="container mt-2 no-print">
+        {% for message in messages %}
+            <div class="alert {{message.tags}} p-2 mb-2" style="font-size: 13px;">
+                {{message}}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="container compact-container mt-3">
+    
+    <div class="header-clinica">
+        <h4 class="text-center mb-2 fw-bold">
+            {% if perfil.nomeclinica %}{{ perfil.nomeclinica }}{% else %}Clínica de Nutrição{% endif %} - Dados Clínicos
+        </h4>
+        <div class="row align-items-center info-block">
+            <div class="col-6">
+                <strong>Paciente:</strong> {{ paciente.nome }}<br>
+                <strong>Nascimento:</strong> {{ paciente.datanascimento|date:"d/m/Y" }}<br>
+                <strong>CPF:</strong> {{ paciente.cpf }}
+            </div>
+            <div class="col-4 text-end">
+                {% if perfil %}
+                    <strong>Nutricionista:</strong> {{ perfil.nome_completo }}<br>
+                    <strong>CPF:</strong> {{ perfil.cpf }} | <strong>CFN:</strong> {{ perfil.cfn }}
+                {% endif %}
+            </div>
+            <div class="col-2 text-end">
+                {% if perfil.logotipo %}
+                    <img src="{{ perfil.logotipo.url }}" class="logo-impressao-laudo" height="50" style="object-fit: contain;">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3 no-print">
+        <button type="button" onclick="history.back()" class="btn btn-sm btn-secondary">← Voltar</button>
+        <button type="button" class="btn btn-sm btn-success" onclick="window.print()">🖨️ Imprimir Registro</button>
+    </div>
+
+    
+
+    {% if resultados_exames %}
+        <div class="secao-titulo">Resultados de Exames Laboratoriais</div>
+        
+        {% regroup resultados_exames by solicitacao.data_solicitacao as exames_por_data %}
+        
+        {% for grupo in exames_por_data %}
+            <div class="fw-bold mt-2 mb-1 text-secondary" style="font-size: 12px;">
+                📅 Exames realizados em: {{ grupo.grouper|date:"d/m/Y" }}
+            </div>
+            <table class="table table-sm table-striped table-bordered table-compact mb-2">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 35%;">Exame</th>
+                        <th style="width: 20%;">Resultado</th>
+                        <th style="width: 25%;">Valores de Referência</th>
+                        <th style="width: 20%;">Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in grupo.list %}
+                    <tr>
+                        <td class="fw-bold">{{ r.tipo_exame.nome }}</td>
+                        <td>{{ r.resultado }} {{ r.tipo_exame.unidade_padrao }}</td>
+                        <td>
+                            {% if r.tipo_exame.ref_min and r.tipo_exame.ref_max %}
+                                {{ r.tipo_exame.ref_min }} – {{ r.tipo_exame.ref_max }} {{ r.tipo_exame.unidade_padrao }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if "ABAIXO" in r.pre_diagnostico_ia %}
+                                <span class="badge bg-danger text-white" style="font-size: 10px;">▼ Abaixo</span>
+                            {% elif "ACIMA" in r.pre_diagnostico_ia %}
+                                <span class="badge bg-warning text-dark" style="font-size: 10px;">▲ Acima</span>
+                            {% elif "DENTRO" in r.pre_diagnostico_ia %}
+                                <span class="badge bg-success text-white" style="font-size: 10px;">✓ Normal</span>
+                            {% else %}
+                                <span>—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% endif %}
+
+    <div class="mt-4 row align-items-end" style="page-break-inside: avoid;">
+        <div class="col-5">
+            <small class="text-muted">Data de Impressão: {% now "d/m/Y" %}</small>
+        </div>
+        <div class="col-7">
+            <div class="assinatura">
+                <div class="linha-assinatura"></div>
+                <div class="mt-1 fw-bold">
+                    Assinatura e Carimbo do Profissional
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

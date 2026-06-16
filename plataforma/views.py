@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.messages import constants
 
 from autenticacao.models import PerfilProfissional
+from exames.models import ResultadoExame
 from .models import Pacientes, DadosPaciente, Refeicao, PlanoAlimentar, ItemRefeicao
 from datetime import date, datetime
 
@@ -759,3 +760,5 @@ def imprimir_plano_alimentar(request, plano_id):
         'duracao_dias': duracao_dias,
         'today': date.today(),
     })
+
+

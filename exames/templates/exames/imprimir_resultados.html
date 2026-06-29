@@ -204,9 +204,9 @@
                         </td>
                         <td>
                             {% if "ABAIXO" in r.pre_diagnostico_ia %}
-                                <span class="badge bg-danger text-white" style="font-size: 10px;">▼ Abaixo</span>
+                                <span class="badge bg-warning text-white" style="font-size: 10px;">▼ Abaixo</span>
                             {% elif "ACIMA" in r.pre_diagnostico_ia %}
-                                <span class="badge bg-warning text-dark" style="font-size: 10px;">▲ Acima</span>
+                                <span class="badge bg-danger text-white" style="font-size: 10px;">▲ Acima</span>
                             {% elif "DENTRO" in r.pre_diagnostico_ia %}
                                 <span class="badge bg-success text-white" style="font-size: 10px;">✓ Normal</span>
                             {% else %}

@@ -21,11 +21,14 @@
     <div class="mb-4">
         <form method="GET" action="">
             <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
-                <button class="btn btn-primary" type="submit">Buscar</button>
+                <input type="text" name="q" class="form-control" placeholder="Buscar paciente pelo nome ou plano..." value="{{ request.GET.q|default:'' }}">
+                
+                <button class="btn btn-primary" type="submit">🔍 Buscar</button>
+                
                 {% if request.GET.q %}
-                <a href="{% url 'plataforma:pacientes' %}" class="btn btn-secondary">Limpar</a>
-            {% endif %}
+                    <!-- Botão para limpar a busca mantendo a aba atual -->
+                    <a href="?tab={{ aba_ativa|default:'pacientes' }}" class="btn btn-outline-secondary">❌ Limpar</a>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -144,6 +147,19 @@
                         <br><br>
                         <label>Endereço:</label>
                         <input type="text" placeholder="rua, numero, apto, cidade " class="form-control" name="endereco">
+                        <br>
+                        <label>Restrições Alimentares:</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="restricao_diabetico" id="restricao_diabetico">
+                            <label class="form-check-label" for="restricao_diabetico">Diabético</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="restricao_hipertenso" id="restricao_hipertenso">
+                            <label class="form-check-label" for="restricao_hipertenso">Hipertenso</label>
+                        </div>
+                        <label>Outras restrições:</label>
+                        <input type="text" placeholder="Ex: alergia a lactose, celíaco..." class="form-control" name="restricao_outros">
+                        <br>
                         <input type="submit" class="btn btn-success btn-lg" value="Salvar">
                 </form>
             </div>

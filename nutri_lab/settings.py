@@ -1,7 +1,9 @@
 from pathlib import Path
 import os
 from decouple import config
+from dotenv import load_dotenv
 
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -9,7 +11,15 @@ SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['nutri.innosoft.com.br', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='nutri.innosoft.com.br,localhost,127.0.0.1').split(',')
+
+# Segurança adicional para produção (ativa via variáveis de ambiente)
+if config('HTTPS_REDIRECT', default=False, cast=bool):
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
 
 
 INSTALLED_APPS = [
@@ -36,9 +46,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'paginas_vendas.middleware.BloqueioAssinaturaExpiradaMiddleware',
 ]
 
 ROOT_URLCONF = 'nutri_lab.urls'
+
+LOGIN_URL = '/auth/logar/'
+LOGIN_REDIRECT_URL = '/plataforma/pacientes/'
 
 TEMPLATES = [
     {
@@ -51,7 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'autenticacao.context_processors.perfil_profissional'
+                'autenticacao.context_processors.perfil_profissional',
+                'paginas_vendas.context_processors.banner_assinatura',
             ],
         },
     },
@@ -107,7 +122,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'plataforma/static'),)
-STATIC_ROOT = os.path.join('staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -129,15 +144,16 @@ MESSAGE_TAGS = {
     constants.WARNING: 'alert-warning',
 }
 
-#email
-
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'josecelsoleite@gmail.com'
-EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD')
-DEFAULT_FROM_EMAIL = 'Nutri-Innosoft <noreply@nutriminas.com.br>'
-EMAIL_FAIL_SILENTLY = False
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+
+# Configurações do ASAAS (Adicionar)
+ASAAS_API_KEY = os.environ.get('ASAAS_API_KEY')
+ASAAS_BASE_URL = os.environ.get('ASAAS_BASE_URL', 'https://sandbox.asaas.com/api/v3' )

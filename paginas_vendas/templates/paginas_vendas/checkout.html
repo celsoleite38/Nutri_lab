@@ -1,0 +1,372 @@
+{% extends 'base_vendas.html' %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'paginas_vendas/css/css.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #a9ebd5, #ffffffff);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .area_cadastrar {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            border-radius: 20px;
+        }
+
+        /* ── Card formulário ── */
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            background: rgba(39, 219, 143, 0.6);
+            color: #113523;
+            font-weight: 600;
+            border-bottom: none;
+            text-align: center;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1.5px solid #dde3ec;
+            padding: 10px 14px;
+            font-size: 0.97rem;
+        }
+
+        .form-control:focus {
+            border-color: #27DB8F;
+            box-shadow: 0 0 0 3px rgba(39, 219, 143, 0.15);
+        }
+
+        .btn-pagar {
+            background: linear-gradient(to right, #27DB8F, #F59E0B);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 12px;
+            width: 100%;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-pagar:hover  { opacity: 0.90; color: #fff; }
+        .btn-pagar:active { transform: scale(0.98); }
+        .btn-pagar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ── Resumo do plano ── */
+        .info-plano {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 24px;
+        }
+
+        .info-plano .preco {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #113523;
+        }
+
+        .aviso-pagamento {
+            background: rgba(39, 219, 143, 0.12);
+            border-left: 4px solid #27DB8F;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.88rem;
+            color: #1b7a4f;
+        }
+
+        .erro-box {
+            background: rgba(255, 80, 80, 0.12);
+            border-left: 4px solid #e74c3c;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.88rem;
+            color: #c0392b;
+            margin-bottom: 18px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #222;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .col-md-9 { width: 100%; max-width: 100%; flex: 0 0 100%; }
+            .area_cadastrar { padding: 20px 15px; margin: 20px 0; }
+        }
+    </style>
+{% endblock %}
+
+{% block 'titulo' %}Checkout — {{ plano.title }} | NUTRI-INNOSOFT{% endblock %}
+
+{% block 'body' %}
+<div class="container-fluid px-0">
+    <div class="row mx-0">
+
+        <!-- Sidebar -->
+        <div class="col-md-3 d-none d-md-block sidebar bg-light py-4">
+            <div class="logo_sidebar text-center mb-2">
+                <img class="img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo" style="max-height: 260px;">
+            </div>
+        </div>
+
+        <div class="col-12 col-md-9 px-0">
+
+            <nav class="navbar navbar-expand-lg navbar-dark" style="background-image: linear-gradient(to right, #27DB8F, #F59E0B);">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+                        <strong>NUTRI INNOSOFT</strong>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}">Planos</a></li>
+                            <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'recursos' %}">Recursos</a></li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i> {{ user.email }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'sair' %}">Sair</a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-lg-2 mt-2 mt-lg-0" href="{% url 'logar' %}">
+                                    <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="area_cadastrar my-4 mx-3 mx-md-4">
+                <h1 class="mb-4 text-center text-dark">Finalizar Assinatura</h1>
+
+                <div class="row justify-content-center">
+
+                    <!-- Resumo do plano -->
+                    <div class="col-12 col-md-4 mb-4">
+                        <div class="info-plano h-100">
+                            <p class="text-muted mb-1" style="font-size:0.85rem;">VOCÊ ESCOLHEU</p>
+                            <h4 class="fw-bold text-dark mb-3">{{ plano.title }}</h4>
+                            <hr>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-tag text-success me-2"></i>
+                                <span class="preco">R$ {{ plano.price|floatformat:2 }}</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-calendar-alt text-info me-2"></i>
+                                <span style="color:#333; font-size:0.95rem;">
+                                    {% if plano.dias == 30 %}Acesso por 1 mês
+                                    {% elif plano.dias == 90 %}Acesso por 3 meses
+                                    {% elif plano.dias == 180 %}Acesso por 6 meses
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <hr>
+                            <div class="aviso-pagamento">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Após confirmar seus dados, você será redirecionado para a página de pagamento segura do
+                                <strong>Asaas</strong> — PIX ou Cartão de Crédito.
+                            </div>
+                            <div class="mt-3 text-center" style="font-size:0.78rem; color:#aaa;">
+                                <i class="fas fa-shield-alt me-1"></i> Ambiente seguro · Powered by Asaas
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulário -->
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Seus dados</h5>
+                            </div>
+                            <div class="card-body p-4">
+
+                                {% if erro %}
+                                <div class="erro-box">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>{{ erro }}
+                                </div>
+                                {% endif %}
+
+                                <form method="post" id="form-checkout">
+                                    {% csrf_token %}
+
+                                    <div class="form-group mb-3">
+                                        <label for="nome"><i class="fas fa-user me-1 text-info"></i> Nome completo</label>
+                                        <input type="text" class="form-control" id="nome" name="nome"
+                                            placeholder="Seu nome completo" required autocomplete="name">
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="email"><i class="fas fa-envelope me-1 text-info"></i> E-mail</label>
+                                        <input type="email" class="form-control" id="email" name="email"
+                                            placeholder="seu@email.com" required autocomplete="email"
+                                            {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="cpf_cnpj"><i class="fas fa-id-card me-1 text-info"></i> CPF ou CNPJ</label>
+                                        <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj"
+                                            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                                            maxlength="18" required autocomplete="off">
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="phone"><i class="fas fa-phone me-1 text-info"></i> Telefone / WhatsApp</label>
+                                        <input type="text" class="form-control" id="phone" name="phone"
+                                            placeholder="(00) 00000-0000" maxlength="15" required autocomplete="tel">
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="postal_code"><i class="fas fa-map-marker-alt me-1 text-info"></i> CEP</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="postal_code" name="postal_code"
+                                                placeholder="00000-000" maxlength="9" required autocomplete="postal-code">
+                                            <button class="btn btn-outline-secondary" type="button" id="btn-cep">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted">Digite o CEP para preencher o endereço automaticamente.</small>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="address"><i class="fas fa-road me-1 text-info"></i> Rua / Logradouro</label>
+                                        <input type="text" class="form-control" id="address" name="address"
+                                            placeholder="Rua das Flores" required autocomplete="street-address">
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-4">
+                                            <label for="address_number"><i class="fas fa-hashtag me-1 text-info"></i> Número</label>
+                                            <input type="text" class="form-control" id="address_number" name="address_number"
+                                                placeholder="123" required>
+                                        </div>
+                                        <div class="col-8">
+                                            <label for="province"><i class="fas fa-map me-1 text-info"></i> Bairro</label>
+                                            <input type="text" class="form-control" id="province" name="province"
+                                                placeholder="Centro" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-4">
+                                        <label for="city"><i class="fas fa-city me-1 text-info"></i> Cidade</label>
+                                        <input type="text" class="form-control" id="city" name="city"
+                                            placeholder="São Paulo" required autocomplete="address-level2">
+                                    </div>
+
+                                    <button type="submit" class="btn btn-pagar" id="btn-pagar">
+                                        <span id="btn-texto">
+                                            <i class="fas fa-lock me-2"></i>Confirmar e ir para o pagamento
+                                        </span>
+                                        <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status"></span>
+                                    </button>
+
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a href="{% url 'pagina_vendas' %}" style="color:#555; font-size:0.88rem;">
+                                <i class="fas fa-arrow-left me-1"></i> Voltar aos planos
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Busca CEP
+    function buscarCep(cep) {
+        cep = cep.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.erro) return;
+                document.getElementById('address').value  = data.logradouro || '';
+                document.getElementById('province').value = data.bairro     || '';
+                document.getElementById('city').value     = data.localidade || '';
+                document.getElementById('address_number').focus();
+            });
+    }
+
+    document.getElementById('postal_code').addEventListener('blur', function () { buscarCep(this.value); });
+    document.getElementById('btn-cep').addEventListener('click', function () { buscarCep(document.getElementById('postal_code').value); });
+
+    // Máscaras
+    document.getElementById('postal_code').addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '');
+        v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        this.value = v;
+    });
+
+    document.getElementById('phone').addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '');
+        if (v.length <= 10) {
+            v = v.replace(/(\d{2})(\d)/, '($1) $2');
+            v = v.replace(/(\d{4})(\d)/, '$1-$2');
+        } else {
+            v = v.replace(/(\d{2})(\d)/, '($1) $2');
+            v = v.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        this.value = v;
+    });
+
+    document.getElementById('cpf_cnpj').addEventListener('input', function () {
+        let v = this.value.replace(/\D/g, '');
+        if (v.length <= 11) {
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        } else {
+            v = v.replace(/(\d{2})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d)/, '$1/$2');
+            v = v.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        }
+        this.value = v;
+    });
+
+    // Spinner
+    document.getElementById('form-checkout').addEventListener('submit', function () {
+        const btn     = document.getElementById('btn-pagar');
+        const texto   = document.getElementById('btn-texto');
+        const spinner = document.getElementById('spinner');
+        btn.disabled = true;
+        texto.classList.add('d-none');
+        spinner.classList.remove('d-none');
+    });
+</script>
+{% endblock %}

@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block 'head' %}
     <link rel="stylesheet" href="{% static 'autenticacao/css/auth.css' %}">
-
+    <link rel="icon" href="{% static 'autenticacao/img/logo3.png' %}">
 {% endblock %}
-{% block 'titulo' %}Nutri-Innosoft Login{% endblock %}
+{% block 'titulo' %}Nutri Innosoft Acesse sua Conta{% endblock %}
 {% block 'body' %}
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3 sidebar bg-light py-4">
+            <div class="col-md-3 sidebar">
                 <div class="logo_sidebar">
                     <h2 class="logo">
                         <img class="img_logo_sidebar" src="{% static 'autenticacao/img/logo3.png' %}">
                     </h2>
                 </div>
             </div>
-            <div class="col-md-9">
+            
+            <div class="col-md-9 area_form">
                 <div class="area_cadastrar">
                     {% if messages %}
                         <br>
@@ -27,42 +27,52 @@
                         {% endfor %}
                     {% endif %}
                     
-                    <h2 class="titulo">Seja Bem Vindo</h2>
-                    <p class="sub-titulo">Entre com sua conta</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 class="titulo" style="margin: 0;">Seja Bem Vindo</h2>
+                            <p class="sub-titulo" style="margin: 0;">Acesse sua conta Nutri</p>
+                        </div>
+                        
+                        <a href="{% url 'pagina_vendas' %}" style="text-decoration: none;">
+                            <!-- Redirecionamento direto e seguro via onClick -->
+                            <button type="button" class="btn-interativo btn-cadastro-destaque" onclick="window.location.href='{% url 'pagina_vendas' %}'">
+                                Não tem uma conta? Conheça nossos planos
+                            </button>
+                        </a>
+                    </div>
+                    
                     <hr>
                     
-                    <form action="{% url 'logar' %}" method="POST"> 
-                        {% csrf_token %}
-                        <span class="bold">Nome de usuário</span>
+                    <form action="{% url 'logar' %}" method="POST">{% csrf_token %}
+                        <span class="bold">Usuário</span>
                         <input class="form-control input-form" name="usuario" type="text" placeholder="Digite seu nome...">
                         <br>
                         <span class="bold">Senha</span>
                         <input class="form-control input-form" name="senha" type="password" placeholder="Digite sua senha...">
                         <br>
-                        <button class="btn-first">ENTRAR</button>
-                        <br>
-                        <p><h5 style="position: absolute; bottom: 430px; font-weight: bold"></h5><a href="/auth/recuperar-senha/">Esqueceu a senha?</a></p>
+                        <button class="btn-first">Entrar</button>
+                        <p style="margin-top: 15px;"><a href="{% url 'password_reset' %}">Esqueceu a senha?</a></p>
                     </form>
                     
-                    <!-- LINK PARA ABRIR A MODAL reenvio ativação -->
-                     <h5 style="position: absolute; bottom: 80px; ">Não tem uma conta?&nbsp <a href= "{% url 'cadastro' %}" >Registre-se </a>
-                    &nbsp;|&nbsp;
-                        Reenviar email de ativação? 
-                        <a href="#"  data-toggle="modal" data-target="#modalReenviarAtivacao">
-                            Reenviar ativação
-                        </a>
-                    </h5>
+                    <hr style="margin-top: 40px;">
+                    
+                    <div class="container-botoes-rodape">
+                        <span style="font-size: 13px; color: #666;">Problemas com o acesso?</span>
+                        <button type="button" class="btn-interativo btn-secundario" data-bs-toggle="modal" data-bs-target="#modalReenviarAtivacao">
+                            Reenviar e-mail de ativação
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE REENVIO DE ATIVAÇÃO (Bootstrap 4) -->
     <div class="modal fade" id="modalReenviarAtivacao" tabindex="-1" role="dialog" aria-labelledby="modalReenviarAtivacaoLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalReenviarAtivacaoLabel"><img src="{% static 'autenticacao/img/logo3.png' %}" style="width: 70px; height: auto;"> Reenviar Email de Ativação</h5>
+                    <h5 class="modal-title" id="modalReenviarAtivacaoLabel"><img src="{% static 'autenticacao/img/logo3.png' %}" style="width: 40px; height: auto; margin-right: 10px;"> Reenviar Email de Ativação</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -76,7 +86,6 @@
                         </div>
                     </form>
                 </div>
-                
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" form="formReenviarAtivacao" class="btn btn-first">Reenviar Email</button>
@@ -84,4 +93,94 @@
             </div>
         </div>
     </div>
+
+    <style>
+    /* Cabeçalho Responsivo */
+    .header-formulario {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 20px;
+        gap: 15px;
+    }
+
+    /* Container do Rodapé */
+    .container-botoes-rodape {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 20px;
+        align-items: flex-start;
+    }
+
+    /* Base do botão interativo */
+    .btn-interativo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 22px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        text-align: center;
+    }
+
+    /* Botão de Destaque Máximo para Vendas/Cadastro */
+    .btn-cadastro-destaque {
+        background-color: #28a745;
+        color: #ffffff;
+        border: 2px solid #28a745;
+    }
+
+    .btn-cadastro-destaque:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Botão Secundário para Reenvio */
+    .btn-secundario {
+        background-color: transparent;
+        color: #6c757d;
+        border: 1.5px solid #6c757d;
+        padding: 8px 15px;
+        font-size: 13px;
+        box-shadow: none;
+    }
+
+    .btn-secundario:hover {
+        background-color: #6c757d;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .btn-interativo:active {
+        transform: translateY(0);
+    }
+
+    /* MEDIA QUERIES (Responsividade Mobile) */
+    @media (max-width: 768px) {
+        .header-formulario {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .header-formulario a, 
+        .header-formulario button,
+        .container-botoes-rodape button {
+            width: 100%;
+        }
+
+        .container-botoes-rodape {
+            align-items: center;
+            text-align: center;
+        }
+    }
+</style>
 {% endblock %}

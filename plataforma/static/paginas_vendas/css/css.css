@@ -1,0 +1,37 @@
+/* Estilização do menu */
+.sidebar{
+    background-image: url('"/static/autenticacao/img/logo3.png"'), linear-gradient(to bottom, #a9ebd5, #F59E0B) ;
+    height: 100vh;
+    color: rgb(36, 28, 28);
+} 
+.logo_sidebar{
+    text-align: center;
+}
+.img_logo_sidebar{
+    width: 100%;
+}
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand img {
+    margin-right: 10px;
+}
+
+.nav-link {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.btn-outline-light {
+    border-color: rgba(255,255,255,0.5);
+    color: white;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+body {
+    overflow-x: hidden;
+}

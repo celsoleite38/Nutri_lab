@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}{{ titulo }} - Nutri-Minsas{% endblock %}
+{% block 'titulo' %}{{ titulo }} - Nutri-Minsas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -200,7 +200,7 @@
                 <!-- Ações -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Salvar</button>
-                    <a href="{% url 'alimentos:lista_alimentos' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="button" onclick="history.back()" class="btn btn-secondary">↩️Voltar</button>
                 </div>
             </form>
         </div>

@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Editar Refeição - {{ refeicao.titulo }} - Nutri-Minas{% endblock %}
+{% block 'titulo' %}Editar Refeição - {{ refeicao.titulo }} - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -16,6 +16,16 @@
             {{ message }}
         </div>
         {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if restricoes_paciente %}
+    <div class="alert alert-warning">
+        <strong>⚠️ Restrições alimentares do paciente {{ paciente.nome }}:</strong>
+        {% for restricao in restricoes_paciente %}
+        <span class="badge badge-restricao">{{ restricao }}</span>
+        {% endfor %}
+        <br><small>As sugestões de substituição já excluem alimentos incompatíveis com essas restrições.</small>
     </div>
     {% endif %}
 
@@ -50,7 +60,7 @@
                 <!-- BOTÕES DE AÇÃO PARA EDITAR A REFEIÇÃO -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    <a href="{% url 'plataforma:plano_alimentar' refeicao.paciente.id %}" class="btn btn-secondary">Voltar</a>
+                    <button type="button" onclick="history.back()" class="btn btn-secondary">↩️Voltar</button>
                 </div>
             </form>
         </div>
@@ -142,14 +152,19 @@
                                     <th>Alimento</th>
                                     <th>Quantidade</th>
                                     <th>Nutrientes</th>
+                                    <th>Substituições</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in itens %}
-                                <tr>
+                                {% for info in itens_info %}
+                                {% with item=info.item %}
+                                <tr class="{% if not info.permitido %}row-incompativel{% endif %}">
                                     <td>
                                         <strong>{{ item.alimento.nome }}</strong>
+                                        {% if not info.permitido %}
+                                        <br><span class="badge badge-restricao">⚠️ Incompatível: {{ info.motivo }}</span>
+                                        {% endif %}
                                         {% if item.observacoes %}
                                         <br><small>{{ item.observacoes }}</small>
                                         {% endif %}
@@ -163,6 +178,25 @@
                                         </small>
                                     </td>
                                     <td>
+                                        {% with subs=info.substituicoes %}
+                                        {% if subs %}
+                                        {% for sub in subs %}
+                                        <div class="sub-confirmada">
+                                            <span title="Substituir {{ item.alimento.nome }}">
+                                                ➔ {{ sub.alimento_substituto.nome }} ({{ sub.quantidade_g }}g)
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                        {% else %}
+                                        <span class="text-muted small">Nenhuma</span>
+                                        {% endif %}
+                                        {% endwith %}
+                                        <button type="button" class="btn btn-sm btn-info mt-1" id="btn-sub-{{ item.id }}"
+                                                onclick="abrirSubstituicoes({{ item.id }})">
+                                            🔄 Ver substituições
+                                        </button>
+                                    </td>
+                                    <td>
                                         <form method="post" action="{% url 'plataforma:remover_item_refeicao' item.id %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-danger" 
@@ -172,9 +206,26 @@
                                         </form>
                                     </td>
                                 </tr>
+                                {% endwith %}
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Painel de sugestões de substituição -->
+                    <div id="painel-substituicoes" style="display: none; margin-top: 15px; padding: 15px; border: 2px dashed var(--primary); border-radius: 8px; background: #f8fbfd;">
+                        <h5>🔄 Sugestões de Substituição</h5>
+                        <form id="form-substituicoes" method="post" action="{% url 'plataforma:salvar_substituicoes' 0 %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" id="painel-item-id">
+                            <div id="conteudo-sugestoes">
+                                <p class="text-muted">Carregando sugestões...</p>
+                            </div>
+                            <div class="form-actions mt-3">
+                                <button type="submit" class="btn btn-primary">Salvar substituições selecionadas</button>
+                                <button type="button" class="btn btn-secondary" onclick="fecharSubstituicoes()">Fechar</button>
+                            </div>
+                        </form>
                     </div>
                     {% else %}
                     <p class="text-center text-muted">Nenhum alimento adicionado ainda.</p>
@@ -182,9 +233,7 @@
                     
                     <!-- BOTÕES DE AÇÃO NO FINAL DA LISTA -->
                     <div class="form-actions mt-3">
-                        <a href="{% url 'plataforma:plano_alimentar' refeicao.paciente.id %}" class="btn btn-secondary">
-                            ← Voltar
-                        </a>
+                        
                         <a href="{% url 'plataforma:adicionar_refeicao' refeicao.paciente.id %}" class="btn btn-primary">
                             + Adicionar Outra Refeição
                         </a>
@@ -489,6 +538,70 @@
             max-width: 100%;
         }
     }
+
+    /* Restrições e substituições */
+    .badge-restricao {
+        background-color: #ffc107;
+        color: #6b4e00;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        margin-right: 4px;
+    }
+
+    .row-incompativel {
+        background-color: #fff3cd !important;
+    }
+
+    .row-incompativel td {
+        border-left: 3px solid #ffc107;
+    }
+
+    .sub-confirmada {
+        font-size: 0.85rem;
+        color: var(--success);
+        margin-bottom: 3px;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+    }
+
+    .sugestao-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        margin-bottom: 8px;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+    }
+
+    .sugestao-item .sug-check {
+        flex-shrink: 0;
+    }
+
+    .sugestao-item .sug-info {
+        flex: 1;
+    }
+
+    .sugestao-item .sug-qtd {
+        text-align: right;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .sugestao-item .sug-qtd input {
+        width: 80px;
+        display: inline-block;
+    }
 </style>
 
 <script>
@@ -548,5 +661,70 @@
             }
         });
     });
+
+    // ---------- Substituições ----------
+    function abrirSubstituicoes(itemId) {
+        const painel = document.getElementById('painel-substituicoes');
+        if (!painel) return;
+
+        // Alterna fechar se clicou no mesmo item
+        if (painel.dataset.item === String(itemId) && painel.style.display !== 'none') {
+            painel.style.display = 'none';
+            return;
+        }
+        painel.dataset.item = itemId;
+        painel.style.display = 'block';
+        painel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        const conteudo = document.getElementById('conteudo-sugestoes');
+        conteudo.innerHTML = '<p class="text-muted">Carregando sugestões...</p>';
+
+        fetch(`/plataforma/api/sugerir-substituicoes/${itemId}/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                conteudo.innerHTML = `<p class="text-muted">${data.error}</p>`;
+                return;
+            }
+            if (!data.sugestoes || data.sugestoes.length === 0) {
+                conteudo.innerHTML = '<p class="text-muted">Nenhuma substituição compatível encontrada para este alimento.</p>';
+                return;
+            }
+
+            const form = document.getElementById('form-substituicoes');
+            form.action = "{% url 'plataforma:salvar_substituicoes' 0 %}".replace(/\/0\/$/, '/' + itemId + '/');
+            document.getElementById('painel-item-id').value = itemId;
+
+            let html = `<p><strong>Substituir: ${data.alimento_original}</strong></p>`;
+            html += `<table class="table table-sm"><thead><tr>
+                        <th></th><th>Alimento</th><th>Medida caseira</th>
+                        <th>Qtd (g)</th><th>kcal</th><th>P</th><th>C</th><th>L</th>
+                    </tr></thead><tbody>`;
+            data.sugestoes.forEach(s => {
+                html += `<tr>
+                    <td><input type="checkbox" name="substituto_id" value="${s.id}" class="sug-check"></td>
+                    <td>${s.nome}</td>
+                    <td><small>${s.medida_caseira}</small></td>
+                    <td><input type="number" name="quantidade_${s.id}" value="${s.quantidade_g}" min="5" step="5" class="form-control form-control-sm" style="width:80px; display:inline-block;"></td>
+                    <td>${s.energia.toFixed(0)}</td>
+                    <td>${s.proteina.toFixed(1)}</td>
+                    <td>${s.carboidrato.toFixed(1)}</td>
+                    <td>${s.lipidios.toFixed(1)}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            conteudo.innerHTML = html;
+        })
+        .catch(() => {
+            conteudo.innerHTML = '<p class="text-muted">Erro ao carregar sugestões.</p>';
+        });
+    }
+
+    function fecharSubstituicoes() {
+        const painel = document.getElementById('painel-substituicoes');
+        if (painel) painel.style.display = 'none';
+    }
 </script>
 {% endblock %}

@@ -10,12 +10,11 @@
         <p class="text-muted">Baseada na TBCA - Tabela Brasileira de Composição de Alimentos</p>
     </div>
     <div class="col-md-4 text-end"><br>
+        <button type="button" onclick="history.back()" class="btn btn-secondary">↩️Voltar</button>
         <a href="{% url 'alimentos:adicionar_alimento' %}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Adicionar Alimento
         </a>
-        <a href="{% url 'alimentos:lista_categorias' %}" class="btn btn-outline-secondary">
-            <i class="fas fa-tags"></i> Categorias
-        </a>
+                
     </div>
 </div>
 

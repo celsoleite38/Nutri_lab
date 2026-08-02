@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Planos Alimentares - Nutri-Innosoft{% endblock %}
+{% block 'titulo' %}Planos Alimentares - Nutri-Innosoft{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -11,20 +11,27 @@
 
     <div class="mb-4">
         <form method="GET" action="">
+            <input type="hidden" name="tab" id="active-tab-input" value="{{ aba_ativa|default:'pacientes' }}">
             <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Buscar paciente pelo nome..." value="{{ request.GET.q }}">
-                <button class="btn btn-primary" type="submit">Buscar</button>
+                <input type="text" name="q" class="form-control" placeholder="Buscar paciente pelo nome ou plano..." value="{{ request.GET.q|default:'' }}">
+                
+                <button class="btn btn-primary" type="submit">🔍 Buscar</button>
+                
+                {% if request.GET.q %}
+                    <!-- Botão para limpar a busca mantendo a aba atual -->
+                    <a href="?tab={{ aba_ativa|default:'pacientes' }}" class="btn btn-outline-secondary">❌ Limpar</a>
+                {% endif %}
             </div>
         </form>
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('pacientes')">Pacientes</button>
-        <button class="tab-btn" onclick="showTab('planos')">Planos Existentes</button>
+        <button class="tab-btn {% if aba_ativa != 'planos' %}active{% endif %}" onclick="showTab('pacientes')">Pacientes</button>
+        <button class="tab-btn {% if aba_ativa == 'planos' %}active{% endif %}" onclick="showTab('planos')">Planos Existentes</button>
     </div>
 
     <!-- Tab de Pacientes -->
-    <div id="pacientes-tab" class="tab-content active">
+    <div id="pacientes-tab" class="tab-content {% if aba_ativa != 'planos' %}active{% endif %}">
         <div class="card">
             <div class="card-header">
                 <h3></h3>
@@ -76,7 +83,7 @@
     </div>
 
     <!-- Tab de Planos Existentes -->
-    <div id="planos-tab" class="tab-content">
+    <div id="planos-tab" class="tab-content {% if aba_ativa == 'planos' %}active{% endif %}">
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
@@ -102,7 +109,7 @@
                             {% for plano in planos %}
                             <tr>
                                 <td>{{ plano.paciente.nome }}</td>
-                                <td>{{ plano.nome }}</td>
+                                <td class="text-break" style="max-width: 150px;">{{ plano.nome }}</td>
                                 <td>
                                     {{ plano.data_inicio|date:"d/m/Y" }}<br>
                                     à {{ plano.data_fim|date:"d/m/Y" }}
@@ -121,6 +128,9 @@
                                     <a href="{% url 'plataforma:desativar_plano' plano.id %}" class="btn btn-warning btn-sm"
                                        onclick="return confirm('Desativar este plano?')">
                                         ⏸️ Desativar
+                                    </a>
+                                    <a href="{% url 'plataforma:imprimir_plano_alimentar' plano.id %}" class="btn btn-secondary">
+                                        🖨️ Imprimir
                                     </a>
                                     {% else %}
                                     <a href="{% url 'plataforma:reativar_plano' plano.id %}" class="btn btn-success btn-sm"
@@ -153,13 +163,19 @@
         });
         
         // Mostra a tab selecionada
-        document.getElementById(tabName + '-tab').classList.add('active');
+        const selectedTab = document.getElementById(tabName + '-tab');
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
         
         // Atualiza botões
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        event.target.classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        // ADICIONE ESTA LINHA: Atualiza o input oculto para o form saber qual aba está aberta
+        document.getElementById('active-tab-input').value = tabName;
     }
 </script>
 {% endblock %}

@@ -2,129 +2,278 @@
 {% load static %}
 
 {% block 'head' %}
-    <link rel="stylesheet" href="{% static 'autenticacao/css/css.css' %}">
+    <link rel="stylesheet" href="{% static 'paginas_vendas/css/css.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #a9ebd5, #ffffffff);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header {
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            background: rgba(39, 219, 143, 0.6);
+            color: #113523;
+            font-weight: 600;
+            border-bottom: none;
+            text-align: center;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+
+        .area_cadastrar {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            border-radius: 20px;
+        }
+
+        .card-text {
+            color: #221010;
+        }
+
+        .glass-card, .glass-highlight {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-highlight {
+            border: 2px solid #27DB8F;
+            box-shadow: 0 0 25px rgba(39, 219, 143, 0.4);
+        }
+
+        .navbar .btn:hover {
+            background-color: #F59E0B;
+            color: #ffffff;
+        }
+
+        /* CorreÃ§Ãµes para responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Oculta sidebar em mobile */
+            }
+            
+            .col-md-9 {
+                width: 100%;
+                max-width: 100%;
+                flex: 0 0 100%;
+            }
+            
+            .area_cadastrar {
+                padding: 20px 15px;
+                margin: 20px 0;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-text {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+            
+            /* Ajuste para o card grÃ¡tis em mobile */
+            .col-md-12.col-lg-8.mx-auto.mb-4 {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                max-width: 100%;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+            
+            .navbar-nav .btn {
+                margin-top: 10px;
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
+            
+            .col-md-9 {
+                width: calc(100% - 250px);
+            }
+            
+            .area_cadastrar {
+                padding: 40px 25px;
+            }
+        }
+
+        /* Garantir que containers sejam responsivos */
+        .container-fluid {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        
+        /* Melhorar a navbar para mobile */
+        .navbar-collapse {
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-nav .nav-link {
+                text-align: center;
+                padding: 10px 0;
+            }
+            
+            .dropdown-menu {
+                text-align: center;
+            }
+        }
+    </style>
 {% endblock %}
 
-{% block 'titulo' %}Planos Disponíveis - Nutri Innosoft{% endblock %}
+{% block 'titulo' %}Planos Disponíveis - NUTRI-INNOSOFT{% endblock %}
 
 {% block 'body' %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 sidebar bg-light py-4">
-            <div class="logo_sidebar text-center mb-4">
-                <img class="img_logo_sidebar img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo">
+<div class="container-fluid px-0"> 
+    <div class="row mx-0">
+        <div class="col-md-3 d-none d-md-block sidebar bg-light py-4">
+            <div class="logo_sidebar text-center mb-2">
+                <img class="img_logo_sidebar img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo" style="max-height: 260px;">
             </div>
         </div>
 
-        <!-- Área principal -->
-        <div class="col-md-9">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
-                <div class="container">
+        <!-- Ãrea principal -->
+        <div class="col-12 col-md-9 px-0"> <!-- 100% width em mobile -->
+            <nav class="navbar navbar-expand-lg navbar-dark" style="background-image: linear-gradient(to right, #27DB8F, #F59E0B);">
+                <div class="container-fluid"> <!-- Container fluid para usar toda largura -->
                     <a class="navbar-brand" href="/">
-                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class=" align-top" alt="">
+                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
                         <strong>NUTRI INNOSOFT</strong>
                     </a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <ul class="navbar-nav me-auto">
                             <li class="nav-item">
-                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}"><strong>Planos</strong></a>
+                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}">Planos</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link fw-bold" href="{% url 'recursos' %}"><strong>Recursos</strong></a>
+                                <a class="nav-link fw-bold" href="{% url 'recursos' %}">Recursos</a>
                             </li>
                         </ul>
-                        <div class="d-flex justify-content-between w-100 align-items-center">
-    
-                            <div></div>
-                            
-                            <ul class="navbar-nav">
-                                {% if user.is_authenticated %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-user-circle me-1"></i> {{ user.email }}
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="{% url 'sair' %}">Sair</a></li>
-                                    </ul>
-                                </li>
-                                {% else %}
-                                <li class="nav-item">
-                                    <a class="btn btn-outline-light ms-2" href="{% url 'logar' %}">
-                                        <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
-                                    </a>
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </div>
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'sair' %}">Sair</a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-lg-2 mt-2 mt-lg-0" href="{% url 'logar' %}">
+                                    <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
                     </div>
                 </div>
             </nav>
 
-            <div class=".area_cadastrar_vendas my-3">
-                
-                 <a class="btn btn-outline-light ms-2" href="{% url 'cadastro' %}">
-                    <div style="color: #007bff;">
-                    <i class="fas fa-sign-in-alt me-1"></i><strong>cadastro</strong>
-                    </div>
-                </a>
+            <div class="area_cadastrar my-4 mx-3 mx-md-4"> <!-- Margens responsivas -->
+                <h1 class="mb-4 text-center text-dark">Escolha seu plano</h1>
 
-                <h1 class="mb-4 text-center text-dark">Escolha seu Plano</h1>
-
-                <div class="row">
+                <div class="row justify-content-center g-3">
                     {% for plano in planos %}
-    {% if "Grátis" in plano.preco %}
-    <div class="col-md-12 col-lg-8 mx-auto mb-4">
-        <div class="card h-100 glass-highlight border-info">
-            <div class="card-header bg-info text-white text-center">
-                <h5 class="card-title mb-0">{{ plano.nome }} <i class="fas fa-star ms-2"></i></h5>
-            </div>
-            <div class="card-body d-flex flex-column">
-                <p class="card-text"><i class="fas fa-calendar-alt text-info me-2"></i> Duração: {{ plano.duracao }}</p>
-                <p class="card-text"><i class="fas fa-tag text-success me-2"></i> Preço: {{ plano.preco }}</p>
+                    <div class="col-6 col-lg-3">
+                        <div class="card h-100 glass-card {% if plano.eh_teste_gratis %}border-info border-2{% elif plano.eh_promocional %}border-warning border-2{% endif %}">
+                            <div class="card-body d-flex flex-column text-center p-3">
+                                {% if plano.eh_teste_gratis %}
+                                    <span class="badge bg-info text-white mb-2 align-self-center"><font size="5">7 dias gratis</span></font>
+                                {% elif plano.eh_promocional %}
+                                    <span class="badge bg-warning text-dark mb-2 align-self-center">Promoção</span>
+                                {% endif %}
 
-                <!-- Bloco com destaque -->
-                <div class="alert alert-light border-start border-info ps-3 mt-3 mb-4" style="font-size: 0.95rem;">
-                    <i class="fas fa-info-circle me-2 text-info"></i>
-                    Aproveite 7 dias gratuitos para testar todos os recursos da plataforma sem compromisso. Ideal para quem quer experimentar antes de assinar!
+                                <h5 class="card-title mb-1">{{ plano.nome }}</h5>
+
+                                {% if plano.eh_teste_gratis %}
+                                    <p class="fs-3 fw-semibold mb-2">Grátis</p>
+                                {% else %}
+                                    <p class="fs-3 fw-semibold mb-2">R$ {{ plano.preco }}</p>
+                                {% endif %}
+
+                                <p class="card-text text-muted small mb-2">
+                                    <i class="fas fa-calendar-alt me-1"></i>{{ plano.duracao_dias }} dias de acesso
+                                </p>
+
+                                {% if plano.descricao %}
+                                <p class="card-text text-muted small flex-grow-1">
+                                    <i class="fas fa-info-circle me-1"></i>{{ plano.descricao }}
+                                </p>
+                                {% else %}
+                                <div class="flex-grow-1"></div>
+                                {% endif %}
+
+                                {% if plano.eh_teste_gratis %}
+                                <a href="{% url 'teste_gratis' %}" class="btn btn-success w-100 py-2 mt-2">
+                                    <i class="fas fa-play-circle me-2"></i>Experimentar
+                                </a>
+                                {% else %}
+                                <a href="{% url 'checkout' plano.slug %}" class="btn btn-success w-100 py-2 mt-2">
+                                    <i class="fas fa-shopping-cart me-2"></i>Assinar
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-
-                <div class="mt-auto">
-                    <a href="{{ plano.link }}" class="btn btn-success w-100">
-                        <i class="fas fa-play-circle me-2"></i> Experimentar
+                    <div class="whatsapp-alert" style="background-color: #e3f7ec; border-left: 5px solid #25d366; padding: 15px; margin: 20px 0; border-radius: 4px; font-family: sans-serif;">
+                    <h4 style="margin-top: 0; color: #128c7e; font-size: 16px;">Precisa de Ajuda ou Agendamento?</h4>
+                    <p style="color: #333; font-size: 14px; margin-bottom: 15px;">
+                        Se você tiver qualquer dúvida sobre o sistema ou precisar falar diretamente conosco, clique no botão abaixo WhatsApp.<br>
+                        Se caso não consiga pelo link abaixo ,  adicione número <strong>+55 35 98859-9032</strong> no seu WhatsApp.
+                    </p>
+                    
+                    <!-- Link do WhatsApp -->
+                    <a href="https://wa.me/5535988599032?text=Ol%C3%A1%2C%20Innosoft%20gostaria%20de%20saber%20mais%20sobre%20o%20sistema." 
+                    target="_blank" 
+                    style="background-color: #25d366; color: white; padding: 10px 15px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                         WhatsApp
                     </a>
                 </div>
             </div>
-        </div>
-    </div>
-    {% else %}
-    <!-- Outros cards normais -->
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100 glass-card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">{{ plano.nome }}</h5>
-            </div>
-            <div class="card-body d-flex flex-column text-white">
-                <p class="card-text"><i class="fas fa-calendar-alt text-info me-2"></i> Duração: {{ plano.duracao }}</p>
-                <p class="card-text"><i class="fas fa-tag text-warning me-2"></i> Preço: {{ plano.preco }}</p>
-                <div class="mt-auto">
-                    <a href="{{ plano.link }}" class="btn btn-success w-100">
-                        <i class="fas fa-shopping-cart me-2"></i> Assinar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-{% endfor %}
-
-                </div>
-            </div>
+            
         </div>
     </div>
 </div>

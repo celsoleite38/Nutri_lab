@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Adicionar Refeição - Nutri-Minas{% endblock %}
+{% block 'titulo' %}Adicionar Refeição - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -66,8 +66,11 @@
                 
                 <!-- Ações -->
                 <div class="form-actions">
+                    
                     <button type="submit" class="btn btn-info">Criar Refeição</button>
-                    <a href="{% url 'plataforma:plano_alimentar' paciente.id %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="button" onclick="history.back()" class="btn text-white" style="background-color: #615c5c; ">
+                        ↩️ Cancelar
+                    </button>
                 </div>
             </form>
         </div>

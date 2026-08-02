@@ -143,6 +143,33 @@
         border-top: 1px solid #f0e8c0;
     }
 
+    .substituicoes-print {
+        padding: 6px 14px;
+        font-size: 8.5pt;
+        background: #f0fdf4;
+        border-top: 1px solid #d9f2e0;
+    }
+
+    .substituicoes-print:empty { display: none; }
+
+    .sub-linha { margin-bottom: 3px; }
+
+    .sub-origem {
+        font-weight: 600;
+        color: #555;
+        text-decoration: line-through;
+        text-decoration-color: #c00;
+    }
+
+    .sub-seta { color: #2c7da0; margin: 0 4px; }
+
+    .sub-substituto {
+        font-weight: 700;
+        color: #14532d;
+    }
+
+    .sub-sep { margin: 0 4px; color: #aaa; }
+
     .objetivo-box {
         background: #fff8e1;
         border-left: 4px solid #f59e0b;
@@ -268,9 +295,14 @@
     </div>
 
     <!-- BOTÕES (some na impressão) -->
-    <div class="no-print" style="margin-bottom:14px; display:flex; gap:8px;">
-        <button type="button" onclick="history.back()" class="btn btn-secondary">← Voltar</button>
+    <div class="no-print" style="margin-bottom:14px; display:flex; gap:8px; align-items:center;">
+        <button type="button" onclick="history.back()" class="btn btn-secondary">↩️Voltar</button>
         <button class="btn btn-success" onclick="window.print()">🖨️ Imprimir</button>
+        <label style="display:flex; align-items:center; gap:6px; margin-left:auto; cursor:pointer; font-size:9pt;">
+            <input type="checkbox" id="toggle-substituicoes" checked
+                   onchange="document.querySelectorAll('.substituicoes-print').forEach(el => { el.style.display = this.checked ? 'block' : 'none'; });">
+            <span>Incluir substituições no plano</span>
+        </label>
     </div>
 
     <!-- DADOS PACIENTE / PLANO -->
@@ -392,6 +424,26 @@
         {% if refeicao.observacoes %}
         <div class="refeicao-obs">⚠️ {{ refeicao.observacoes }}</div>
         {% endif %}
+
+        {% with itens=refeicao.itens.all %}
+        <div class="substituicoes-print">
+            {% for item in itens %}
+            {% with subs=item.substituicoes.all %}
+            {% if subs %}
+            <div class="sub-linha">
+                <span class="sub-origem">{{ item.alimento.nome }}</span>
+                <span class="sub-seta">→</span>
+                {% for sub in subs %}
+                <span class="sub-substituto">
+                    {{ sub.alimento_substituto.nome }} ({{ sub.quantidade_g }}g)
+                </span>{% if not forloop.last %}<span class="sub-sep">·</span>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+            {% endfor %}
+        </div>
+        {% endwith %}
 
     </div>
     {% endwith %}

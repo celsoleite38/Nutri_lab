@@ -12,7 +12,7 @@ urlpatterns = [
     path('agenda/', include('agenda.urls',namespace='agenda')),
     path("alimentos/", include("alimentos.urls")),
     path('exames/', include('exames.urls', namespace='exames')),
-    #path('', include('paginas_vendas.urls')),
+    path('vendas/', include('paginas_vendas.urls')),
 
 ]
 

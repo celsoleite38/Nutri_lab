@@ -1,7 +1,7 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Plano Alimentar - {{ paciente.nome }} - Nutri-Minas{% endblock %}
+{% block 'titulo' %}Plano Alimentar - {{ paciente.nome }} - Nutri-Minas{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
@@ -11,15 +11,16 @@
     </div>
 
     <div class="action-bar">
-        <a href="{% url 'plataforma:plano_alimentar_listar' %}" class="btn btn-secondary">
-            ↩️ Voltar
-        </a>
+        
         <a href="{% url 'plataforma:adicionar_refeicao' paciente.id %}" class="btn btn-primary">
             + Nova Refeição
         </a>
         <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-info">
            <strong> Criar Plano Completo</strong>
         </a>
+        <button type="button" onclick="history.back()" class="btn text-white" style="background-color: #615c5c;">
+            ↩️ Voltar
+        </button>
     </div>
 
     {% if refeicoes %}

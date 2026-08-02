@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from alimentos.models import Alimento
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Pacientes(models.Model):
     choices_sexo = (('Feminino', 'Feminino'),
@@ -21,6 +24,12 @@ class Pacientes(models.Model):
     telefone = models.CharField(max_length=25)
     whatsapp = models.BooleanField(default=False, verbose_name="É WhatsApp?")
     endereco = models.CharField(max_length=50, null=True)
+
+    # Restrições alimentares (anamnese)
+    restricao_diabetico = models.BooleanField(default=False, verbose_name="Diabético")
+    restricao_hipertenso = models.BooleanField(default=False, verbose_name="Hipertenso")
+    restricao_outros = models.CharField(max_length=200, blank=True, verbose_name="Outras restrições")
+
     nutri = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -31,6 +40,31 @@ class Pacientes(models.Model):
             today = date.today()
             return today.year - self.datanascimento.year - ((today.month, today.day) < (self.datanascimento.month, self.datanascimento.day))
         return None
+
+    def restricoes_lista(self):
+        """Retorna a lista de restrições do paciente (para exibição)"""
+        restricoes = []
+        if self.restricao_diabetico:
+            restricoes.append('Diabético')
+        if self.restricao_hipertenso:
+            restricoes.append('Hipertenso')
+        if self.restricao_outros:
+            restricoes.append(self.restricao_outros)
+        return restricoes
+
+    def alimento_permitido(self, alimento):
+        """Verifica se um alimento é permitido para este paciente.
+        Retorna (permitido, motivo)"""
+        if not alimento:
+            return True, None
+        restricao_alimento = alimento.restricao
+        if not restricao_alimento:
+            return True, None
+        if self.restricao_diabetico and restricao_alimento in ('DIABETES', 'AMBOS'):
+            return False, 'Diabético'
+        if self.restricao_hipertenso and restricao_alimento in ('HIPERTENSAO', 'AMBOS'):
+            return False, 'Hipertenso'
+        return True, None
 
 class DadosPaciente(models.Model):
     paciente = models.ForeignKey(Pacientes, on_delete=models.CASCADE)
@@ -100,7 +134,7 @@ class Refeicao(models.Model):
                             break
                         
             except Exception as e:
-                print(f"Erro ao calcular nutrientes do item {item}: {e}")
+                logger.warning("Erro ao calcular nutrientes do item %s: %s", item, e)
                 continue
         
         return total
@@ -153,7 +187,7 @@ class PlanoAlimentar(models.Model):
                     total[key] += float(valor) if valor else 0
                     
         except Exception as e:
-            print(f"Erro ao calcular nutrientes do plano: {e}")
+            logger.warning("Erro ao calcular nutrientes do plano: %s", e)
         
         return total
     
@@ -162,3 +196,18 @@ class PlanoAlimentar(models.Model):
         if self.data_inicio and self.data_fim:
             return (self.data_fim - self.data_inicio).days + 1  # +1 para incluir ambos os dias
         return 0
+
+class SubstituicaoRefeicao(models.Model):
+    """Substituição confirmada pelo nutricionista para um item da refeição"""
+    item = models.ForeignKey(ItemRefeicao, on_delete=models.CASCADE, related_name='substituicoes')
+    alimento_substituto = models.ForeignKey(Alimento, on_delete=models.CASCADE, verbose_name="Alimento substituto")
+    quantidade_g = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="Quantidade (g)")
+    observacoes = models.TextField(blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Substituição de Refeição'
+        verbose_name_plural = 'Substituições de Refeições'
+
+    def __str__(self):
+        return f"{self.item.alimento.nome} → {self.alimento_substituto.nome} ({self.quantidade_g}g)"

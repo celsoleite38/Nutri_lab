@@ -1,51 +1,319 @@
 {% extends 'base_vendas.html' %}
 {% load static %}
+
 {% block 'head' %}
-    <link rel="stylesheet" href="{% static 'autenticacao/css/css.css' %}">
+    <link rel="stylesheet" href="{% static 'paginas_vendas/css/css.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #a9ebd5, #ffffffff);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .area_cadastrar {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            border-radius: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            background: rgba(39, 219, 143, 0.6);
+            color: #113523;
+            font-weight: 600;
+            border-bottom: none;
+            text-align: center;
+        }
+
+        .badge-gratis {
+            background: linear-gradient(to right, #27DB8F, #F59E0B);
+            color: #fff;
+            font-size: 0.8rem;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .beneficios {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .beneficio-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.92rem;
+            color: #222;
+        }
+
+        .beneficio-item:last-child { margin-bottom: 0; }
+
+        .beneficio-item i {
+            color: #27DB8F;
+            font-size: 1rem;
+            min-width: 18px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1.5px solid #dde3ec;
+            padding: 10px 14px;
+            font-size: 0.97rem;
+        }
+
+        .form-control:focus {
+            border-color: #27DB8F;
+            box-shadow: 0 0 0 3px rgba(39, 219, 143, 0.15);
+        }
+
+        .btn-teste {
+            background: linear-gradient(to right, #27DB8F, #F59E0B);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px;
+            width: 100%;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-teste:hover  { opacity: 0.88; color: #fff; }
+        .btn-teste:active { transform: scale(0.98); }
+        .btn-teste:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .aviso-box {
+            background: rgba(39, 219, 143, 0.10);
+            border-left: 4px solid #27DB8F;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            color: #1b7a4f;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #222;
+            font-size: 0.9rem;
+        }
+
+        .rodape-seguro {
+            font-size: 0.78rem;
+            color: #999;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .col-md-9 { width: 100%; max-width: 100%; flex: 0 0 100%; }
+            .area_cadastrar { padding: 20px 15px; margin: 20px 0; }
+        }
+    </style>
 {% endblock %}
-{% block 'titulo' %}Fisiominas - Teste Grátis{% endblock %}
+
+{% block 'titulo' %}Teste Gratuito — 7 dias | NUTRI INNOSOFT{% endblock %}
+
 {% block 'body' %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-3 sidebar">
-                <div class="logo_sidebar">
-                    <h2 class="logo">
-                        <img class="img_logo_sidebar" src="{% static 'autenticacao/img/log FM-SF.png' %}">
-                    </h2>
-                </div>
-            </div>
-            <div class="col-md-9">
-                <div class="area_cadastrar">
-                    {% if messages %}
-                        <br>
-                        {% for message in messages %}
-                            <div class="alert {{message.tags}}">
-                                {{message}}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    <h2 class="titulo">Experimente 7 Dias Grátis</h2>
-                    <p class="sub-titulo">Preencha com seu e-mail para começar</p>
-                    <hr>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <span class="bold">Seu e-mail</span>
-                        <input class="form-control input-form" 
-                               name="email" 
-                               type="email" 
-                               placeholder="exemplo@email.com" 
-                               required>
-                        <br>
-                        <button class="btn-first">
-                            <i class="fas fa-play-circle mr-2"></i> Ativar Teste
-                        </button>
-                    </form>
-                    <h3 style="position: absolute; bottom: 65px; font-weight: bold">
-                        Já tem uma conta?&nbsp 
-                        <a href="{% url 'logar' %}" class="btn btn-outline-success btn-lg">Acessar</a>
-                    </h3>
-                </div>
+<div class="container-fluid px-0">
+    <div class="row mx-0">
+
+        <!-- Sidebar -->
+        <div class="col-md-3 d-none d-md-block sidebar bg-light py-4">
+            <div class="logo_sidebar text-center mb-2">
+                <img class="img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo" style="max-height: 260px;">
             </div>
         </div>
+
+        <!-- Área principal -->
+        <div class="col-12 col-md-9 px-0">
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-dark" style="background-image: linear-gradient(to right, #27DB8F, #F59E0B);">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+                        <strong>NUTRI INNOSOFT</strong>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}">Planos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-bold" href="{% url 'recursos' %}">Recursos</a>
+                            </li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i> {{ user.email }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'sair' %}">Sair</a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-lg-2 mt-2 mt-lg-0" href="{% url 'logar' %}">
+                                    <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Conteúdo -->
+            <div class="area_cadastrar my-4 mx-3 mx-md-4">
+
+                <h1 class="mb-4 text-center text-dark">Teste Gratuito</h1>
+
+                <div class="row justify-content-center">
+
+                    <!-- Coluna benefícios -->
+                    <div class="col-12 col-md-4 mb-4">
+                        <div class="card h-100 p-4">
+                            <div class="text-center mb-3">
+                                <span class="badge-gratis">
+                                    <i class="fas fa-star me-1"></i> 7 dias grátis
+                                </span>
+                            </div>
+                            <h5 class="fw-bold text-dark text-center mb-3">
+                                O que você terá acesso
+                            </h5>
+                            <div class="beneficios">
+                                <div class="beneficio-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    Cadastro completo de pacientes
+                                </div>
+                                <div class="beneficio-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    Anamnese e plano alimentar
+                                </div>
+                                <div class="beneficio-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    Evoluções e acompanhamento nutricional
+                                </div>
+                                <div class="beneficio-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    Agenda de atendimentos
+                                </div>
+                                <div class="beneficio-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    Controle de medidas e IMC
+                                </div>
+                                <div class="beneficio-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    Sem cartão de crédito
+                                </div>
+                            </div>
+                            <p class="text-center text-muted" style="font-size:0.82rem;">
+                                Após 7 dias, escolha um plano para continuar.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Formulário -->
+                    <div class="col-12 col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-play-circle me-2"></i>Começar agora — é grátis
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+
+                                <div class="aviso-box">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Nenhum pagamento necessário. Acesso imediato por <strong>7 dias</strong>.
+                                </div>
+
+                                <form method="post" id="form-teste">
+                                    {% csrf_token %}
+
+                                    <div class="form-group mb-4">
+                                        <label for="email">
+                                            <i class="fas fa-envelope me-1 text-info"></i> Seu e-mail
+                                        </label>
+                                        <input
+                                            type="email"
+                                            class="form-control"
+                                            id="email"
+                                            name="email"
+                                            placeholder="seu@email.com"
+                                            required
+                                            autocomplete="email"
+                                            {% if user.is_authenticated %}value="{{ user.email }}"{% endif %}
+                                        >
+                                        <small class="text-muted">
+                                            Cada e-mail tem direito a um único teste gratuito.
+                                        </small>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-teste" id="btn-teste">
+                                        <span id="btn-texto">
+                                            <i class="fas fa-rocket me-2"></i>Ativar meu teste gratuito
+                                        </span>
+                                        <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status"></span>
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a href="{% url 'pagina_vendas' %}" style="color:#555; font-size:0.88rem;">
+                                <i class="fas fa-arrow-left me-1"></i> Voltar aos planos
+                            </a>
+                        </div>
+
+                        <div class="rodape-seguro">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Seus dados estão seguros · NUTRI INNOSOFT
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
+</div>
+
+<script>
+    document.getElementById('form-teste').addEventListener('submit', function () {
+        const btn     = document.getElementById('btn-teste');
+        const texto   = document.getElementById('btn-texto');
+        const spinner = document.getElementById('spinner');
+
+        btn.disabled = true;
+        texto.classList.add('d-none');
+        spinner.classList.remove('d-none');
+    });
+</script>
 {% endblock %}

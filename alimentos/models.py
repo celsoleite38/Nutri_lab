@@ -33,6 +33,15 @@ class Alimento(models.Model):
     # Medidas caseiras
     medida_caseira = models.CharField(max_length=100, help_text="Ex: 1 colher de sopa, 1 unidade")
     quantidade_medida_caseira = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(0)], verbose_name="Quantidade da medida caseira (g)")
+
+    # Restrições de saúde (para sugestão de substituições)
+    RESTRICAO_CHOICES = (
+        ('', 'Nenhuma'),
+        ('DIABETES', 'Diabético'),
+        ('HIPERTENSAO', 'Hipertenso'),
+        ('AMBOS', 'Diabético e Hipertenso'),
+    )
+    restricao = models.CharField(max_length=20, choices=RESTRICAO_CHOICES, blank=True, default='', verbose_name="Restrição de saúde")
     
     # Controle
     ativo = models.BooleanField(default=True)

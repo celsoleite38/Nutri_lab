@@ -22,6 +22,31 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Metadados de download do Windows (Zone.Identifier)
+*:Zone.Identifier
+*.Zone.Identifier
+
+# Uploads de usuários (não versionar; copiar na VPS via scp/rsync)
+media/
+
+# Arquivos grandes / planilhas de importação
+*.xlsx
+*.xls
+tabelas aimportar/
+
+# Scripts e arquivos de migração de dados locais
+convert.py
+verificar_dados_atuais.py
+analisar_dados_atuais.py
+importação de taco tbca.txt
+organograma_nutrilab.png
+
+# Projeto duplicado/aninhado
+nutri_lab/nutri_lab/
+
+# Arquivos coletados (collectstatic)
+staticfiles/
+
 # Imagens estáticas específicas do servidor
 plataforma/static/autenticacao/img/logo3.png
 plataforma/static/plataforma/img/calendarwsf.png

@@ -76,6 +76,7 @@ def cancelar_consulta_view(request, pk):
         return JsonResponse({"success": False, "message": f"Ocorreu um erro: {str(e)}"}, status=500)
 # Fim da função cancelar_consulta_view - Certifique-se de que a próxima função está corretamente desindentada.
 
+@login_required(login_url='/auth/logar/')
 def detalhes_consulta(request, pk):
     consulta = get_object_or_404(Consulta, pk=pk, profissional=request.user)
     return render(request, "agenda/detalhes_consulta.html", {"consulta": consulta})
@@ -87,8 +88,9 @@ class CalendarioView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         return context
 
+@login_required(login_url='/auth/logar/')
 def consultas_json(request):
-    consultas = Consulta.objects.filter(profissional=request.user)
+    consultas = Consulta.objects.filter(profissional=request.user).select_related('paciente')
     eventos = []
     for consulta in consultas:
         eventos.append({

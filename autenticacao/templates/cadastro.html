@@ -19,13 +19,13 @@
         <div class="col-md-9">
             <div class="area_cadastrar">
                 {% if messages %}
-                    <br>
-                            {% for message in messages %}
-                            <div class="alert {{message.tags}}">
-                                {{message}}
-                            </div>
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
                         {% endfor %}
+                    </ul>
                 {% endif %}
+
                 <h2 class="titulo">Seja bem vindo</h2>
                 <p class="sub-titulo">Crie sua conta</p>
                 <hr>
@@ -34,7 +34,7 @@
                     <input class="form-control input-form" name="usuario" type="text" placeholder="Digite seu nome...">
                     <br>
                     <span class="bold">E-mail</span>
-                    <input class="form-control input-form" name="email" type="text" placeholder="Digite seu E-mail...">
+                    <input class="form-control input-form" name="email" type="text" placeholder="Digite seu E-mail..." value="{{ email_fixo|default:'' }}" {% if email_fixo %}readonly{% endif %}>
                     <br>
                     <div class="row">
                         <div class="col-md">

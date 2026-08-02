@@ -1,13 +1,283 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Obrigado!</title>
+{% extends 'base_vendas.html' %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'paginas_vendas/css/css.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light text-center py-5">
-    <h1 class="mb-4">🎉 Obrigado pela sua assinatura!</h1>
-    <p class="lead">Seu pagamento foi confirmado com sucesso.</p>
-    <a href="/" class="btn btn-primary mt-4">Voltar ao início</a>
-</body>
-</html>
+    <style>
+        body {
+            background: linear-gradient(to right, #a9ebd5, #ffffffff);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .area_cadastrar {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            border-radius: 20px;
+        }
+
+        .card-obrigado {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .icone-sucesso {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #27DB8F, #F59E0B);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            box-shadow: 0 4px 20px rgba(39, 219, 143, 0.4);
+        }
+
+        .icone-sucesso i {
+            font-size: 2.4rem;
+            color: #fff;
+        }
+
+        .card-obrigado h2 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #113523;
+            margin-bottom: 12px;
+        }
+
+        .card-obrigado p.subtitulo {
+            font-size: 1rem;
+            color: #444;
+            margin-bottom: 32px;
+        }
+
+        .passos {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .passos h6 {
+            font-weight: 700;
+            color: #113523;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .passo-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .passo-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .passo-num {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            background: linear-gradient(135deg, #27DB8F, #F59E0B);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .passo-texto {
+            font-size: 0.92rem;
+            color: #333;
+            padding-top: 4px;
+        }
+
+        .btn-acessar {
+            background: linear-gradient(to right, #27DB8F, #F59E0B);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px 32px;
+            transition: opacity 0.2s, transform 0.1s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-acessar:hover  { opacity: 0.88; color: #fff; }
+        .btn-acessar:active { transform: scale(0.98); }
+
+        .btn-planos {
+            border: 2px solid rgba(39, 219, 143, 0.6);
+            border-radius: 10px;
+            background: transparent;
+            color: #113523;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 11px 28px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-planos:hover {
+            background: rgba(39, 219, 143, 0.15);
+            color: #113523;
+        }
+
+        .rodape-seguro {
+            font-size: 0.78rem;
+            color: #999;
+            margin-top: 28px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .col-md-9 { width: 100%; max-width: 100%; flex: 0 0 100%; }
+            .area_cadastrar { padding: 20px 15px; margin: 20px 0; }
+            .card-obrigado { padding: 32px 20px; }
+            .card-obrigado h2 { font-size: 1.5rem; }
+        }
+    </style>
+{% endblock %}
+
+{% block 'titulo' %}Pagamento Confirmado | NUTRI INNOSOFT{% endblock %}
+
+{% block 'body' %}
+<div class="container-fluid px-0">
+    <div class="row mx-0">
+
+        <!-- Sidebar -->
+        <div class="col-md-3 d-none d-md-block sidebar bg-light py-4">
+            <div class="logo_sidebar text-center mb-2">
+                <img class="img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo" style="max-height: 260px;">
+            </div>
+        </div>
+
+        <!-- Área principal -->
+        <div class="col-12 col-md-9 px-0">
+
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-dark" style="background-image: linear-gradient(to right, #27DB8F, #F59E0B);">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+                        <strong>NUTRI INNOSOFT</strong>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}">Planos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link fw-bold" href="{% url 'recursos' %}">Recursos</a>
+                            </li>
+                        </ul>
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i> {{ user.email }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'sair' %}">Sair</a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-lg-2 mt-2 mt-lg-0" href="{% url 'logar' %}">
+                                    <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Conteúdo -->
+            <div class="area_cadastrar my-4 mx-3 mx-md-4">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <div class="card-obrigado">
+
+                            <!-- Ícone de sucesso -->
+                            <div class="icone-sucesso">
+                                <i class="fas fa-check"></i>
+                            </div>
+
+                            <h2>Pedido recebido!</h2>
+                            <p class="subtitulo">
+                                Seu pagamento está sendo processado pelo <strong>Asaas</strong>.<br>
+                                Assim que confirmado, seu acesso será liberado automaticamente.
+                            </p>
+
+                            <!-- Próximos passos -->
+                            <div class="passos">
+                                <h6><i class="fas fa-list-ol me-2 text-info"></i>Próximos passos</h6>
+
+                                <div class="passo-item">
+                                    <div class="passo-num">1</div>
+                                    <div class="passo-texto">
+                                        Verifique seu <strong>e-mail</strong> — o Asaas enviará o boleto ou QR Code do PIX.
+                                    </div>
+                                </div>
+
+                                <div class="passo-item">
+                                    <div class="passo-num">2</div>
+                                    <div class="passo-texto">
+                                        Efetue o pagamento. A confirmação é automática e pode levar alguns minutos.
+                                    </div>
+                                </div>
+
+                                <div class="passo-item">
+                                    <div class="passo-num">3</div>
+                                    <div class="passo-texto">
+                                        Após a confirmação, seu acesso completo à plataforma será liberado.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                                <a href="{% url 'logar' %}" class="btn-acessar">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Acessar a plataforma
+                                </a>
+                                <a href="{% url 'pagina_vendas' %}" class="btn-planos">
+                                    <i class="fas fa-arrow-left me-2"></i>Ver planos
+                                </a>
+                            </div>
+
+                            <div class="rodape-seguro">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Transação segura · Powered by Asaas
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

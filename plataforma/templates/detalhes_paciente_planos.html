@@ -1,19 +1,15 @@
 {% extends 'base_plataforma.html' %}
 {% load static %}
 
-{% block 'title' %}Planos de {{ paciente.nome }} - Nutri-Innosoft{% endblock %}
+{% block 'titulo' %}Planos de {{ paciente.nome }} - Nutri-Innosoft{% endblock %}
 
 {% block 'plataforma' %}
 <div class="container">
     <div class="header">
         <h1 class="titulo">Planos Alimentares de {{ paciente.nome }}</h1>
         <div class="header-actions">
-            <a href="{% url 'plataforma:plano_alimentar_listar' %}" class="btn btn-secondary">
-                ↩️ Voltar
-            </a>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#copiarPlanoModal">
-                📋 Copiar Plano de Outro Paciente
-            </button>
+            
+            
         </div>
     </div>
 
@@ -21,6 +17,10 @@
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h3>Planos do Paciente</h3>
+                <button type="button" onclick="history.back()" class="btn btn-secondary">↩️Voltar</button>
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#copiarPlanoModal">
+                    📋 Copiar Plano de Outro Paciente
+                </button>
                 <a href="{% url 'plataforma:criar_plano_alimentar' paciente.id %}" class="btn btn-success">
                     ➕ Criar Novo Plano
                 </a>
@@ -62,11 +62,15 @@
                                    onclick="return confirm('Desativar este plano?')">
                                     ⏸️ Desativar
                                 </a>
+                                <a href="{% url 'plataforma:imprimir_plano_alimentar' plano.id %}" class="btn btn-secondary">
+                                    🖨️ Imprimir Plano
+                                </a>
                                 {% else %}
                                 <a href="{% url 'plataforma:reativar_plano' plano.id %}" class="btn btn-success btn-sm"
                                    onclick="return confirm('Reativar este plano?')">
                                     ▶️ Reativar
                                 </a>
+                                
                                 {% endif %}
                             </td>
                         </tr>

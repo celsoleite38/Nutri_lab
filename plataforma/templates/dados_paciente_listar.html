@@ -18,8 +18,14 @@
     <div class="mb-4">
         <form method="GET" action="">
             <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
-                <button class="btn btn-primary" type="submit">Buscar</button>
+                <input type="text" name="q" class="form-control" placeholder="Buscar paciente pelo nome ou plano..." value="{{ request.GET.q|default:'' }}">
+                
+                <button class="btn btn-primary" type="submit">🔍 Buscar</button>
+                
+                {% if request.GET.q %}
+                    <!-- Botão para limpar a busca mantendo a aba atual -->
+                    <a href="?tab={{ aba_ativa|default:'pacientes' }}" class="btn btn-outline-secondary">❌ Limpar</a>
+                {% endif %}
             </div>
         </form>
     </div>

@@ -23,8 +23,30 @@
     </style>
 
 {% endblock %}
+<body>
+    {% block content %}
+    {% endblock %}
+</body>
 
 {% block 'body' %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if assinatura_ativa %}
+        <div class="banner-assinatura-ativa">
+            <p>Sua assinatura {{ assinatura_ativa.plano }} está ativa até {{ assinatura_ativa.validade|date:"d/m/Y" }}.</p>
+        </div>
+    {% else %}
+        <div class="banner-assinatura-inativa">
+            <p>Sua assinatura está inativa ou expirada. <a href="{% url 'pagina_vendas' %}">Confira nossos planos!</a></p>
+        </div>
+    {% endif %}
+
     <div class="container-fluid">
         <div class="row">
             <!-- MENU LATERAL - ESQUERDA -->

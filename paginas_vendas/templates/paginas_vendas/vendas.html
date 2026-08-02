@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {# Adapte para o seu template base #}
+
+{% block content %}
+    <h1>Nossos Planos de Assinatura</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="planos-container">
+        {% for plano in planos %}
+            <div class="plano-card">
+                <h2>{{ plano.nome }}</h2>
+                <p>{{ plano.descricao }}</p>
+                <p>Preço: R$ {{ plano.preco|floatformat:2 }}</p>
+                <p>Duração: {{ plano.duracao_dias }} dias</p>
+                {% if plano.eh_promocional and plano.promocao_valida %}
+                    <p>Promoção válida até: {{ plano.validade_promocao|date:"d/m/Y H:i" }}</p>
+                {% endif %}
+                <a href="{% url 'checkout' plano.slug %}">Assinar {{ plano.nome }}</a>
+            </div>
+        {% empty %}
+            <p>Nenhum plano disponível no momento.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

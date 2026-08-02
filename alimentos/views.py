@@ -2,6 +2,7 @@
 from django.db.models.aggregates import Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -10,6 +11,7 @@ from .forms import AlimentoForm, CategoriaAlimentoForm, BuscaAlimentoForm
 from django.db.models import Count, Sum, Avg, Q
 from django.db import models
 
+@login_required(login_url='/auth/logar/')
 def lista_alimentos(request):
     form = BuscaAlimentoForm(request.GET or None)
     alimentos = Alimento.objects.filter(ativo=True)
@@ -35,10 +37,12 @@ def lista_alimentos(request):
     }
     return render(request, 'alimentos/lista_alimentos.html', context)
 
+@login_required(login_url='/auth/logar/')
 def detalhe_alimento(request, alimento_id):
     alimento = get_object_or_404(Alimento, id=alimento_id)
     return render(request, 'alimentos/detalhe_alimento.html', {'alimento': alimento})
 
+@login_required(login_url='/auth/logar/')
 def adicionar_alimento(request):
     if request.method == 'POST':
         form = AlimentoForm(request.POST)
@@ -51,6 +55,7 @@ def adicionar_alimento(request):
     
     return render(request, 'alimentos/form_alimento.html', {'form': form, 'titulo': 'Adicionar Alimento'})
 
+@login_required(login_url='/auth/logar/')
 def editar_alimento(request, alimento_id):
     alimento = get_object_or_404(Alimento, id=alimento_id)
     
@@ -65,6 +70,7 @@ def editar_alimento(request, alimento_id):
     
     return render(request, 'alimentos/form_alimento.html', {'form': form, 'titulo': 'Editar Alimento'})
 
+@login_required(login_url='/auth/logar/')
 def buscar_alimentos_ajax(request):
     """View para busca AJAX de alimentos"""
     termo = request.GET.get('termo', '')
@@ -93,6 +99,7 @@ def buscar_alimentos_ajax(request):
     
     return JsonResponse([], safe=False)
 
+@login_required(login_url='/auth/logar/')
 def calcular_nutrientes(request):
     """View para cálculo de nutrientes baseado na quantidade"""
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -110,10 +117,12 @@ def calcular_nutrientes(request):
     return JsonResponse({'success': False, 'error': 'Requisição inválida'})
 
 # Views para Categorias
+@login_required(login_url='/auth/logar/')
 def lista_categorias(request):
     categorias = CategoriaAlimento.objects.all()
     return render(request, 'alimentos/lista_categorias.html', {'categorias': categorias})
 
+@login_required(login_url='/auth/logar/')
 def adicionar_categoria(request):
     if request.method == 'POST':
         form = CategoriaAlimentoForm(request.POST)
@@ -128,16 +137,17 @@ def adicionar_categoria(request):
 
 
 
+@login_required(login_url='/auth/logar/')
 def dashboard_nutricional(request):
     total_alimentos = Alimento.objects.filter(ativo=True).count()
     total_categorias = CategoriaAlimento.objects.count()
     
     alimentos_recentes = Alimento.objects.filter(ativo=True).order_by('-data_criacao')[:5]
     
-    # Estatísticas por categoria - FORMA SIMPLIFICADA
+    # Estatísticas por categoria
     categorias_stats = []
-    for categoria in CategoriaAlimento.objects.all():
-        num_alimentos = categoria.alimento_set.count()
+    for categoria in CategoriaAlimento.objects.annotate(num_alimentos=Count('alimento')):
+        num_alimentos = categoria.num_alimentos
         categorias_stats.append({
             'nome': categoria.nome,
             'num_alimentos': num_alimentos,

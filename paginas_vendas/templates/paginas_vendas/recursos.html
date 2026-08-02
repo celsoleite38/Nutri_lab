@@ -2,186 +2,267 @@
 {% load static %}
 
 {% block 'head' %}
-    <link rel="stylesheet" href="{% static 'autenticacao/css/css.css' %}">
+    <link rel="stylesheet" href="{% static 'paginas_vendas/css/css.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #a9ebd5, #ffffffff);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Estilo compacto para os cards */
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            background: rgba(39, 219, 143, 0.6);
+            color: #113523;
+            font-weight: 600;
+            border-bottom: none;
+            text-align: center;
+            padding: 8px 12px;
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+
+        /* Área de conteúdo mais enxuta */
+        .area_cadastrar {
+            padding: 15px 10px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+            border-radius: 12px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .navbar .btn:hover {
+            background-color: #F59E0B;
+            color: #ffffff;
+        }
+
+        /* Listas e ícones mais compactos */
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        .feature-list li {
+            padding: 4px 0;
+            font-size: 0.9rem;
+        }
+
+        .feature-icon {
+            padding: 10px;
+        }
+
+        .feature-icon h5 {
+            color: #2c3e50;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-top: 6px;
+            margin-bottom: 2px;
+        }
+
+        .feature-icon p {
+            color: #555;
+            font-size: 0.8rem;
+            margin-bottom: 0;
+        }
+
+        /* Limite de largura para não esticar na tela */
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .area_cadastrar {
+                padding: 15px 5px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block 'titulo' %}Recursos - Nutri Innosoft{% endblock %}
 
 {% block 'body' %}
-<div class="container-fluid">
-    <div class="row">
+<div class="container-fluid px-0"> 
+    <div class="row mx-0">
         <!-- Sidebar -->
-        <div class="col-md-3 sidebar bg-light py-4">
-            <div class="logo_sidebar text-center mb-4">
-                <img class="img_logo_sidebar img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo">
+        <div class="col-md-3 d-none d-md-block sidebar bg-light py-4">
+            <div class="logo_sidebar text-center mb-2">
+                <img class="img_logo_sidebar img-fluid" src="{% static 'autenticacao/img/logo3.png' %}" alt="Logo" style="max-height: 260px;">
             </div>
         </div>
 
         <!-- Área principal -->
-        <div class="col-md-9">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
-                <div class="container">
+        <div class="col-12 col-md-9 px-0">
+            <nav class="navbar navbar-expand-lg navbar-dark" style="background-image: linear-gradient(to right, #27DB8F, #F59E0B);">
+                <div class="container-fluid">
                     <a class="navbar-brand" href="/">
-                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="align-top" alt="">
+                        <img src="{% static 'autenticacao/img/logo3.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
                         <strong>NUTRI INNOSOFT</strong>
                     </a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav me-auto">
                             <li class="nav-item">
-                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}"><strong>Planos</strong></a>
+                                <a class="nav-link fw-bold" href="{% url 'pagina_vendas' %}">Planos</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link fw-bold" href="{% url 'recursos' %}"><strong>Recursos</strong></a>
+                                <a class="nav-link fw-bold" href="{% url 'recursos' %}">Recursos</a>
                             </li>
                         </ul>
-                        <div class="d-flex justify-content-between w-100 align-items-center">
-                            <div></div>
-                            <ul class="navbar-nav">
-                                {% if user.is_authenticated %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-user-circle me-1"></i> {{ user.email }}
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="{% url 'sair' %}">Sair</a></li>
-                                    </ul>
-                                </li>
-                                {% else %}
-                                <li class="nav-item">
-                                    <a class="btn btn-outline-light ms-2" href="{% url 'logar' %}">
-                                        <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
-                                    </a>
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </div>
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'editar_perfil' %}">Meu Perfil</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'sair' %}">Sair</a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item">
+                                <a class="btn btn-outline-light ms-lg-2 mt-2 mt-lg-0" href="{% url 'logar' %}">
+                                    <i class="fas fa-sign-in-alt me-1"></i><strong>Entrar no Sistema</strong>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
                     </div>
                 </div>
             </nav>
 
-            <div class="area_cadastrar_vendas my-3">
-                <h1 class="mb-4 text-center text-dark">Recursos</h1>
+            <div class="area_cadastrar my-3 mx-2 mx-md-3">
+                <div class="content-container">
+                    <h1 class="mb-3 text-center text-dark style-title" style="font-size: 1.5rem;">Recursos do Sistema</h1>
 
-                <!-- Seção 1: Gestão Clínica -->
-                <div class="card mb-4 shadow glass-card">
-                    <div class="card-header text-white text-center" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
-                        <h3><i class="fas fa-clinic-medical me-2 "></i> Gestão Clínica Completa</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="feature-list">
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Prontuários de Evoluções</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Agenda com lembretes automáticos</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Prescrição de Exames</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="feature-list">
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Anamnese digital</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Controle de evolução do paciente</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Armazenamento em nuvem seguro</li>
-                                </ul>
-                            </div>
+                    <!-- Seção 1: Gestão Clínica -->
+                    <div class="card mb-3 shadow-sm glass-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clinic-medical me-2"></i> Gestão Clínica Completa</h3>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Seção 2: Ferramentas para Fisioterapeutas -->
-                <div class="card mb-4 shadow glass-card">
-                    <div class="card-header text-white text-center" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
-                        <h3><i class="fas fa-tools me-2"></i> Ferramentas para Fisioterapeutas</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 text-center mb-3">
-                                <div class="feature-icon">
-                                    <i class="fas fa-chart-line fa-3x mb-3" style="color: #F59E0B;"></i>
-                                    <h5>Análise de Progresso</h5>
-                                    <p>Gráficos detalhados da evolução dos pacientes</p>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Prontuários de Evoluções</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Agenda com lembretes automáticos</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Prescrição de Exames</li>
+                                    </ul>
                                 </div>
-                            </div>
-                            <div class="col-md-4 text-center mb-3">
-                                <div class="feature-icon">
-                                    <i class="fas fa-video fa-3x mb-3" style="color: #F59E0B;"></i>
-                                    <h5>Análise de evoluções</h5>
-                                    <p>Atendimento remoto integrado</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-center mb-3">
-                                <div class="feature-icon">
-                                    <i class="fas fa-print fa-3x mb-3" style="color: #F59E0B;"></i>
-                                    <h5>Impressão digitalizada</h5>
-                                    <p>Controle completo de impressões</p>
+                                <div class="col-md-6">
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Anamnese digital</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Plano alimentar do paciente</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Armazenamento em nuvem seguro</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Seção adicional para manter consistência -->
-                <div class="card mb-4 shadow glass-card">
-                    <div class="card-header text-white text-center" style="background-image: linear-gradient(to right, #a9ebd5, #F59E0B);">
-                        <h3><i class="fas fa-shield-alt me-2"></i> Segurança e Confiabilidade</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="feature-list">
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Dados criptografados</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Backup automático</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Conformidade com LGPD</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="feature-list">
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Acesso multi-dispositivo</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Suporte técnico</li>
-                                    <li><i class="fas fa-check-circle text-success me-2"></i> Atualizações constantes</li>
-                                </ul>
+                    <!-- Seção 2: Ferramentas para Nutricionistas -->
+                    <div class="card mb-3 shadow-sm glass-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-tools me-2"></i> Ferramentas para Nutricionistas</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-2">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-chart-line fa-2x" style="color: #F59E0B;"></i>
+                                        <h5>Análise de Progresso</h5>
+                                        <p>Gráficos detalhados da evolução</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center mb-2">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-video fa-2x" style="color: #F59E0B;"></i>
+                                        <h5>Análise de Evoluções</h5>
+                                        <p>Atendimento remoto integrado</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center mb-2">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-print fa-2x" style="color: #F59E0B;"></i>
+                                        <h5>Impressão Digitalizada</h5>
+                                        <p>Controle completo de impressões</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Seção 3: Segurança -->
+                    <div class="card mb-3 shadow-sm glass-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-shield-alt me-2"></i> Segurança e Confiabilidade</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Dados criptografados</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Backup automático</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Conformidade com LGPD</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="feature-list">
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Acesso multi-dispositivo</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Suporte técnico</li>
+                                        <li><i class="fas fa-check-circle text-success me-2"></i> Atualizações constantes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.glass-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-}
-
-.feature-list {
-    list-style: none;
-    padding-left: 0;
-}
-
-.feature-list li {
-    padding: 8px 0;
-    font-size: 1.1rem;
-}
-
-.feature-icon {
-    padding: 20px;
-}
-
-.feature-icon h5 {
-    color: #2c3e50;
-    font-weight: bold;
-}
-
-.feature-icon p {
-    color: #7f8c8d;
-}
-</style>
 {% endblock %}

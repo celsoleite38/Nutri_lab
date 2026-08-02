@@ -96,7 +96,7 @@ def detalhe_solicitacao(request, solicitacao_id):
         messages.success(request, "Resultados atualizados com sucesso!")
         return redirect('exames:detalhe_solicitacao', solicitacao_id=solicitacao.id)
 
-    resultados_existentes = ResultadoExame.objects.filter(solicitacao=solicitacao).order_by('tipo_exame__nome')
+    resultados_existentes = ResultadoExame.objects.filter(solicitacao=solicitacao).select_related('tipo_exame').order_by('tipo_exame__nome')
     ids_existentes = resultados_existentes.values_list('tipo_exame_id', flat=True)
     tipos_de_exame_disponiveis = TipoExame.objects.exclude(id__in=ids_existentes).order_by('nome')
 
@@ -124,7 +124,7 @@ def imprimir_solicitacao(request, solicitacao_id):
     except PerfilProfissional.DoesNotExist:
         perfil_profissional = None
 
-    exames_solicitados = ResultadoExame.objects.filter(solicitacao=solicitacao).order_by('tipo_exame__nome')
+    exames_solicitados = ResultadoExame.objects.filter(solicitacao=solicitacao).select_related('tipo_exame').order_by('tipo_exame__nome')
 
     context = {
         'paciente': paciente,
@@ -148,16 +148,17 @@ def selecionar_paciente(request):
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from plataforma.models import Pacientes, DadosPaciente 
-
-# IMPORT CORRETO: Buscando o Perfil de dentro do app autenticacao
+from plataforma.models import Pacientes, DadosPaciente
 from autenticacao.models import PerfilProfissional as Perfil
 
-@login_required
+@login_required(login_url='/auth/logar/')
 def imprimir_resultados(request, paciente_id):
-    # 1. Busca o paciente (ajustado para 'Pacientes' com S)
     paciente = get_object_or_404(Pacientes, id=paciente_id)
-    
+
+    if paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plataforma:pacientes')
+
     # 2. Busca o perfil do nutricionista logado vindo do app autenticacao
     perfil = Perfil.objects.filter(usuario=request.user).first() 
     

@@ -30,7 +30,7 @@ class AlimentoResource(resources.ModelResource):
             'id', 'nome', 'categoria', 'energia_kcal', 'proteina_g', 
             'lipidios_g', 'carboidrato_g', 'fibra_alimentar_g', 'calcio_mg', 
             'ferro_mg', 'sodio_mg', 'vitamina_c_mg', 'medida_caseira', 
-            'quantidade_medida_caseira', 'ativo', 'fonte'
+            'quantidade_medida_caseira', 'restricao', 'ativo', 'fonte'
         )
 
         skip_unchanged = True
@@ -43,8 +43,8 @@ class AlimentoAdmin(ImportExportModelAdmin): # <<< MUDANÇA PRINCIPAL AQUI
     resource_class = AlimentoResource
 
     # Todo o resto da sua configuração de admin pode continuar exatamente igual!
-    list_display = ['nome', 'categoria', 'energia_kcal', 'proteina_g', 'carboidrato_g', 'ativo']
-    list_filter = ['categoria', 'ativo']
+    list_display = ['nome', 'categoria', 'energia_kcal', 'proteina_g', 'carboidrato_g', 'restricao', 'ativo']
+    list_filter = ['categoria', 'restricao', 'ativo']
     search_fields = ['nome', 'nome_cientifico']
     fieldsets = (
         ('Informações Básicas', {
@@ -58,6 +58,9 @@ class AlimentoAdmin(ImportExportModelAdmin): # <<< MUDANÇA PRINCIPAL AQUI
         }),
         ('Medida Caseira', {
             'fields': ('medida_caseira', 'quantidade_medida_caseira')
+        }),
+        ('Restrição de Saúde', {
+            'fields': ('restricao',),
         }),
         ('Metadados', {
             'fields': ('fonte', 'data_criacao', 'data_atualizacao'),

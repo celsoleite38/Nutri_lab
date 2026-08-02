@@ -3,18 +3,17 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.messages import constants
-
 from autenticacao.models import PerfilProfissional
 from exames.models import ResultadoExame
 from .models import Pacientes, DadosPaciente, Refeicao, PlanoAlimentar, ItemRefeicao
 from datetime import date, datetime
-
 from django.views.decorators.csrf import csrf_exempt
 from alimentos.models import Alimento
 from decimal import Decimal, InvalidOperation
-
 import json
 from django.urls import reverse
+from django.db.models import Q
+
 
 @login_required(login_url='/auth/logar/')
 def pacientes(request):
@@ -25,18 +24,24 @@ def pacientes(request):
             pacientes = pacientes.filter(nome__icontains=query)
         return render(request, 'pacientes.html' , {'pacientes' : pacientes})
     elif request.method == "POST":
-        nome = request.POST.get('nome')
-        cpf = request.POST.get('cpf')
-        sexo = request.POST.get('sexo')
-        estadocivil = request.POST.get('estadocivil')
-        datanascimento = request.POST.get('datanascimento')
-        naturalidade = request.POST.get('naturalidade')
-        profissao = request.POST.get('profissao')
-        email = request.POST.get('email')
-        telefone = request.POST.get('telefone')
-        endereco = request.POST.get('endereco')
+        nome = request.POST.get('nome', '')
+        cpf = request.POST.get('cpf', '')
+        sexo = request.POST.get('sexo', '')
+        estadocivil = request.POST.get('estadocivil', '')
+        datanascimento = request.POST.get('datanascimento', '')
+        naturalidade = request.POST.get('naturalidade', '')
+        profissao = request.POST.get('profissao', '')
+        email = request.POST.get('email', '')
+        telefone = request.POST.get('telefone', '')
+        endereco = request.POST.get('endereco', '')
+        restricao_diabetico = request.POST.get('restricao_diabetico') == 'on'
+        restricao_hipertenso = request.POST.get('restricao_hipertenso') == 'on'
+        restricao_outros = request.POST.get('restricao_outros', '').strip()
         
-        if (len(nome.strip()) == 0) or (len(sexo.strip()) == 0) or (len(cpf.strip()) == 0) or (len(estadocivil.strip()) == 0) or (len(datanascimento.strip()) == 0) or (len(naturalidade.strip()) == 0) or (len(profissao.strip()) == 0) or (len(email.strip()) == 0) or (len(telefone.strip()) == 0) or (len(endereco.strip()) == 0):
+        if any(len(campo.strip()) == 0 for campo in [
+            nome, sexo, cpf, estadocivil, datanascimento,
+            naturalidade, profissao, email, telefone, endereco
+        ]):
             messages.add_message(request, constants.ERROR, 'Preencha todos os campos')
             return redirect('/plataforma/pacientes/')
             
@@ -61,6 +66,9 @@ def pacientes(request):
                 email=email,
                 telefone=telefone,
                 endereco=endereco,
+                restricao_diabetico=restricao_diabetico,
+                restricao_hipertenso=restricao_hipertenso,
+                restricao_outros=restricao_outros,
                 nutri=request.user
             )
                 
@@ -145,7 +153,7 @@ def dados_paciente(request, id):
 @login_required(login_url='/auth/logar/')
 @csrf_exempt
 def grafico_peso(request, id):
-    paciente = Pacientes.objects.get(id=id)
+    paciente = get_object_or_404(Pacientes, id=id, nutri=request.user)
     dados = DadosPaciente.objects.filter(paciente=paciente).order_by("data")
     pesos = []
     gorduras = []
@@ -181,23 +189,46 @@ def grafico_peso(request, id):
 @login_required(login_url='/auth/logar/')
 def plano_alimentar_listar(request):
     if request.method == "GET":
+        query = request.GET.get('q', '').strip()
+        aba_ativa = request.GET.get('tab', 'pacientes')
+
+        # Buscar pacientes do nutricionista logado
         pacientes = Pacientes.objects.filter(nutri=request.user)
-        query = request.GET.get('q')
+
+        # Buscar planos do nutricionista logado
+        planos = PlanoAlimentar.objects.filter(
+            paciente__nutri=request.user
+        ).select_related('paciente').prefetch_related('refeicoes').order_by('-data_criacao')
+
+        # Se o usuário digitou algo na busca:
         if query:
-            pacientes = pacientes.filter(nome__icontains=query)
-        planos = PlanoAlimentar.objects.filter(paciente__nutri=request.user).order_by('-data_criacao')
-        
-        return render(request, 'plano_alimentar_listar.html', {
-            'pacientes': pacientes,
-            'planos': planos,
-        })
+            # Filtra pacientes por NOME ou CPF
+            pacientes = pacientes.filter(
+                Q(nome__icontains=query) | Q(cpf__icontains=query)
+            )
+
+            # Filtra planos por NOME DO PLANO ou NOME DO PACIENTE
+            planos = planos.filter(
+                Q(nome__icontains=query) | Q(paciente__nome__icontains=query)
+            )
+
+        return render(
+            request,
+            'plano_alimentar_listar.html',
+            {
+                'pacientes': pacientes,
+                'planos': planos,
+                'query': query,
+                'aba_ativa': aba_ativa,
+            },
+        )
     
 @login_required(login_url='/auth/logar/')
 def plano_alimentar(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
     if not paciente.nutri == request.user:
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
-        return redirect('/plano_alimentar_listar/')
+        return redirect(reverse('plataforma:plano_alimentar_listar'))
     
     if request.method == "GET":
         # Use o novo sistema de refeições
@@ -216,42 +247,21 @@ def refeicao(request, id_paciente):
     paciente = get_object_or_404(Pacientes, id=id_paciente)
     if not paciente.nutri == request.user:
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
-        return redirect('/dados_paciente/')
+        return redirect(reverse('plataforma:dados_paciente_listar'))
     
     if request.method == "POST":
         titulo = request.POST.get('titulo')
         horario = request.POST.get('horario')
-        carboidratos = request.POST.get('carboidratos')
-        proteinas = request.POST.get('proteinas')
-        gorduras = request.POST.get('gorduras')
         
         r1 = Refeicao(paciente=paciente,
                         titulo=titulo,
-                        horario=horario,
-                        carboidratos=carboidratos,
-                        proteinas=proteinas,
-                        gorduras=gorduras)
+                        horario=horario)
         
         r1.save()
         
         messages.add_message(request, constants.SUCCESS, 'Refeição cadastrada')
-        return redirect(f'/plano_alimentar/{id_paciente}')
+        return redirect(reverse('plataforma:plano_alimentar', args=[id_paciente]))
 
-@login_required(login_url='/auth/logar/')
-def opcao(request, id_paciente):
-    if request.method == "POST":
-        id_refeicao = request.POST.get('refeicao')
-        imagem = request.FILES.get('imagem')
-        descricao = request.POST.get('descricao')
-        
-        o1 = Opcao(refeicao_id=id_refeicao,
-                    imagem=imagem,
-                    descricao=descricao)
-        
-        o1.save()
-        messages.add_message(request, constants.SUCCESS, 'Opção cadastrada')
-        return redirect(f'/plano_alimentar/{id_paciente}')
-    
 @login_required(login_url='/auth/logar/')
 def imprimir_dados_paciente(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
@@ -286,16 +296,19 @@ def editar_paciente(request, id):
         messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
         return redirect('/plataforma/pacientes/')
     if request.method == "POST":
-        paciente.nome = request.POST.get('nome')
-        paciente.cpf = request.POST.get('cpf')
-        paciente.sexo = request.POST.get('sexo')
-        paciente.estadocivil = request.POST.get('estadocivil')
-        paciente.datanascimento = request.POST.get('datanascimento')
-        paciente.naturalidade = request.POST.get('naturalidade')
-        paciente.profissao = request.POST.get('profissao')
-        paciente.email = request.POST.get('email')
-        paciente.telefone = request.POST.get('telefone')
-        paciente.endereco = request.POST.get('endereco')
+        paciente.nome = request.POST.get('nome', '')
+        paciente.cpf = request.POST.get('cpf', '')
+        paciente.sexo = request.POST.get('sexo', '')
+        paciente.estadocivil = request.POST.get('estadocivil', '')
+        paciente.datanascimento = request.POST.get('datanascimento', '')
+        paciente.naturalidade = request.POST.get('naturalidade', '')
+        paciente.profissao = request.POST.get('profissao', '')
+        paciente.email = request.POST.get('email', '')
+        paciente.telefone = request.POST.get('telefone', '')
+        paciente.endereco = request.POST.get('endereco', '')
+        paciente.restricao_diabetico = request.POST.get('restricao_diabetico') == 'on'
+        paciente.restricao_hipertenso = request.POST.get('restricao_hipertenso') == 'on'
+        paciente.restricao_outros = request.POST.get('restricao_outros', '').strip()
         
         if any(len(campo.strip()) == 0 for campo in [
             paciente.nome, paciente.sexo, paciente.estadocivil, paciente.datanascimento,
@@ -322,63 +335,35 @@ def editar_paciente(request, id):
 def imprimir_paciente(request, id):
     paciente = get_object_or_404(Pacientes, id=id)
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{paciente.nome}.pdf"'
+    if paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect(reverse('plataforma:pacientes'))
 
-    p = canvas.Canvas(response)
+    from exames.models import ResultadoExame
 
-    # Criando uma página para cada paciente
-    p.drawString(100, 800, f"Paciente: {paciente.nome}")
-    p.drawString(100, 780, f"Sexo: {paciente.sexo}")
-    p.drawString(100, 760, f"Estado Civil: {paciente.estadocivil}")
-    p.drawString(100, 740, f"Data de Nascimento: {paciente.datanascimento}")
-    p.drawString(100, 720, f"Naturalidade: {paciente.naturalidade}")
-    p.drawString(100, 700, f"Profissão: {paciente.profissao}")
-    p.drawString(100, 680, f"E-mail: {paciente.email}")
-    p.drawString(100, 660, f"Telefone: {paciente.telefone}")
-    p.drawString(100, 640, f"Endereço: {paciente.endereco}")
-
-    # Finaliza a página
-    p.showPage()
-    p.save()
-
-    return response
-
-
-@login_required(login_url='/auth/logar/')
-def imprimir_opcao(request, paciente_id):
-    paciente = get_object_or_404(Pacientes, id=paciente_id)
-    opcoes = Opcao.objects.filter(refeicao__paciente=paciente)
+    dados_paciente = DadosPaciente.objects.filter(paciente=paciente).order_by('-data')
     perfil = PerfilProfissional.objects.filter(usuario=request.user).first()
 
-    # Sempre filtra as opções do paciente (para mostrar na seleção)
-    opcoes = Opcao.objects.filter(refeicao__paciente=paciente)
+    resultados_exames = ResultadoExame.objects.filter(
+        solicitacao__paciente=paciente,
+        resultado__isnull=False
+    ).select_related('tipo_exame', 'solicitacao').order_by('solicitacao__data_solicitacao', 'tipo_exame__nome')
 
-    if request.method == 'POST':
-        # Se enviou o formulário, gera o relatório para impressão
-        ids_selecionados = request.POST.getlist('opcoes')
-        opcoes_selecionadas = opcoes.filter(id__in=ids_selecionados) if ids_selecionados else opcoes
-
-        return render(request, 'relatorio_impressao.html', {
-            'paciente': paciente,
-            'opcoes': opcoes_selecionadas,
-            'perfil': perfil,
-            'today':date.today()
-        })
-
-    # GET: Mostra a página de seleção
-    return render(request, 'selecionar_opcao.html', {
+    return render(request, 'imprimir_dados_paciente.html', {
         'paciente': paciente,
-        'opcoes': opcoes,
+        'dados_paciente': dados_paciente,
+        'resultados_exames': resultados_exames,
         'perfil': perfil,
-        'today':date.today()
-        
+        'today': date.today(),
     })
 
 
 @login_required(login_url='/auth/logar/')
 def calcular_nutrientes_plano(request, plano_id):
-    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    plano = get_object_or_404(
+        PlanoAlimentar.objects.prefetch_related('refeicoes__itens__alimento'),
+        id=plano_id
+    )
     total_nutrientes = {
         'energia': 0, 'proteinas': 0, 'carboidratos': 0, 
         'lipidios': 0, 'fibras': 0
@@ -421,7 +406,10 @@ def criar_plano_alimentar(request, paciente_id):
 
 @login_required(login_url='/auth/logar/')
 def detalhes_plano_alimentar(request, plano_id):
-    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    plano = get_object_or_404(
+        PlanoAlimentar.objects.prefetch_related('refeicoes__itens__alimento'),
+        id=plano_id
+    )
 
     if plano.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
@@ -431,9 +419,12 @@ def detalhes_plano_alimentar(request, plano_id):
         refeicao_id = request.POST.get('refeicao_id')
         if refeicao_id:
             refeicao = get_object_or_404(Refeicao, id=refeicao_id)
-            plano.refeicoes.add(refeicao)
-            messages.success(request, f'Refeição "{refeicao.titulo}" adicionada ao plano.')
-        return redirect('plataforma:detalhes_plano_alimentar', plano_id=plano.id)
+            if refeicao.paciente != plano.paciente:
+                messages.error(request, 'Essa refeição não pertence a este paciente.')
+            else:
+                plano.refeicoes.add(refeicao)
+                messages.success(request, f'Refeição "{refeicao.titulo}" adicionada ao plano.')
+        return redirect(reverse('plataforma:detalhes_plano_alimentar', args=[plano.id]))
 
     # Pré-calcular nutrientes por refeição (evita chamar métodos no template)
     refeicoes_com_nutrientes = []
@@ -493,10 +484,10 @@ def adicionar_refeicao(request, paciente_id):
 
 @login_required(login_url='/auth/logar/')
 def editar_refeicao(request, refeicao_id):
-    refeicao = get_object_or_404(Refeicao, id=refeicao_id)
+    refeicao = get_object_or_404(Refeicao.objects.select_related('paciente'), id=refeicao_id)
     if refeicao.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
-        return redirect('plano_alimentar_listar')
+        return redirect(reverse('plataforma:plano_alimentar_listar'))
     
     alimentos = Alimento.objects.filter(ativo=True)
     
@@ -517,10 +508,24 @@ def editar_refeicao(request, refeicao_id):
             item.save()
             messages.success(request, f'{alimento.nome} adicionado à refeição.')
     
+    itens = refeicao.itens.select_related('alimento').prefetch_related('substituicoes__alimento_substituto')
+    itens_info = []
+    for item in itens:
+        permitido, motivo = refeicao.paciente.alimento_permitido(item.alimento)
+        itens_info.append({
+            'item': item,
+            'permitido': permitido,
+            'motivo': motivo,
+            'substituicoes': item.substituicoes.all(),
+        })
+
     return render(request, 'editar_refeicao.html', {
         'refeicao': refeicao,
+        'paciente': refeicao.paciente,
+        'restricoes_paciente': refeicao.paciente.restricoes_lista(),
         'alimentos': alimentos,
-        'itens': refeicao.itens.all(),
+        'itens': itens,
+        'itens_info': itens_info,
         'total_nutrientes': refeicao.total_nutrientes()
     })
 
@@ -534,7 +539,7 @@ def remover_refeicao(request, refeicao_id):
     # Verifique se o usuário tem permissão para esta refeição
     if refeicao.paciente.nutri != request.user:
         messages.error(request, 'Você não tem permissão para remover esta refeição.')
-        return redirect('plataforma:plano_alimentar')
+        return redirect(reverse('plataforma:plano_alimentar', args=[refeicao.paciente.id]))
     
     if request.method == 'POST':
         # Salve o ID do paciente antes de deletar
@@ -568,7 +573,7 @@ def buscar_alimentos_refeicao(request):
         alimentos = Alimento.objects.filter(
             nome__icontains=termo, 
             ativo=True
-        )[:10]
+        ).select_related('categoria')[:10]
         
         resultados = [{
             'id': a.id,
@@ -604,20 +609,128 @@ def calcular_nutrientes_item(request):
 
 
 @login_required(login_url='/auth/logar/')
+def sugerir_substituicoes(request, item_id):
+    item = get_object_or_404(ItemRefeicao, id=item_id)
+    if item.refeicao.paciente.nutri != request.user:
+        return JsonResponse({'success': False, 'error': 'Acesso negado'})
+
+    paciente = item.refeicao.paciente
+    alimento_original = item.alimento
+    qtd_original = float(item.quantidade_g)
+
+    # Candidatos: mesma categoria, ativos, diferentes do atual
+    candidatos = Alimento.objects.filter(
+        categoria=alimento_original.categoria,
+        ativo=True
+    ).exclude(id=alimento_original.id)
+
+    # Remove alimentos já presentes na refeição
+    ids_na_refeicao = item.refeicao.itens.values_list('alimento_id', flat=True)
+    candidatos = candidatos.exclude(id__in=ids_na_refeicao)
+
+    # Filtra incompatíveis com as restrições do paciente
+    permitidos = []
+    for candidato in candidatos:
+        permitido, _ = paciente.alimento_permitido(candidato)
+        if permitido:
+            permitidos.append(candidato)
+
+    def proximidade(c):
+        """Menor desvio = mais próximo nutricionalmente"""
+        campos = ['energia_kcal', 'proteina_g', 'carboidrato_g', 'lipidios_g', 'fibra_alimentar_g']
+        total = 0.0
+        for campo in campos:
+            a = float(getattr(alimento_original, campo)) + 0.001
+            b = float(getattr(c, campo)) + 0.001
+            total += abs(a - b) / max(a, b)
+        return total
+
+    permitidos.sort(key=proximidade)
+    sugestoes = permitidos[:5]
+
+    resultados = []
+    for cand in sugestoes:
+        energia_orig = float(alimento_original.energia_kcal)
+        energia_cand = float(cand.energia_kcal)
+        if energia_cand > 0:
+            qtd_ajustada = qtd_original * energia_orig / energia_cand
+        else:
+            qtd_ajustada = qtd_original
+        qtd_ajustada = round(qtd_ajustada / 5) * 5
+        if qtd_ajustada < 5:
+            qtd_ajustada = 5
+
+        nutrientes = cand.calcular_nutrientes_por_porcao(qtd_ajustada)
+        resultados.append({
+            'id': cand.id,
+            'nome': cand.nome,
+            'medida_caseira': cand.medida_caseira,
+            'quantidade_g': qtd_ajustada,
+            'energia': nutrientes['energia'],
+            'proteina': nutrientes['proteina'],
+            'carboidrato': nutrientes['carboidrato'],
+            'lipidios': nutrientes['lipidios'],
+            'fibra': nutrientes['fibra'],
+        })
+
+    return JsonResponse({
+        'success': True,
+        'alimento_original': alimento_original.nome,
+        'sugestoes': resultados
+    })
+
+
+@login_required(login_url='/auth/logar/')
+def salvar_substituicoes(request, item_id):
+    item = get_object_or_404(ItemRefeicao, id=item_id)
+    if item.refeicao.paciente.nutri != request.user:
+        messages.error(request, 'Acesso não autorizado.')
+        return redirect('plataforma:editar_refeicao', refeicao_id=item.refeicao.id)
+
+    if request.method == 'POST':
+        selecionados = request.POST.getlist('substituto_id')
+
+        # Remove as substituições anteriores (o nutricionista redefine o que oferecer)
+        item.substituicoes.all().delete()
+
+        for alimento_id in selecionados:
+            try:
+                alimento = Alimento.objects.get(id=alimento_id)
+            except Alimento.DoesNotExist:
+                continue
+            try:
+                quantidade = Decimal(request.POST.get(f'quantidade_{alimento_id}', ''))
+            except (InvalidOperation, TypeError):
+                quantidade = item.quantidade_g
+
+            item.substituicoes.create(
+                alimento_substituto=alimento,
+                quantidade_g=quantidade,
+            )
+
+        if selecionados:
+            messages.success(request, f'{len(selecionados)} substituição(ões) salva(s).')
+        else:
+            messages.info(request, 'Nenhuma substituição selecionada.')
+
+    return redirect('plataforma:editar_refeicao', refeicao_id=item.refeicao.id)
+
+
+@login_required(login_url='/auth/logar/')
 def desativar_plano(request, plano_id):
     plano = get_object_or_404(PlanoAlimentar, id=plano_id)
     
     # Verifica se o usuário tem permissão (nutricionista do paciente)
     if plano.paciente.nutri != request.user:
         messages.error(request, "Você não tem permissão para desativar este plano.")
-        return redirect('plano_alimentar_listar')
+        return redirect(reverse('plataforma:plano_alimentar_listar'))
     
     # Desativa o plano
     plano.ativo = False
     plano.save()
     
     messages.success(request, f"Plano '{plano.nome}' desativado com sucesso!")
-    return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+    return redirect(reverse('plataforma:detalhes_plano_alimentar', args=[plano.id]))
 
 @login_required(login_url='/auth/logar/')
 def reativar_plano(request, plano_id):
@@ -625,14 +738,14 @@ def reativar_plano(request, plano_id):
     
     if plano.paciente.nutri != request.user:
         messages.error(request, "Você não tem permissão para reativar este plano.")
-        return redirect('plano_alimentar_listar')
+        return redirect(reverse('plataforma:plano_alimentar_listar'))
     
     # Reativa o plano
     plano.ativo = True
     plano.save()
     
     messages.success(request, f"Plano '{plano.nome}' reativado com sucesso!")
-    return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+    return redirect(reverse('plataforma:detalhes_plano_alimentar', args=[plano.id]))
 
 
 @login_required(login_url='/auth/logar/')
@@ -643,13 +756,13 @@ def remover_refeicao_plano(request, plano_id, refeicao_id):
     # Verifica permissões
     if plano.paciente.nutri != request.user or refeicao.paciente.nutri != request.user:
         messages.error(request, "Você não tem permissão para realizar esta ação.")
-        return redirect('plano_alimentar_listar')
+        return redirect(reverse('plataforma:plano_alimentar_listar'))
     
     # Remove a refeição do plano
     plano.refeicoes.remove(refeicao)
     
     messages.success(request, f"Refeição '{refeicao.titulo}' removida do plano.")
-    return redirect('plataforma:detalhes_plano_alimentar', plano_id=plano.id)
+    return redirect(reverse('plataforma:detalhes_plano_alimentar', args=[plano.id]))
 
 @login_required(login_url='/auth/logar/')
 def adicionar_refeicao_existente(request, plano_id):
@@ -661,20 +774,20 @@ def adicionar_refeicao_existente(request, plano_id):
             refeicao = get_object_or_404(Refeicao, id=refeicao_id)
             
             # Verifica permissões
-            if plano.paciente.nutri != request.user or refeicao.paciente.nutri != request.user:
+            if plano.paciente.nutri != request.user or refeicao.paciente != plano.paciente:
                 messages.error(request, "Você não tem permissão para realizar esta ação.")
-                return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+                return redirect(reverse('plataforma:detalhes_plano_alimentar', args=[plano.id]))
             
             # Adiciona a refeição ao plano
             plano.refeicoes.add(refeicao)
             messages.success(request, f"Refeição '{refeicao.titulo}' adicionada ao plano.")
         
-        return redirect('detalhes_plano_alimentar', plano_id=plano.id)
+        return redirect(reverse('plataforma:detalhes_plano_alimentar', args=[plano.id]))
     
 @login_required(login_url='/auth/logar/')
 def detalhes_paciente_planos(request, paciente_id):
     paciente = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
-    planos = PlanoAlimentar.objects.filter(paciente=paciente).order_by('-data_criacao')
+    planos = PlanoAlimentar.objects.filter(paciente=paciente).select_related('paciente').prefetch_related('refeicoes').order_by('-data_criacao')
     outros_pacientes = Pacientes.objects.filter(nutri=request.user).exclude(id=paciente_id).prefetch_related('planoalimentar_set')
     
     return render(request, 'detalhes_paciente_planos.html', {
@@ -686,7 +799,6 @@ def detalhes_paciente_planos(request, paciente_id):
 
 
 @login_required(login_url='/auth/logar/')
-@csrf_exempt
 def copiar_plano_alimentar(request, paciente_id):
     if request.method == 'POST':
         try:
@@ -694,7 +806,10 @@ def copiar_plano_alimentar(request, paciente_id):
             plano_origem_id = data.get('plano_origem_id')
             
             paciente_destino = get_object_or_404(Pacientes, id=paciente_id, nutri=request.user)
-            plano_origem = get_object_or_404(PlanoAlimentar, id=plano_origem_id)
+            plano_origem = get_object_or_404(
+                PlanoAlimentar.objects.prefetch_related('refeicoes__itens__alimento'),
+                id=plano_origem_id
+            )
             
             # Verifica se o usuário tem acesso ao plano de origem
             if plano_origem.paciente.nutri != request.user:
@@ -743,7 +858,13 @@ def copiar_plano_alimentar(request, paciente_id):
 
 @login_required(login_url='/auth/logar/')
 def imprimir_plano_alimentar(request, plano_id):
-    plano = get_object_or_404(PlanoAlimentar, id=plano_id)
+    plano = get_object_or_404(
+        PlanoAlimentar.objects.select_related('paciente').prefetch_related(
+            'refeicoes__itens__alimento',
+            'refeicoes__itens__substituicoes__alimento_substituto'
+        ),
+        id=plano_id
+    )
     if plano.paciente.nutri != request.user:
         messages.error(request, 'Acesso não autorizado.')
         return redirect('plataforma:pacientes')

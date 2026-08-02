@@ -1,136 +1,292 @@
 from datetime import timedelta
 import json
+import logging
+import requests
 from django.shortcuts import render, redirect
-import mercadopago
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Assinatura
 from django.contrib.admin.views.decorators import staff_member_required
-from django.utils import timezone  # Importe isto no topo do arquivo
+from django.utils import timezone
+from django.urls import reverse
+from .models import Assinatura, Plano
+from django.contrib.auth.models import User
 
+logger = logging.getLogger(__name__)
+
+# ──────────────────────────────────────────
+# Helpers Asaas
+# ──────────────────────────────────────────
+
+ASAAS_HEADERS = {
+    'access_token': settings.ASAAS_API_KEY,
+    'Content-Type': 'application/json',
+}
+
+ASAAS_TIMEOUT = 30
+
+
+def _criar_cliente_asaas(nome, email, cpf_cnpj):
+    """Cria cliente no Asaas e retorna o ID."""
+    url = f"{settings.ASAAS_BASE_URL}/customers"
+    payload = {
+        "name": nome,
+        "email": email,
+        "cpfCnpj": cpf_cnpj,
+    }
+    resp = requests.post(url, json=payload, headers=ASAAS_HEADERS, timeout=ASAAS_TIMEOUT)
+    resp.raise_for_status()
+    return resp.json()['id']
+
+
+def _criar_ou_buscar_cliente(nome, email, cpf_cnpj, phone,
+                             postal_code, address, address_number, province, city):
+    url_create = f"{settings.ASAAS_BASE_URL}/customers"
+    payload = {
+        "name":          nome,
+        "email":         email,
+        "cpfCnpj":       cpf_cnpj,
+        "phone":         phone,
+        "postalCode":    postal_code,
+        "address":       address,
+        "addressNumber": address_number,
+        "province":      province,
+        "city":          city,
+    }
+    resp = requests.post(url_create, json=payload, headers=ASAAS_HEADERS, timeout=ASAAS_TIMEOUT)
+
+    if resp.status_code == 200:
+        return resp.json()['id']
+
+    if resp.status_code == 400:
+        url_busca = f"{settings.ASAAS_BASE_URL}/customers?cpfCnpj={cpf_cnpj}"
+        r = requests.get(url_busca, headers=ASAAS_HEADERS, timeout=ASAAS_TIMEOUT)
+        r.raise_for_status()
+        data = r.json()
+        if data.get('data'):
+            return data['data'][0]['id']
+
+    resp.raise_for_status()
+
+
+def _criar_checkout_asaas(customer_id, valor, descricao, url_sucesso, url_cancelamento):
+    url = f"{settings.ASAAS_BASE_URL}/checkouts"
+    payload = {
+        "billingTypes": ["PIX", "CREDIT_CARD"],
+        "chargeTypes": ["DETACHED"],
+        "name": descricao,
+        "value": float(valor),
+        "minutesToExpire": 1440,
+        "customer": customer_id,
+        "items": [
+            {
+                "name": descricao,
+                "value": float(valor),
+                "quantity": 1,
+            }
+        ],
+        "callback": {
+            "successUrl": url_sucesso,
+            "cancelUrl": url_cancelamento,
+            "autoRedirect": True,
+        },
+    }
+    resp = requests.post(url, json=payload, headers=ASAAS_HEADERS, timeout=ASAAS_TIMEOUT)
+    resp.raise_for_status()
+    data = resp.json()
+
+    checkout_url = data.get('link') or data.get('url')
+    checkout_id = data.get('id')
+
+    return checkout_url, checkout_id
+
+
+def _consultar_pagamento_asaas(payment_id):
+    """Consulta o status do pagamento no Asaas para validar o webhook."""
+    url = f"{settings.ASAAS_BASE_URL}/payments/{payment_id}"
+    resp = requests.get(url, headers=ASAAS_HEADERS, timeout=ASAAS_TIMEOUT)
+    resp.raise_for_status()
+    return resp.json()
+
+
+# ──────────────────────────────────────────
+# Views
+# ──────────────────────────────────────────
 
 def pagina_vendas(request):
-    
-    if request.user.is_authenticated:
-        return redirect('/pacientes/')
-   
-    planos = [
-        {"nome": "Plano Mensal", "duracao": "1 mês", "preco": "R$ 29,90", "link": "/pagamento/1-mes/"},
-        {"nome": "Plano Trimestral", "duracao": "3 meses", "preco": "R$ 79,90", "link": "/pagamento/3-meses/"},
-        {"nome": "Plano Semestral", "duracao": "6 meses", "preco": "R$ 149,90", "link": "/pagamento/6-meses/"},
-        {"nome": "Teste Gratuito", "duracao": "7 dias", "preco": "Grátis", "link": "/teste-gratis/"},
-    ]
+    todos_planos = Plano.objects.filter(ativo=True)
+    planos = [p for p in todos_planos if p.visivel]
     return render(request, 'paginas_vendas/pagina_vendas.html', {'planos': planos})
+
 
 def teste_gratis(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email_usuario = request.POST.get('email', '').strip()
 
-        if Assinatura.objects.filter(email=email, eh_teste_gratis=True).exists():
+        if not email_usuario:
             return render(request, 'paginas_vendas/erro.html', {
-                'mensagem': 'Este e-mail já utilizou o teste gratuito.',
-                'email': email
+                'mensagem': 'Por favor, informe um e-mail válido.'
             })
 
-        validade = timezone.now() + timedelta(days=7)
+        # REGRA 1: Bloqueia se o e-mail já usou o teste grátis histórico
+        if Assinatura.objects.filter(email=email_usuario, eh_teste_gratis=True).exists():
+            return render(request, 'paginas_vendas/erro.html', {
+                'mensagem': 'Este e-mail já utilizou o período de teste gratuito.',
+                'email': email_usuario,
+                'motivo': 'teste_ja_usado'
+            })
 
-        Assinatura.objects.create(
-            email=email,
-            plano="Teste Grátis (7 dias)",
-            valor=0,
-            validade=validade,
-            status="teste",
-            eh_teste_gratis=True
-        )
+        # REGRA 2: Bloqueia se o usuário já tem cadastro no sistema
+        if User.objects.filter(email=email_usuario).exists():
+            return render(request, 'paginas_vendas/erro.html', {
+                'mensagem': 'Este e-mail já está cadastrado no sistema.',
+                'email': email_usuario,
+                'mostrar_assinaturas': True,
+                'motivo': 'usuario_existente'
+            })
 
-        # ATENÇÃO: aqui precisa passar 'validade' como contexto
-        return render(request, 'paginas_vendas/teste_gratis_sucesso.html', {
-            'validade': validade
-        })
+        # FLUXO DE SUCESSO PARA USUÁRIO NOVO:
+        # Salva o e-mail na sessão e joga direto para o cadastro para ele criar a conta
+        request.session['email_pre_cadastro'] = email_usuario
+        return redirect('cadastro')
 
     return render(request, 'paginas_vendas/teste_gratis_form.html')
 
- 
 
 def checkout(request, plano_slug):
-    planos = {
-        "1-mes": {"title": "Plano Mensal", "price": 29.90},
-        "3-meses": {"title": "Plano Trimestral", "price": 79.90},
-        "6-meses": {"title": "Plano Semestral", "price": 149.90},
-    }
-
-    plano = planos.get(plano_slug)
-    if not plano:
+    plano_obj = Plano.objects.filter(slug=plano_slug, ativo=True).first()
+    if not plano_obj or not plano_obj.visivel:
         return redirect('pagina_vendas')
 
-    sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
-    preference_data = {
-        "items": [
-            {
-                "title": plano["title"],
-                "quantity": 1,
-                "currency_id": "BRL",
-                "unit_price": plano["price"],
-            }
-        ],
-        "back_urls": {
-            "success": request.build_absolute_uri('/obrigado/'),
-            "failure": request.build_absolute_uri('/'),
-        },
-        "auto_return": "approved"
+    plano = {
+        "title": plano_obj.nome,
+        "price": float(plano_obj.preco),
+        "dias": plano_obj.duracao_dias,
     }
-    preference_response = sdk.preference().create(preference_data)
-    preference = preference_response["response"]
 
-    return redirect(preference["init_point"])
+    erro = None
+
+    if request.method == 'POST':
+        email_usuario  = request.POST.get('email', '').strip()
+        nome           = request.POST.get('nome', '').strip()
+        cpf_cnpj       = request.POST.get('cpf_cnpj', '').strip()
+        phone          = request.POST.get('phone', '').strip()
+        postal_code    = request.POST.get('postal_code', '').strip()
+        address        = request.POST.get('address', '').strip()
+        address_number = request.POST.get('address_number', '').strip()
+        province       = request.POST.get('province', '').strip()
+        city           = request.POST.get('city', '').strip()
+
+        cpf_cnpj_limpo = ''.join(filter(str.isdigit, cpf_cnpj))
+        phone_limpo    = ''.join(filter(str.isdigit, phone))
+        postal_limpo   = ''.join(filter(str.isdigit, postal_code))
+
+        if len(cpf_cnpj_limpo) not in (11, 14):
+            erro = 'CPF deve ter 11 dígitos ou CNPJ 14 dígitos.'
+        else:
+            try:
+                customer_id = _criar_ou_buscar_cliente(
+                    nome=nome,
+                    email=email_usuario,
+                    cpf_cnpj=cpf_cnpj_limpo,
+                    phone=phone_limpo,
+                    postal_code=postal_limpo,
+                    address=address,
+                    address_number=address_number,
+                    province=province,
+                    city=city,
+                )
+
+                url_sucesso      = request.build_absolute_uri(reverse('pagina_obrigado'))
+                url_cancelamento = request.build_absolute_uri(reverse('pagina_vendas'))
+
+                checkout_url, checkout_id = _criar_checkout_asaas(
+                    customer_id=customer_id,
+                    valor=plano['price'],
+                    descricao=plano['title'],
+                    url_sucesso=url_sucesso,
+                    url_cancelamento=url_cancelamento,
+                )
+
+                if not checkout_url:
+                    erro = 'Não foi possível gerar o link de pagamento. Tente novamente.'
+                else:
+                    validade = timezone.now() + timedelta(days=plano['dias'])
+                    Assinatura.objects.create(
+                        email=email_usuario,
+                        plano=plano['title'],
+                        valor=plano['price'],
+                        validade=validade,
+                        status="pendente",
+                        asaas_payment_id=checkout_id or '',
+                    )
+
+                    return redirect(checkout_url)   # ← redireciona para o Asaas
+
+            except requests.exceptions.HTTPError as e:
+                erro = f"Erro ao gerar cobrança: {e.response.text}"
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                erro = f"Erro inesperado: {str(e)}"
+
+    return render(request, 'paginas_vendas/checkout.html', {
+        'plano': plano,
+        'plano_slug': plano_slug,
+        'erro': erro,
+    })
+
 
 def pagina_obrigado(request):
     return render(request, 'paginas_vendas/obrigado.html')
 
 
-
-
 @csrf_exempt
-def webhook_mercadopago(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
+def webhook_asaas(request):
+    """Recebe notificações de pagamento do Asaas."""
+    if request.method != 'POST':
+        return JsonResponse({"error": "Método não permitido"}, status=405)
 
-            if data.get("type") == "payment":
-                payment_id = data.get("data", {}).get("id")
+    try:
+        data = json.loads(request.body)
+        evento = data.get('event')
+        payment = data.get('payment', {})
+        pay_id = payment.get('id', '')
 
-                sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
-                payment = sdk.payment().get(payment_id)["response"]
+        logger.info(f"[WEBHOOK] evento=%s payment_id=%s", evento, pay_id)
 
-                if payment["status"] == "approved":
-                    email = payment["payer"]["email"]
-                    valor = payment["transaction_amount"]
-                    plano_nome = payment["additional_info"]["items"][0]["title"]
+        if evento == 'PAYMENT_CONFIRMED' and pay_id:
+            # Validação: confirma no Asaas antes de ativar (evita fraude no webhook)
+            try:
+                dados_pagamento = _consultar_pagamento_asaas(pay_id)
+                status_confirmado = dados_pagamento.get('status') == 'CONFIRMED'
+            except Exception:
+                logger.exception("[WEBHOOK] Falha ao validar pagamento no Asaas")
+                return JsonResponse({"status": "erro_validacao"}, status=502)
 
-                    dias = {
-                        "Plano Mensal": 30,
-                        "Plano Trimestral": 90,
-                        "Plano Semestral": 180
-                    }
-                    validade = timezone.now() + timezone.timedelta(days=dias.get(plano_nome, 30))
+            if status_confirmado:
+                atualizadas = Assinatura.objects.filter(
+                    asaas_payment_id=pay_id
+                ).update(status='ativo')
+                logger.info("[WEBHOOK] Assinaturas ativadas: %s", atualizadas)
+            else:
+                logger.info("[WEBHOOK] Pagamento %s ainda não confirmado (status=%s)",
+                            pay_id, dados_pagamento.get('status'))
+                return JsonResponse({"status": "nao_confirmado"})
 
-                    Assinatura.objects.create(
-                        email=email,
-                        plano=plano_nome,
-                        valor=valor,
-                        validade=validade,
-                        status="ativo"
-                    )
+        elif evento in ('PAYMENT_OVERDUE', 'PAYMENT_DELETED') and pay_id:
+            Assinatura.objects.filter(
+                asaas_payment_id=pay_id
+            ).update(status='cancelado')
+            logger.info("[WEBHOOK] Assinatura marcada como cancelada: %s", pay_id)
 
-            return JsonResponse({"status": "received"})
+        return JsonResponse({"status": "ok"})
 
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    # Caso não seja POST, retorna erro
-    return JsonResponse({"error": "Método não permitido"}, status=405)
-
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+    except Exception as e:
+        logger.exception("[WEBHOOK] Erro inesperado")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @staff_member_required
